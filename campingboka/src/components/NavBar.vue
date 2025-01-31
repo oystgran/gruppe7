@@ -20,28 +20,33 @@ export default{
     .navbar{
         display: flex;
         justify-content: space-around;
-        background-color: #333;
-        color: white;
         height: 40px;
-        padding: none;
     }
     .navbar button{
-        background-color: #333;
-        color: white;
+        background-color: #a6a6a6;
+        color: black;
         border: none;
         cursor: pointer;
         font-weight: bold;
         width: 100%;
         height: 100%;
+        outline: none; 
+        border-top: 1px solid #808080;
+        border-left: 1px solid #808080;
+        border-right: 1px solid #808080;
+        border-radius: 2px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
     }
     .navbar button:hover{
-        background-color: #555;
+        background-color: #E9E9E9;
+        color: #333;
     }
     .navbar button a{
         text-decoration: none;
-        color: white;
+        color: black;
     }
     .navbar button a:hover{
-        color: #f1f1f1;
+        color: black;
     }
 </style>
