@@ -1,5 +1,5 @@
 <template>
-  <div class="ag-theme-alpine" style="height: 400px; width: 100%">
+  <div :class="{ 'hidden-table': !gridReady }" class="ag-theme-alpine">
     <ag-grid-vue
       :columnDefs="columnDefs"
       :rowData="rowData"
@@ -10,16 +10,13 @@
 </template>
 
 <script>
-import { AgGridVue } from 'ag-grid-vue3';  // Use ag-grid-vue3 for Vue 3
+import { AgGridVue } from 'ag-grid-vue3';  
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-import { AllCommunityModule, ModuleRegistry} from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 
 // Register all community features
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-// Mark all grids as using legacy themes
-//provideGlobalGridOptions({ theme: "legacy"});
 
 export default {
   name: "AgGridTable",
@@ -33,14 +30,19 @@ export default {
         { headerName: "Model", field: "model" },
         { headerName: "Price", field: "price" }
       ],
-      rowData: [
-        { make: "Toyota", model: "Celica", price: 35000 },
-        { make: "Ford", model: "Mondeo", price: 32000 },
-        { make: "Porsche", model: "Boxster", price: 72000 }
-      ],
+      rowData: Array.from({ length: 42 }, (_, i) => ({
+        make: ["Toyota", "Ford", "Porsche", "BMW", "Audi"][i % 5],
+        model: `Model ${i + 1}`,
+        price: Math.floor(Math.random() * (100000 - 20000) + 20000)
+      })),
       gridOptions: {
-        pagination: true
-      }
+        pagination: true,
+        onGridReady: (params) => {
+          params.api.sizeColumnsToFit();
+          this.gridReady = true; // Tabellen vises når innholdet er klart
+        }
+      },
+      gridReady: false // Start med at tabellen er skjult
     };
   }
 };
@@ -49,7 +51,7 @@ export default {
 <style scoped>
 #app {
   font-family: 'Arial', sans-serif;
-  background-color: #f4f4f9; /* Light background color for contrast */
+  background-color: #f4f4f9; 
   display: flex;
   justify-content: center;
   align-items: center;
@@ -59,18 +61,25 @@ export default {
 
 .app-container {
   background-color: white;
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  border-radius: 8px; 
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
   padding: 20px;
   width: 80%;
-  max-width: 1200px; /* Max width for large screens */
-  overflow: hidden; /* Hide any overflowing content */
-  box-sizing: border-box; /* Ensure padding doesn't affect width */
+  max-width: 1200px; 
+  overflow: hidden; 
+  box-sizing: border-box; 
 }
 
 .ag-theme-alpine {
   height: 400px;
   width: 100%;
-  border-radius: 6px; /* Rounded corners for the grid */
+  border-radius: 6px; 
+}
+.ag-theme-alpine .ag-row:nth-child(even) {
+  background-color: #d9d9d9; 
+}
+.hidden-table {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
 }
 </style>
