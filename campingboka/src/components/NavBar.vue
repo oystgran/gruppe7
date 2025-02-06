@@ -1,8 +1,8 @@
 <template>
     <nav class="navbar">
       
-        <button><a href="#">Campingboka</a></button>
-        <button><a href="#">Kart</a></button>
+        <button><router-link to="/">Home</router-link></button>
+        <button><router-link to="/map">Kart</router-link></button>
         <button><a href="#">Kontroll</a></button>
         <button><a href="#">Båtutleie</a></button>
     
