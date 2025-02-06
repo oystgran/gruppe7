@@ -1,28 +1,28 @@
 <template>
-    <div class="map-screen">
-        <h1>Kart</h1>
+    <div class="weather-screen">
+        <h1>Været</h1>
         <p>Campingboka</p>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'MapScreen',
+    name: 'WeatherScreen',
 };
 </script>
 
 <style scoped>
-.map-screen {
+.weather-screen {
     text-align: center;
     margin-top: 50px;
 }
 
-.map-screen h1 {
+.weather-screen h1 {
     font-size: 2.5em;
     color: #4CAF50;
 }
 
-.map-screen p {
+.weather-screen p {
     font-size: 1.2em;
     color: #555;
 }

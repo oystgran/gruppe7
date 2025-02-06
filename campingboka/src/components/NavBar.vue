@@ -3,8 +3,10 @@
       
         <button><router-link to="/">Home</router-link></button>
         <button><router-link to="/map">Kart</router-link></button>
-        <button><a href="#">Kontroll</a></button>
-        <button><a href="#">Båtutleie</a></button>
+        <button><router-link to="/control">Kontroll</router-link></button>
+        <button><router-link to="/boatRental">Båtutleie</router-link></button>
+        <button><router-link to="/weather">Været</router-link></button>
+
     
     </nav>
   </template>

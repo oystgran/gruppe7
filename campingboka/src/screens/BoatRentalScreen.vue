@@ -1,28 +1,28 @@
 <template>
-    <div class="map-screen">
-        <h1>Kart</h1>
+    <div class="boatRental-screen">
+        <h1>Båtutleie</h1>
         <p>Campingboka</p>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'MapScreen',
+    name: 'BoatRentalScreen',
 };
 </script>
 
 <style scoped>
-.map-screen {
+.boatRental-screen {
     text-align: center;
     margin-top: 50px;
 }
 
-.map-screen h1 {
+.boatRental-screen h1 {
     font-size: 2.5em;
     color: #4CAF50;
 }
 
-.map-screen p {
+.boatRental-screen p {
     font-size: 1.2em;
     color: #555;
 }
