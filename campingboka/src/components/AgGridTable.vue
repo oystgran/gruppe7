@@ -2,7 +2,7 @@
   <div :class="{ 'hidden-table': !gridReady }" class="ag-theme-alpine">
     <ag-grid-vue
       :columnDefs="columnDefs"
-      :rowData="rowData"
+      :rowData="transformedRowData"
       :gridOptions="gridOptions"
       class="ag-theme-alpine"
     />
@@ -24,25 +24,51 @@ export default {
     AgGridVue
   },
   data() {
+    const numColumns = 3; // Number of sets of columns (Make, Model, Price)
+    const numRows = 14; // Number of rows per column set
+    const totalEntries = numColumns * numRows;
+
+    // Generate row data dynamically
+    const rawData = Array.from({ length: totalEntries }, (_, i) => ({
+      make: ["Toyota", "Ford", "Porsche", "BMW", "Honda"][i % 5],
+      model: `Model ${i + 1}`,
+      price: Math.floor(Math.random() * (100000 - 20000) + 20000)
+    }));
+
+    // Transform data to be structured as 3 columns side by side
+    let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
+      let row = {};
+      for (let col = 0; col < numColumns; col++) {
+        let entry = rawData[rowIndex + col * numRows] || {};
+        row[`make${col + 1}`] = entry.make;
+        row[`model${col + 1}`] = entry.model;
+        row[`price${col + 1}`] = entry.price;
+      }
+      return row;
+    });
+
+    // Dynamically generate column definitions
+    let columnDefs = [];
+    for (let col = 0; col < numColumns; col++) {
+      columnDefs.push(
+        { headerName: `Make ${col + 1}`, field: `make${col + 1}` },
+        { headerName: `Model ${col + 1}`, field: `model${col + 1}` },
+        { headerName: `Price ${col + 1}`, field: `price${col + 1}` }
+      );
+    }
+
     return {
-      columnDefs: [
-        { headerName: "Make", field: "make" },
-        { headerName: "Model", field: "model" },
-        { headerName: "Price", field: "price" }
-      ],
-      rowData: Array.from({ length: 42 }, (_, i) => ({
-        make: ["Toyota", "Ford", "Porsche", "BMW", "Audi"][i % 5],
-        model: `Model ${i + 1}`,
-        price: Math.floor(Math.random() * (100000 - 20000) + 20000)
-      })),
+      columnDefs,
+      rowData: rawData,
+      transformedRowData,
       gridOptions: {
-        pagination: true,
+        pagination: false,
         onGridReady: (params) => {
           params.api.sizeColumnsToFit();
-          this.gridReady = true; // Tabellen vises når innholdet er klart
+          this.gridReady = true;
         }
       },
-      gridReady: false // Start med at tabellen er skjult
+      gridReady: false 
     };
   }
 };
@@ -71,9 +97,10 @@ export default {
 }
 
 .ag-theme-alpine {
-  height: 400px;
+  height: 638px; /* Increased height to fit all rows */
   width: 100%;
   border-radius: 6px; 
+  border: #000000;
 }
 .ag-theme-alpine .ag-row:nth-child(even) {
   background-color: #d9d9d9; 
