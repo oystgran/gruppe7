@@ -1,22 +1,28 @@
 <template>
+  <button @click="deselectRows">deselect rows</button>
   <ag-grid-vue
     class="ag-theme-alpine"
     style="height:500px"
     :column-defs="columnDefs"
     :row-data="rowData"
+    :defaultColDef="defaultColDef"
+    rowSelection="rowSelection"
+    animateRows="true"
+    @cell-clicked="cellWasClicked"
+    @grid-ready="onGridReady"
   />
 </template>
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
-import { AllCommunityModule, ModuleRegistry, provideGlobalGridOptions } from 'ag-grid-community';
+import { ClientSideRowModelModule, ModuleRegistry } from 'ag-grid-community';
+import { reactive, onMounted, ref } from 'vue';
+
+import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 // Registrer alle community-moduler
-ModuleRegistry.registerModules([AllCommunityModule]);
-
-// Bruk global grid-konfigurasjon med "legacy"-tema
-provideGlobalGridOptions({ theme: "legacy" });
+ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 export default {
   name: 'AgGridTable2',
@@ -24,18 +30,47 @@ export default {
     AgGridVue
   },
   setup() {
-    return {
-      columnDefs: [
-        { field: 'make' },
-        { field: 'model' },
-        { field: 'price' },
-      ],
-      rowData: [
-        { make: 'Vauxhall', model: 'Corsa', price: 17300 },
-        { make: 'Ford', model: 'Fiesta', price: 18000 },
-        { make: 'Volkswagen', model: 'Golf', price: 26000 },
-      ],
+    // Definerer reactive objekter
+
+    const gridApi = ref(null)
+
+    const onGridReady = params => {
+      gridApi.value = params.api
+    }
+
+    const rowData = reactive([]);
+    const columnDefs = [
+      { field: "make" },
+      { field: "model" },
+      { field: "price" }
+    ];
+
+    const defaultColDef = {
+      sortable: true,
+      filter: true,
     };
+
+    // Henter data ved onMounted
+    onMounted(() => {
+      fetch("https://www.ag-grid.com/example-assets/row-data.json")
+        .then((result) => result.json())
+        .then((remoteRowData) => {
+          rowData.splice(0, rowData.length, ...remoteRowData);
+        });
+    });
+
+    return { 
+      onGridReady,
+      columnDefs, 
+      rowData, 
+      defaultColDef,
+      cellWasClicked: event=>{
+        console.log('cell was clicked', event)
+      },
+      deselectRows: () => {
+        gridApi.value.deselectAll();
+      }
+     };
   }
 };
 </script>
