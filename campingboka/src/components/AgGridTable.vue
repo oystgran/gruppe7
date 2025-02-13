@@ -20,6 +20,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 // Define Custom Styling for Alpine Theme
 const myTheme = themeAlpine.withParams({
+  headerFontSize:16,
+  headerBackgroundColor: "#cac9c9",
   borderColor: "#9696C8", // Custom border color
   wrapperBorder: false,
   headerRowBorder: false,
@@ -61,6 +63,8 @@ export default {
       columnDefs,
       transformedRowData,
       gridOptions: {
+        domLayout: "autoHeight",
+        rowHeight: 60,
         theme: myTheme, // Apply Custom Alpine Theme
         pagination: false,
         onGridReady: (params) => {
