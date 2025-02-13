@@ -24,7 +24,7 @@ const myTheme = themeAlpine.withParams({
   wrapperBorder: false,
   headerRowBorder: false,
   rowBorder: { style: "solid", color: "black" },
-  columnBorder: { style: "solid", }, // Disable default column borders
+  /* columnBorder: { style: "solid", }, */ // Disable default column borders
 });
 
 export default {
@@ -51,9 +51,9 @@ export default {
     let columnDefs = [];
     for (let col = 0; col < numColumns; col++) {
       columnDefs.push(
-        { headerName: `Bilnummer ${col + 1}`, field: `bilnummer${col + 1}`, cellClass: `column-${col + 1}` },
-        { headerName: `Pris ${col + 1}`, field: `pris${col + 1}`, cellClass: `column-${col + 1}` },
-        { headerName: `Nasjonalitet ${col + 1}`, field: `nasjonalitet${col + 1}`, cellClass: `column-${col + 1}` }
+        { headerName: "Bilnummer", field: `bilnummer${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
+        { headerName: "Pris", field: `pris${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
+        { headerName: "Nasjonalitet", field: `nasjonalitet${col + 1}`, cellClass: "nationality-border", editable: true }
       );
     }
 
@@ -73,7 +73,13 @@ export default {
           "highlight-row": (params) => params.node.rowIndex === 3, // Highlight 4th row
         },
         cellClassRules: {
-  "nationality-border": (params) => params.column.getColId().startsWith("nasjonalitet"),
+  "nationality-border": (params) => {
+    // Get column ID (e.g., "nasjonalitet1", "nasjonalitet2", etc.)
+    const colId = params.column.getColId();
+
+    // Only apply the border if it's "nasjonalitet1" or "nasjonalitet2"
+    return colId === "nasjonalitet1" || colId === "nasjonalitet2";
+  },
 },
       },
       gridReady: false,
@@ -140,5 +146,9 @@ export default {
 /* Apply Borders to Every Third Column */
 :deep(.ag-theme-alpine .third-column-border) {
   border-right: 3px solid #32a1ce !important;
+}
+/* Apply Borders to Only the First Two 'Nasjonalitet' Columns */
+:deep(.ag-theme-alpine .nationality-border:not([col-id="nasjonalitet3"])) {
+  border-right: 3px solid #a7a7a7 !important;
 }
 </style>
