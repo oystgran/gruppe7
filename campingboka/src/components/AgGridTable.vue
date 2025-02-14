@@ -55,10 +55,31 @@ let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
     let columnDefs = [];
     for (let col = 0; col < numColumns; col++) {
       columnDefs.push(
-        { headerName: "Plass", field: `plass${col + 1}`, cellClass: `column-${col + 1}`, editable: false },
-        { headerName: "Bilnummer", field: `bilnummer${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
-        { headerName: "Pris", field: `pris${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
-        { headerName: "Nasjonalitet", field: `nasjonalitet${col + 1}`, cellClass: "nationality-border", editable: true }
+        { 
+          headerName: "Id", 
+          field: `plass${col + 1}`, 
+          cellClass: `column-${col + 1}`, 
+          editable: false,
+          width: 70 // Adjust this to control how thin the column is
+        },
+        { 
+          headerName: "Bilnummer", 
+          field: `bilnummer${col + 1}`, 
+          cellClass: `column-${col + 1}`, 
+          editable: true 
+        },
+        { 
+          headerName: "Pris", 
+          field: `pris${col + 1}`, 
+          cellClass: `column-${col + 1}`, 
+          editable: true 
+        },
+        { 
+          headerName: "Nasjonalitet",
+          field: `nasjonalitet${col + 1}`, 
+          cellClass: "nationality-border", 
+          editable: true 
+        }
       );
     }
 
