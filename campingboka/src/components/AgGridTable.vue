@@ -36,23 +36,26 @@ export default {
   },
   data() {
     const numColumns = 3; // Number of column sets (Bilnummer, Pris, Nasjonalitet)
-    const numRows = 14; // Number of rows
+const numRows = 14; // Number of rows
+//const totalPlaces = numColumns * numRows; // Total places (42)
 
-    // Initialize empty table data
-    let transformedRowData = Array.from({ length: numRows }, () => {
-      let row = {};
-      for (let col = 0; col < numColumns; col++) {
-        row[`bilnummer${col + 1}`] = "";
-        row[`pris${col + 1}`] = "";
-        row[`nasjonalitet${col + 1}`] = "";
-      }
-      return row;
-    });
+let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
+  let row = {};
+  for (let col = 0; col < numColumns; col++) {
+    let placeNumber = rowIndex + 1 + col * numRows; // Distribute numbers row-first
+    row[`plass${col + 1}`] = placeNumber; // Assign the place number
+    row[`bilnummer${col + 1}`] = "";
+    row[`pris${col + 1}`] = "";
+    row[`nasjonalitet${col + 1}`] = "";
+  }
+  return row;
+});
 
     // Dynamically generate column definitions
     let columnDefs = [];
     for (let col = 0; col < numColumns; col++) {
       columnDefs.push(
+        { headerName: "Plass", field: `plass${col + 1}`, cellClass: `column-${col + 1}`, editable: false },
         { headerName: "Bilnummer", field: `bilnummer${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
         { headerName: "Pris", field: `pris${col + 1}`, cellClass: `column-${col + 1}`, editable: true },
         { headerName: "Nasjonalitet", field: `nasjonalitet${col + 1}`, cellClass: "nationality-border", editable: true }
