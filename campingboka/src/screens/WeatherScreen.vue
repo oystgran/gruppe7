@@ -3,13 +3,35 @@
         <h1>Været</h1>
         <p>Campingboka</p>
 
-        <div class="meteogram-container">
+        <div class="button-container">
+            <button @click="selectedWidget = 'card'" :class="{ active: selectedWidget === 'card' }">
+                Vis Vær-kort
+            </button>
+            <button @click="selectedWidget = 'meteogram'" :class="{ active: selectedWidget === 'meteogram' }">
+                Vis Meteogram
+            </button>
+            <button @click="selectedWidget = 'table'" :class="{ active: selectedWidget === 'table' }">
+                Vis Vær-tabell
+            </button>
+        </div>
+
+        <div v-if="selectedWidget === 'card'" class="weather-card-container">
+            <iframe 
+                src="https://www.yr.no/en/content/1-177457/card.html" 
+                title="Yr Weather Card"
+                class="weather-card"
+                frameborder="0"
+                loading="lazy">
+            </iframe>
+        </div>
+
+        <div v-if="selectedWidget === 'meteogram'" class="meteogram-container">
             <img src="https://www.yr.no/en/content/1-72837/meteogram.svg" alt="Yr.no Weather Forecast" class="meteogram" />
         </div>
 
-        <div class="weather-table-container">
+        <div v-if="selectedWidget === 'table'" class="weather-table-container">
             <iframe 
-                src="https://www.yr.no/nb/innhold/1-177457/table.html" 
+                src="https://www.yr.no/en/content/1-177457/table.html" 
                 title="Yr Weather Table"
                 class="weather-table"
                 frameborder="0"
@@ -22,6 +44,11 @@
 <script>
 export default {
     name: 'WeatherScreen',
+    data() {
+        return {
+            selectedWidget: 'card'
+        };
+    }
 };
 </script>
 
