@@ -56,11 +56,17 @@ let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
     for (let col = 0; col < numColumns; col++) {
       columnDefs.push(
         { 
-          headerName: "Id", 
+          headerName: "Plass", 
           field: `plass${col + 1}`, 
-          cellClass: `column-${col + 1}`, 
+          cellClassRules: {
+            "plass-green": (params) => params.value >= 1 && params.value <= 19,
+            "plass-yellow": (params) => params.value >= 20 && params.value <= 31,
+            "plass-red": (params) => params.value >= 32 && params.value <= 37,
+            "plass-purple": (params) => params.value >= 38 && params.value <= 39,
+            "plass-brown": (params) => params.value >= 40 && params.value <= 42,
+          },
           editable: false,
-          width: 70 // Adjust this to control how thin the column is
+          width: 86
         },
         { 
           headerName: "Bilnummer", 
@@ -100,15 +106,21 @@ let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
           "row-odd": (params) => params.node.rowIndex % 2 !== 0, // Odd rows
           "highlight-row": (params) => params.node.rowIndex === 3, // Highlight 4th row
         },
-        cellClassRules: {
-  "nationality-border": (params) => {
-    // Get column ID (e.g., "nasjonalitet1", "nasjonalitet2", etc.)
-    const colId = params.column.getColId();
+        cellClassRules: 
+        {
+          "nationality-border": (params) => {
+            // Get column ID (e.g., "nasjonalitet1", "nasjonalitet2", etc.)
+            const colId = params.column.getColId();
 
-    // Only apply the border if it's "nasjonalitet1" or "nasjonalitet2"
-    return colId === "nasjonalitet1" || colId === "nasjonalitet2";
-  },
-},
+            // Only apply the border if it's "nasjonalitet1" or "nasjonalitet2"
+            return colId === "nasjonalitet1" || colId === "nasjonalitet2";
+          },
+          "plass-green": (params) => params.value >= 1 && params.value <= 19,
+          "plass-yellow": (params) => params.value >= 20 && params.value <= 31,
+          "plass-red": (params) => params.value >= 32 && params.value <= 37,
+          "plass-purple": (params) => params.value >= 38 && params.value <= 39,
+          "plass-brown": (params) => params.value >= 40 && params.value <= 42,
+        },
       },
       gridReady: false,
     };
@@ -178,5 +190,30 @@ let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
 /* Apply Borders to Only the First Two 'Nasjonalitet' Columns */
 :deep(.ag-theme-alpine .nationality-border:not([col-id="nasjonalitet3"])) {
   border-right: 3px solid #a7a7a7 !important;
+}
+
+/* Green Left Border for Plass 1-19 */
+:deep(.ag-theme-alpine .plass-green) {
+  border-left: 4px solid green !important;
+}
+
+/* Yellow Left Border for Plass 20-31 */
+:deep(.ag-theme-alpine .plass-yellow) {
+  border-left: 4px solid yellow !important;
+}
+
+/* Red Left Border for Plass 32-37 */
+:deep(.ag-theme-alpine .plass-red) {
+  border-left: 4px solid red !important;
+}
+
+/* Purple Left Border for Plass 38-39 */
+:deep(.ag-theme-alpine .plass-purple) {
+  border-left: 4px solid purple !important;
+}
+
+/* Brown Left Border for Plass 40-42 */
+:deep(.ag-theme-alpine .plass-brown) {
+  border-left: 4px solid brown !important;
 }
 </style>
