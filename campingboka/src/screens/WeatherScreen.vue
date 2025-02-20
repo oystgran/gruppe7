@@ -5,13 +5,13 @@
 
         <div class="button-container">
             <button @click="selectedWidget = 'card'" :class="{ active: selectedWidget === 'card' }">
-                Vis Vær-kort
+                Vær-kort
             </button>
             <button @click="selectedWidget = 'meteogram'" :class="{ active: selectedWidget === 'meteogram' }">
-                Vis Meteogram
+                Meteogram
             </button>
             <button @click="selectedWidget = 'table'" :class="{ active: selectedWidget === 'table' }">
-                Vis Vær-tabell
+                Vær-tabell
             </button>
         </div>
 
@@ -21,7 +21,7 @@
                 title="Yr Weather Card"
                 class="weather-card"
                 frameborder="0"
-                loading="lazy">
+                >
             </iframe>
         </div>
 
@@ -35,7 +35,7 @@
                 title="Yr Weather Table"
                 class="weather-table"
                 frameborder="0"
-                loading="lazy">
+                >
             </iframe>
         </div>
     </div>
@@ -68,6 +68,47 @@ export default {
     color: #555;
 }
 
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 0px;
+    margin: 20px 0;
+}
+
+button {
+    padding: 5px 10px;
+    font-size: 16px;
+    border: 1px solid #808080;
+    border-radius: 2px;
+    background-color: #a6a6a6;
+    color: black;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #8e8e8e;
+}
+
+button.active {
+    background-color: #E9E9E9;
+    color: black;
+}
+
+.weather-card-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.weather-card {
+    width: 100%;
+    max-width: 400px;
+    height: 370px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 .weather-table-container {
     margin-top: 20px;
     display: flex;
@@ -77,7 +118,7 @@ export default {
 .weather-table {
     width: 100%;
     max-width: 800px;
-    height: 500px;
+    height: 510px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
