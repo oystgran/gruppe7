@@ -52,6 +52,21 @@ export default {
     color: #555;
 }
 
+button {
+    padding: 5px 10px;
+    font-size: 16px;
+    border: 1px solid #808080;
+    border-radius: 2px;
+    background-color: #a6a6a6;
+    color: black;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #8e8e8e;
+}
+
 .modal {
     position: fixed;
     top: 0;
