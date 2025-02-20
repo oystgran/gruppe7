@@ -80,22 +80,23 @@ export default {
 
 button {
     padding: 5px 10px;
-    font-size: 16px;
-    border: 1px solid #808080;
-    border-radius: 2px;
-    background-color: #a6a6a6;
-    color: black;
+    font-size: 13px;
+    border-radius: 7px;
+    border-color: #394856;
+    background-color: #394856;
+    color: #E9E9E9;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-weight: bold;
+
 }
 
 button:hover {
-    background-color: #8e8e8e;
+    background-color: #252f38;
 }
 
 button.active {
     background-color: #E9E9E9;
-    color: black;
+    color: #333;
 }
 
 .weather-card-container {
