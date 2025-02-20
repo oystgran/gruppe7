@@ -34,22 +34,23 @@ export default {
   components: {
     AgGridVue,
   },
-  data() {
+  data()
+  {
     const numColumns = 3; // Number of column sets (Bilnummer, Pris, Nasjonalitet)
-const numRows = 14; // Number of rows
-//const totalPlaces = numColumns * numRows; // Total places (42)
+    const numRows = 14; // Number of rows
+    //const totalPlaces = numColumns * numRows; // Total places (42)
 
-let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
-  let row = {};
-  for (let col = 0; col < numColumns; col++) {
-    let placeNumber = rowIndex + 1 + col * numRows; // Distribute numbers row-first
-    row[`plass${col + 1}`] = placeNumber; // Assign the place number
-    row[`bilnummer${col + 1}`] = "";
-    row[`pris${col + 1}`] = "";
-    row[`nasjonalitet${col + 1}`] = "";
-  }
-  return row;
-});
+    let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
+    let row = {};
+    for (let col = 0; col < numColumns; col++) {
+      let placeNumber = rowIndex + 1 + col * numRows; // Distribute numbers row-first
+      row[`plass${col + 1}`] = placeNumber; // Assign the place number
+      row[`bilnummer${col + 1}`] = "";
+      row[`pris${col + 1}`] = "";
+      row[`nasjonalitet${col + 1}`] = "";
+    }
+    return row;
+  });
 
     // Dynamically generate column definitions
     let columnDefs = [];
@@ -97,6 +98,7 @@ let transformedRowData = Array.from({ length: numRows }, (_, rowIndex) => {
         rowHeight: 60,
         theme: myTheme, // Apply Custom Alpine Theme
         pagination: false,
+        singleClickEdit: true,
         onGridReady: (params) => {
           params.api.sizeColumnsToFit();
           this.gridReady = true;
