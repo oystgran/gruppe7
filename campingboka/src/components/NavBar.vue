@@ -20,25 +20,22 @@ export default{
         display: flex;
         justify-content: space-around;
         height: 50px;
+        background-color: #394856;
     }
 
     .navbar button{
-        background-color: #a6a6a6;
-        color: black;
+        background-color: #394856;
+        color: #E9E9E9;
         border: none;
         cursor: pointer;
         font-weight: bold;
         width: 100%;
         height: 100%;
         outline: none; 
-        border-top: 1px solid #808080;
-        border-left: 1px solid #808080;
-        border-right: 1px solid #808080;
-        border-radius: 2px;
+        border-color: #394856;
+        border-radius: 7px;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
-        transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out; /* Denne var kul!!!! Gi et pip om du ikke likte den eller vil justere den*/
-
     }
 
     .nav-link {
@@ -52,11 +49,16 @@ export default{
     .nav-link.router-link-exact-active button:hover {
         background-color: #E9E9E9 !important;
         color: #333 !important;
+        border-color: #394856;
+        border-radius: 7px;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+
     }
 
     .navbar button:not(.nav-link.router-link-active button):hover,
     .navbar button:not(.nav-link.router-link-exact-active button):hover {
-        background-color: #8e8e8e;
+        background-color: #252f38;
     }
 
     .navbar button a {
