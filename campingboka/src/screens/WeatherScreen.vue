@@ -21,12 +21,14 @@
                 title="Yr Weather Card"
                 class="weather-card"
                 frameborder="0"
+                loading="eager"
                 >
             </iframe>
         </div>
 
         <div v-if="selectedWidget === 'meteogram'" class="meteogram-container">
-            <img src="https://www.yr.no/en/content/1-72837/meteogram.svg" alt="Yr.no Weather Forecast" class="meteogram" />
+            <img src="https://www.yr.no/en/content/1-72837/meteogram.svg" alt="Yr.no Weather Forecast" class="meteogram" loading="eager"/>
+            
         </div>
 
         <div v-if="selectedWidget === 'table'" class="weather-table-container">
@@ -35,6 +37,7 @@
                 title="Yr Weather Table"
                 class="weather-table"
                 frameborder="0"
+                loading="eager"
                 >
             </iframe>
         </div>
