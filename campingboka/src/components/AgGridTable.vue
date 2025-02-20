@@ -67,25 +67,29 @@ export default {
             "plass-brown": (params) => params.value >= 40 && params.value <= 42,
           },
           editable: false,
-          width: 86
+          width: 86,
+          sortable: false,
         },
         { 
           headerName: "Bilnummer", 
           field: `bilnummer${col + 1}`, 
           cellClass: `column-${col + 1}`, 
-          editable: true 
+          editable: true,
+          sortable: false,
         },
         { 
           headerName: "Pris", 
           field: `pris${col + 1}`, 
           cellClass: `column-${col + 1}`, 
-          editable: true 
+          editable: true,
+          sortable: false,
         },
         { 
           headerName: "Nasjonalitet",
           field: `nasjonalitet${col + 1}`, 
           cellClass: "nationality-border", 
-          editable: true 
+          editable: true,
+          sortable: false,
         }
       );
     }
@@ -99,6 +103,7 @@ export default {
         theme: myTheme, // Apply Custom Alpine Theme
         pagination: false,
         singleClickEdit: true,
+        suppressMoveWhenColumnDragging: true,
         onGridReady: (params) => {
           params.api.sizeColumnsToFit();
           this.gridReady = true;
