@@ -13,6 +13,7 @@
 import { AgGridVue } from "ag-grid-vue3";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import AddNewRenderer from "./AddNewRenderer.vue";
 import { AllCommunityModule, ModuleRegistry, themeAlpine } from "ag-grid-community";
 
 // Register AG Grid Modules
@@ -59,7 +60,7 @@ export default {
         { 
           headerName: "Plass", 
           field: `plass${col + 1}`, 
-          cellClassRules: {
+          cellClassRules: { // Flytt hit
             "plass-green": (params) => params.value >= 1 && params.value <= 19,
             "plass-yellow": (params) => params.value >= 20 && params.value <= 31,
             "plass-red": (params) => params.value >= 32 && params.value <= 37,
@@ -74,21 +75,23 @@ export default {
           headerName: "Bilnummer", 
           field: `bilnummer${col + 1}`, 
           cellClass: `column-${col + 1}`, 
-          editable: true,
+          cellRenderer: "AddNewRenderer",
+          cellRendererParams: (params) => ({ value: params.value }),
+          editable: false,
           sortable: false,
         },
         { 
           headerName: "Pris", 
           field: `pris${col + 1}`, 
           cellClass: `column-${col + 1}`, 
-          editable: true,
+          editable: false,
           sortable: false,
         },
         { 
           headerName: "Nasjonalitet",
           field: `nasjonalitet${col + 1}`, 
           cellClass: "nationality-border", 
-          editable: true,
+          editable: false,
           sortable: false,
         }
       );
@@ -103,7 +106,10 @@ export default {
         theme: myTheme, // Apply Custom Alpine Theme
         pagination: false,
         singleClickEdit: true,
-        suppressMoveWhenColumnDragging: true,
+        suppressMovableColumns: true,
+        components: {
+          AddNewRenderer, // Registrer renderer for AG Grid
+        },
         onGridReady: (params) => {
           params.api.sizeColumnsToFit();
           this.gridReady = true;
