@@ -83,7 +83,7 @@ button:hover {
 .modal-content {
     position: relative;
     background: white;
-    padding: 20px;
+    padding: 10px;
     border-radius: 8px;
     max-width: 90%;
     max-height: 90%;
@@ -102,8 +102,17 @@ button:hover {
     position: absolute;
     top: 10px;
     right: 15px;
-    font-size: 24px;
+    font-size: 34px;
     font-weight: bold;
     cursor: pointer;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+    color: black;
+}
+
+.close:hover {
+    color: red;
 }
 </style>
