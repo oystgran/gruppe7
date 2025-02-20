@@ -24,5 +24,14 @@ export default {
   text-align: center;
   color: #2c3e50;
   background-color: #E9E9E9;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #E9E9E9;
 }
 </style>
