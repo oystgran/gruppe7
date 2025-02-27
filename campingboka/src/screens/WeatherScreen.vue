@@ -84,7 +84,7 @@ button {
     border-radius: 7px;
     border-color: #394856;
     background-color: #394856;
-    color: #E9E9E9;
+    color: white;
     cursor: pointer;
     font-weight: bold;
 
@@ -95,7 +95,7 @@ button:hover {
 }
 
 button.active {
-    background-color: #E9E9E9;
+    background-color: white;
     color: #333;
 }
 

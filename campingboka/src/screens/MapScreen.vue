@@ -58,7 +58,7 @@ button {
     border: none;
     border-radius: 7px;
     background-color: #394856;
-    color: #E9E9E9;
+    color: white;
     cursor: pointer;
     font-weight: bold;
 }

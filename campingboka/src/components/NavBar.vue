@@ -25,7 +25,7 @@ export default{
 
     .navbar button{
         background-color: #394856;
-        color: #E9E9E9;
+        color: white;
         border: none;
         cursor: pointer;
         font-weight: bold;
@@ -47,7 +47,7 @@ export default{
     .nav-link.router-link-exact-active button,
     .nav-link.router-link-active button:hover,
     .nav-link.router-link-exact-active button:hover {
-        background-color: #E9E9E9 !important;
+        background-color: white !important;
         color: #333 !important;
         border-color: #394856;
         border-radius: 7px;
