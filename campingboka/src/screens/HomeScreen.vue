@@ -2,17 +2,20 @@
     <div class="home-screen">
         <h1>Home</h1>
         <p>Campingboka</p>
-        <AgGridTable></AgGridTable>
+        <!-- <AgGridTable></AgGridTable> -->
+        <ArchiveTable></ArchiveTable>
     </div>
 </template>
 
 <script>
-import AgGridTable from '@/components/AgGridTable.vue';
+/* import AgGridTable from '@/components/AgGridTable.vue'; */
+import ArchiveTable from '@/components/ArchiveTable.vue';
 
 export default {
     name: 'HomeScreen',
     components: {
-        AgGridTable, // Add it here
+        /* AgGridTable */
+        ArchiveTable, // Add it here
     },
 };
 </script>
