@@ -2,13 +2,18 @@
     <div class="control-screen">
         <h1>Kontroll</h1>
         <p>Campingboka</p>
+        <el-button>I am ElButton</el-button>
     </div>
 </template>
 
 <script>
+import { ElButton } from 'element-plus'
+
 export default {
     name: 'ControlScreen',
+    components: { ElButton },
 };
+
 </script>
 
 <style scoped>
