@@ -3,7 +3,7 @@
     <ag-grid-vue
         :rowData="rowData"
         :columnDefs="colDefs"
-        style="height: 500px"
+        style="height: 1000px; width:100%;"
     >
     </ag-grid-vue>
 </template>
@@ -56,7 +56,7 @@
     { Plass: 18, Bilnummer: "EE33456", Nasjonalitet: "Russland", Pris: 490, Startdato: "2025-03-18", Sluttdato: "2025-03-19", Betalt: false },
     { Plass: 19, Bilnummer: "FF55678", Nasjonalitet: "USA", Pris: 1960, Startdato: "2025-03-19", Sluttdato: "2025-03-23", Betalt: true },
     { Plass: 20, Bilnummer: "GG88901", Nasjonalitet: "Canada", Pris: 490, Startdato: "2025-03-20", Sluttdato: "2025-03-21", Betalt: false },
-]);
+    ]);
         // Column Definitions: Defines the columns to be displayed.
         const colDefs = ref([
             { field: "Plass" },
@@ -67,6 +67,7 @@
             { field: "Sluttdato" },
             { field: "Betalt" }
         ]);
+        
 
         return {
             rowData,
