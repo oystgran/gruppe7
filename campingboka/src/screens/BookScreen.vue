@@ -1,6 +1,6 @@
 <template>
-    <div class="home-screen">
-        <h1>Home</h1>
+    <div class="book-screen">
+        <h1>Book</h1>
         <p>Campingboka</p>
         <AgGridTable></AgGridTable>
     </div>
@@ -10,7 +10,7 @@
 import AgGridTable from '@/components/AgGridTable.vue';
 
 export default {
-    name: 'HomeScreen',
+    name: 'BookScreen',
     components: {
         AgGridTable, // Add it here
     },
@@ -18,17 +18,17 @@ export default {
 </script>
 
 <style scoped>
-.home-screen {
+.book-screen {
     text-align: center;
     margin-top: 50px;
 }
 
-.home-screen h1 {
+.book-screen h1 {
     font-size: 2.5em;
     color: #4CAF50;
 }
 
-.home-screen p {
+.book-screen p {
     font-size: 1.2em;
     color: #555;
 }
