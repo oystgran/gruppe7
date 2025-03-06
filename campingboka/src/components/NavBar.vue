@@ -8,7 +8,8 @@
       active-text-color="#333"
       router
     >
-      <el-menu-item index="/">Home</el-menu-item>
+      <el-menu-item index="/">Dashboard</el-menu-item>
+      <el-menu-item index="/book">Book</el-menu-item>
       <el-menu-item index="/map">Kart</el-menu-item>
       <el-menu-item index="/control">Kontroll</el-menu-item>
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
