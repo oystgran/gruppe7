@@ -4,6 +4,9 @@ import router from './tools/router.js';
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/firestore';
+import 'firebase/compat/storage';
 
 // Firebase configuration
 const firebaseConfig = {
