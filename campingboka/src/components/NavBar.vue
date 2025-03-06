@@ -1,6 +1,7 @@
 <template>
     <nav class="navbar">
-        <router-link to="/" class="nav-link" active-class="active"><button>Home</button></router-link>
+        <router-link to="/" class="nav-link" active-class="active"><button>Dashboard</button></router-link>
+        <router-link to="/book" class="nav-link" active-class="active"><button>Book</button></router-link>
         <router-link to="/map" class="nav-link" active-class="active"><button>Kart</button></router-link>
         <router-link to="/control" class="nav-link" active-class="active"><button>Kontroll</button></router-link>
         <router-link to="/boatRental" class="nav-link" active-class="active"><button>Båtutleie</button></router-link>
