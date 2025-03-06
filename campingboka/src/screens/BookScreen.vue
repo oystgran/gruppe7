@@ -24,6 +24,15 @@ export default {
 .book-screen {
     text-align: center;
     margin-top: 50px;
+    width: 800px; /* 80% av viewport width */
+    max-width: 1200px; /* Valgfritt: setter en maks bredde */
+    height: 100vh; /* Sikrer at den fyller høyden av skjermen */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .book-screen h1 {
