@@ -3,7 +3,7 @@
         <h1>Kart</h1>
         <p>Campingboka</p>
         
-        <button @click="openModal">Vis plakat</button>
+        <el-button type="primary" @click="openModal">Vis plakat</el-button>
 
         <div v-if="isModalOpen" class="modal">
             <div class="modal-content">
@@ -53,18 +53,8 @@ export default {
 }
 
 button {
-    padding: 8px 12px;
-    font-size: 13px;
-    border: none;
-    border-radius: 7px;
-    background-color: #394856;
-    color: white;
+    font-size: 15px;
     cursor: pointer;
-    font-weight: bold;
-}
-
-button:hover {
-    background-color: #252f38;
 }
 
 .modal {

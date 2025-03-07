@@ -4,15 +4,15 @@
         <p>Campingboka</p>
 
         <div class="button-container">
-            <button @click="selectedWidget = 'card'" :class="{ active: selectedWidget === 'card' }">
+            <el-button @click="selectedWidget = 'card'" :class="{ active: selectedWidget === 'card' }">
                 Vær-kort
-            </button>
-            <button @click="selectedWidget = 'meteogram'" :class="{ active: selectedWidget === 'meteogram' }">
+            </el-button>
+            <el-button @click="selectedWidget = 'meteogram'" :class="{ active: selectedWidget === 'meteogram' }">
                 Meteogram
-            </button>
-            <button @click="selectedWidget = 'table'" :class="{ active: selectedWidget === 'table' }">
+            </el-button>
+            <el-button @click="selectedWidget = 'table'" :class="{ active: selectedWidget === 'table' }">
                 Vær-tabell
-            </button>
+            </el-button>
         </div>
 
         <div v-if="selectedWidget === 'card'" class="weather-card-container">
@@ -79,19 +79,17 @@ export default {
 }
 
 button {
-    padding: 5px 10px;
-    font-size: 13px;
-    border-radius: 7px;
+    font-size: 15px;
     border-color: #394856;
     background-color: #394856;
     color: white;
     cursor: pointer;
-    font-weight: bold;
 
 }
 
 button:hover {
     background-color: #252f38;
+    color: white;
 }
 
 button.active {
