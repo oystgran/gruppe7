@@ -8,6 +8,7 @@
                 class="ag-theme-alpine"
                 :quickFilterText="quickFilter"
                 :style="{ width, height }"
+                :pagination="true"
             >
             </ag-grid-vue>
         </div>
