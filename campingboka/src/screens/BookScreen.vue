@@ -2,17 +2,18 @@
   <div class="book-screen">
     <h1>Book</h1>
     <p>Campingboka</p>
-    <AgGridTable></AgGridTable>
+    <!-- <AgGridTable></AgGridTable> -->
   </div>
 </template>
 
 <script>
-import AgGridTable from "@/components/AgGridTable.vue";
+/* import AgGridTable from "@/components/AgGridTable.vue"; */
 
 export default {
   name: "BookScreen",
   components: {
-    AgGridTable, // Add it here
+    /* AgGridTable, */
+    // Add it here
   },
 };
 </script>
