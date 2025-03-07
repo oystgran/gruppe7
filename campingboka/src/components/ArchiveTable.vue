@@ -1,10 +1,12 @@
 <template>
     <div style="display: flex; flex-direction: column; height: 100%; ">
+        <input v-model="quickFilter" placeholder="Search..." />
         <div style="flex: 1 1 auto; width: 100%;">
             <ag-grid-vue
                 :rowData="rowData"
                 :columnDefs="colDefs"
                 class="ag-theme-alpine"
+                :quickFilterText="quickFilter"
                 :style="{ width, height }"
             >
             </ag-grid-vue>
@@ -19,14 +21,18 @@
   
   <script>
   import { AgGridVue } from "ag-grid-vue3";
-  import { ref } from 'vue';
+  import { 
+    ref,
+   } from 'vue';
   import {
     ModuleRegistry,
-    AllCommunityModule, // or AllEnterpriseModule
+    AllCommunityModule,
+    QuickFilterModule,// or AllEnterpriseModule
 } from 'ag-grid-community';
 
   ModuleRegistry.registerModules([
-    AllCommunityModule, // or AllEnterpriseModule
+    AllCommunityModule,
+    QuickFilterModule // or AllEnterpriseModule
 ]);
 
   export default 
@@ -94,6 +100,7 @@
         width.value = "400px";
         height.value = "400px";
         };
+        const quickFilter = ref("");
 
         return {
             rowData,
@@ -103,6 +110,7 @@
             fillLarge,
             fillMedium,
             fillExact,
+            quickFilter
         };
     },
 };
@@ -111,7 +119,7 @@
 <style>
 .ag-theme-alpine {
     width: 100% !important; /* Sikrer at tabellen fyller bredde */
-    min-width: 900px; /* Unngår at den blir for smal */
+    min-width: 1400px; /* Unngår at den blir for smal */
 }
 </style>
   
