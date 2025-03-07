@@ -5,11 +5,13 @@ import ControlScreen from '@/screens/ControlScreen.vue';
 import BoatRentalScreen from '@/screens/BoatRentalScreen.vue';
 import WeatherScreen from '@/screens/WeatherScreen.vue';
 import DashboardScreen from '@/screens/DashboardScreen.vue';
+import ArchiveScreen from '@/screens/ArchiveScreen.vue';
 
 const routes = [
   { path: '/', component: DashboardScreen },
   { path: '/book', component: BookScreen },
   { path: '/map', component: MapScreen },
+  { path: '/archive', component: ArchiveScreen },
   { path: '/control', component: ControlScreen },
   { path: '/boatRental', component: BoatRentalScreen },
   { path: '/weather', component: WeatherScreen },
