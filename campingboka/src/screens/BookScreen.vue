@@ -1,26 +1,24 @@
 <template>
   <div class="book-screen">
-    <h1>Book</h1>
-    <p>Campingboka</p>
-    <AgGridTable></AgGridTable>
+    <!-- <AgGridTable></AgGridTable> -->
+    <GuestBook></GuestBook>
   </div>
 </template>
 
 <script>
-import AgGridTable from "@/components/AgGridTable.vue";
+// Import the renamed 'GuestBook' component
+import GuestBook from "@/components/GuestBook.vue";
 
 export default {
   name: "BookScreen",
   components: {
-    AgGridTable, // Add it here
+    GuestBook, // Register 'GuestBook' here
   },
 };
 </script>
 
 <style scoped>
 .book-screen {
-  text-align: center;
-  margin-top: 50px;
 }
 
 .book-screen h1 {
