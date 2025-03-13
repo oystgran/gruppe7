@@ -19,8 +19,6 @@ export default {
 
 <style scoped>
 .book-screen {
-  text-align: center;
-  margin-top: 50px;
 }
 
 .book-screen h1 {

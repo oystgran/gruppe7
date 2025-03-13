@@ -2,7 +2,7 @@
   <el-card shadow="hover">
     <el-row :gutter="20">
       <el-col :span="6"
-        >Plass:
+        >{{ plass }}
         <div class="grid-content ep-bg-purple"
       /></el-col>
       <el-col :span="6"
@@ -30,6 +30,12 @@
 <script>
 export default {
   name: "GuestBookCard", // Changed to a multi-word name
+  props: {
+    plass: {
+      type: Number,
+      required: true, // Sørger for at prop-en alltid er tilgjengelig
+    },
+  },
 };
 </script>
 
@@ -39,7 +45,7 @@ export default {
   display: grid; /* Bruk grid i stedet for flex */
   grid-template-columns: repeat(5, 1fr); /* 5 kolonner med lik bredde */
   gap: 20px; /* Avstand mellom elementene */
-  min-height: 60px;
+  min-height: 40px;
 }
 
 .el-row {

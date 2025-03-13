@@ -1,7 +1,7 @@
 <template>
   <div class="bookCards">
     <div class="bookCards">
-      <GuestBookCard v-for="index in 42" :key="index" />
+      <GuestBookCard v-for="index in 42" :key="index" :plass="index" />
     </div>
   </div>
 </template>
