@@ -1,7 +1,5 @@
 <template>
   <div class="book-screen">
-    <h1>Book</h1>
-    <p>Campingboka</p>
     <!-- <AgGridTable></AgGridTable> -->
     <GuestBook></GuestBook>
   </div>
