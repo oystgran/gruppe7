@@ -18,7 +18,7 @@
         <div class="grid-content ep-bg-purple"
       /></el-col>
       <el-col :span="6"
-        >Pris
+        >Bet
         <div class="grid-content ep-bg-purple"
       /></el-col>
     </el-row>
@@ -35,19 +35,23 @@ export default {
 
 <style scoped>
 .el-card {
-  height: 80px; /* Fast høyde */
-  display: flex; /* Aktiverer flexbox */
-  flex-direction: row; /* Plasserer innhold horisontalt */
-  align-items: center; /* Sentrerer innholdet vertikalt */
-  justify-content: space-around; /* Sprer innholdet jevnt */
+  height: auto; /* Automatisk høyde for innhold */
+  display: grid; /* Bruk grid i stedet for flex */
+  grid-template-columns: repeat(5, 1fr); /* 5 kolonner med lik bredde */
+  gap: 20px; /* Avstand mellom elementene */
+  min-height: 60px;
 }
+
 .el-row {
-  margin-bottom: 20px;
+  display: grid; /* Bruk grid for å arrangere kolonner */
+  grid-template-columns: repeat(5, 1fr); /* Del opp i 5 kolonner */
+  gap: 20px; /* Avstand mellom kolonnene */
 }
-.el-row:last-child {
-  margin-bottom: 0;
-}
+
 .el-col {
+  display: flex;
+  flex-direction: column; /* Plasserer tekst og innhold vertikalt */
+  justify-content: center; /* Sentrerer innholdet vertikalt */
   border-radius: 4px;
 }
 </style>
