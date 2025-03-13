@@ -3,17 +3,18 @@
     <h1>Book</h1>
     <p>Campingboka</p>
     <!-- <AgGridTable></AgGridTable> -->
+    <GuestBook></GuestBook>
   </div>
 </template>
 
 <script>
-/* import AgGridTable from "@/components/AgGridTable.vue"; */
+// Import the renamed 'GuestBook' component
+import GuestBook from "@/components/GuestBook.vue";
 
 export default {
   name: "BookScreen",
   components: {
-    /* AgGridTable, */
-    // Add it here
+    GuestBook, // Register 'GuestBook' here
   },
 };
 </script>
