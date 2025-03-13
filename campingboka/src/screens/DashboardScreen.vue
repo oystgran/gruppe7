@@ -3,15 +3,17 @@
         <h1>Dashboard</h1>
         <p>Campingboka</p>
         <el-button>I am ElButton</el-button>
+        <AddGuestModal />
     </div>
 </template>
 
 <script>
-import { ElButton } from 'element-plus'
+import AddGuestModal from '@/components/AddGuestModal.vue';
+import { ElButton } from 'element-plus';
 
 export default {
     name: 'ControlScreen',
-    components: { ElButton },
+    components: { ElButton, AddGuestModal },
 };
 
 </script>
