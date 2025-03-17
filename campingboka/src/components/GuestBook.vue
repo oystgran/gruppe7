@@ -4,14 +4,22 @@
       v-for="index in 42"
       :key="index"
       :plass="index"
-      :bilnummer="guests[index]?.Bilnummer || '+'"
       :nasjonalitet="guests[index]?.Nasjonalitet"
       :innsjekk="
         guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : ''
       "
       :utsjekk="guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : ''"
       :pris="guests[index]?.Pris"
-    />
+    >
+      <template v-slot:bilnummer>
+        <span v-if="guests[index]?.Bilnummer">{{
+          guests[index]?.Bilnummer
+        }}</span>
+        <el-icon v-else class="plus-icon">
+          <CirclePlusFilled />
+        </el-icon>
+      </template>
+    </GuestBookCard>
   </div>
 </template>
 
@@ -19,11 +27,13 @@
 import { db } from "@/main";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
+import { CirclePlusFilled } from "@element-plus/icons-vue";
 
 export default {
   name: "GuestBook",
   components: {
     GuestBookCard,
+    CirclePlusFilled,
   },
   data() {
     return {
@@ -88,5 +98,10 @@ export default {
 }
 .el-col {
   border-radius: 4px;
+}
+.plus-icon {
+  font-size: 24px; /* Juster størrelsen */
+  color: #409eff; /* Blå farge (standard Element Plus blå) */
+  vertical-align: middle; /* Juster vertikalt */
 }
 </style>

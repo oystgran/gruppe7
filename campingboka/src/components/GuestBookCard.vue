@@ -2,7 +2,10 @@
   <el-card shadow="hover">
     <el-row :gutter="20">
       <el-col :span="6">{{ plass }}</el-col>
-      <el-col :span="6">{{ bilnummer }}</el-col>
+      <el-col :span="6">
+        <slot name="bilnummer"></slot>
+        <!-- Her settes bilnummeret eller plussikonet -->
+      </el-col>
       <el-col :span="6">{{ nasjonalitet }}</el-col>
       <el-col :span="6">{{ innsjekk }}</el-col>
       <el-col :span="6">{{ utsjekk }}</el-col>
