@@ -5,14 +5,12 @@
       :key="index"
       :plass="index"
       :bilnummer="guests[index]?.Bilnummer || '+'"
-      :nasjonalitet="guests[index]?.Nasjonalitet || '+'"
+      :nasjonalitet="guests[index]?.Nasjonalitet"
       :innsjekk="
-        guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : '+'
+        guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : ''
       "
-      :utsjekk="
-        guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : '+'
-      "
-      :pris="guests[index]?.Pris || '+'"
+      :utsjekk="guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : ''"
+      :pris="guests[index]?.Pris"
     />
   </div>
 </template>
