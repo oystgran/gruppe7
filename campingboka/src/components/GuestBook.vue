@@ -101,7 +101,7 @@ export default {
 }
 .plus-icon {
   font-size: 24px; /* Juster størrelsen */
-  color: #409eff; /* Blå farge (standard Element Plus blå) */
+  color: #1da03b; /* Blå farge (standard Element Plus blå) */
   vertical-align: middle; /* Juster vertikalt */
 }
 </style>
