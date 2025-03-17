@@ -3,9 +3,10 @@
     <el-row :gutter="20">
       <el-col :span="6">{{ plass }}</el-col>
       <el-col :span="6">{{ bilnummer }}</el-col>
-      <el-col :span="6">{{ dato }}</el-col>
+      <el-col :span="6">{{ nasjonalitet }}</el-col>
+      <el-col :span="6">{{ innsjekk }}</el-col>
+      <el-col :span="6">{{ utsjekk }}</el-col>
       <el-col :span="6">{{ pris }}</el-col>
-      <el-col :span="6">{{ bet }}</el-col>
     </el-row>
   </el-card>
 </template>
@@ -15,9 +16,10 @@ export default {
   props: {
     plass: Number,
     bilnummer: String,
-    dato: String,
+    nasjonalitet: String,
+    innsjekk: String,
     pris: [Number, String], // Pris kan være et tall eller tom
-    bet: String,
+    utsjekk: String,
   },
 };
 </script>

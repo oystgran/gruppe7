@@ -4,17 +4,22 @@
       v-for="index in 42"
       :key="index"
       :plass="index"
-      :bilnummer="getGuestData(index, 'Bilnummer')"
-      :dato="getGuestData(index, 'Dato')"
-      :pris="getGuestData(index, 'Pris')"
-      :bet="getGuestData(index, 'Betaling')"
+      :bilnummer="guests[index]?.Bilnummer || '+'"
+      :nasjonalitet="guests[index]?.Nasjonalitet || '+'"
+      :innsjekk="
+        guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : '+'
+      "
+      :utsjekk="
+        guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : '+'
+      "
+      :pris="guests[index]?.Pris || '+'"
     />
   </div>
 </template>
 
 <script>
-import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/main";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
 
 export default {
@@ -24,43 +29,36 @@ export default {
   },
   data() {
     return {
-      guests: {}, // Bruker et objekt i stedet for array for rask oppslag
+      guests: {}, // Objekt for å holde gjestedataene
     };
   },
   async mounted() {
-    try {
-      const guestsCollectionRef = collection(
-        db,
-        "Camping",
-        "Gjester",
-        "Gjester"
-      );
-      const querySnapshot = await getDocs(guestsCollectionRef);
+    const latestQuery = query(
+      collection(db, "Camping", "Gjester", "Gjester"),
+      orderBy("Plass")
+    );
+    const snapshot = await getDocs(latestQuery);
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        this.guests[data.Plass] = data; // Lagre gjester etter plassnummer
-      });
+    let guestsData = {};
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      guestsData[data.Plass] = data; // Bruk plassnummer som nøkkel
+    });
 
-      console.log("Gjester hentet:", this.guests);
-    } catch (error) {
-      console.error("Feil ved henting av data:", error);
-    }
+    console.log("Gjester hentet:", guestsData);
+    this.guests = guestsData; // Lagre gjestedataene
   },
   methods: {
-    getGuestData(plass, key) {
-      return this.guests[plass]?.[key] || "-"; // Returnerer data hvis den finnes, ellers '-'
+    formatDate(timestamp) {
+      if (!timestamp) return "";
+      const date = timestamp.toDate(); // Konverter Timestamp til Date
+      return date.toLocaleString(); // Returner datoen som en lokal streng
     },
   },
 };
 </script>
 
 <style scoped>
-.add-symbol {
-  font-size: 1.5rem;
-  color: #888; /* Grå farge for å indikere tom plass */
-  cursor: pointer; /* Kan brukes til å indikere at man kan legge til noe */
-}
 .bookCards {
   height: 100vh;
   width: 100vw;
