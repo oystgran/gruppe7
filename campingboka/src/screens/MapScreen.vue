@@ -1,8 +1,7 @@
 <template>
     <div class="map-screen">
-        <h1>Kart</h1>
-        <p>Campingboka</p>
-        
+        <MapComponent />  
+
         <el-button type="primary" @click="openModal">Vis plakat</el-button>
 
         <div v-if="isModalOpen" class="modal">
@@ -16,12 +15,15 @@
 
 <script>
 import posterMap from '@/assets/posterMap.png';
+import MapComponent from '@/components/MapComponent.vue';
+
 
 export default {
     name: 'MapScreen',
+    components: { MapComponent },
     data() {
         return {
-            posterMap: posterMap, 
+            posterMap: posterMap,
             isModalOpen: false
         };
     },
@@ -39,7 +41,6 @@ export default {
 <style scoped>
 .map-screen {
     text-align: center;
-    margin-top: 50px;
 }
 
 .map-screen h1 {
@@ -52,13 +53,14 @@ export default {
     color: #555;
 }
 
+
 button {
     font-size: 15px;
     cursor: pointer;
 }
 
 .modal {
-    position: fixed;
+    position: center;
     top: 0;
     left: 0;
     width: 100%;
