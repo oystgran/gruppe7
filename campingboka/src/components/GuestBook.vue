@@ -1,7 +1,7 @@
 <template>
   <div class="bookCards">
     <!-- First group: 1 to 14 -->
-    <div class="group">
+    <div class="group1">
       <GuestBookCard
         v-for="index in 14"
         :key="index"
@@ -31,7 +31,7 @@
     </div>
 
     <!-- Second group: 15 to 28 -->
-    <div class="group">
+    <div class="group2">
       <GuestBookCard
         v-for="index in 14"
         :key="index + 14"
@@ -61,7 +61,7 @@
     </div>
 
     <!-- Third group: 29 to 42 -->
-    <div class="group">
+    <div class="group3">
       <GuestBookCard
         v-for="index in 14"
         :key="index + 28"
@@ -129,7 +129,7 @@ export default {
     formatDate(timestamp) {
       if (!timestamp) return "";
       const date = timestamp.toDate(); // Konverter Timestamp til Date
-      return date.toLocaleString(); // Returner datoen som en lokal streng
+      return date.toLocaleDateString(); // Returner datoen som en lokal streng
     },
   },
 };
@@ -137,11 +137,11 @@ export default {
 
 <style scoped>
 .bookCards {
-  height: 100vh;
-  width: 100vw;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   grid-template-columns: repeat(3, minmax(350px, 1fr)); /* Maks 3 kolonner */
+  height: 100%;
+  width: 100vw;
   /* gap: 10px; */ /* Valgfritt: Mellomrom mellom kortene */
 }
 
@@ -159,7 +159,7 @@ export default {
   }
 }
 
-.el-row {
+/* .el-row {
   margin-bottom: 20px;
 }
 .el-row:last-child {
@@ -167,10 +167,13 @@ export default {
 }
 .el-col {
   border-radius: 4px;
-}
+} */
 .plus-icon {
-  font-size: 24px;
+  font-size: 20.74px;
   color: #1da03b;
   vertical-align: middle;
+}
+.el-card__body {
+  padding: 15.3px !important;
 }
 </style>
