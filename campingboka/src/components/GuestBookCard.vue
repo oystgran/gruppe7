@@ -1,40 +1,28 @@
 <template>
   <el-card shadow="hover">
     <el-row :gutter="20">
-      <el-col :span="6"
-        >{{ plass }}
-        <div class="grid-content ep-bg-purple"
-      /></el-col>
-      <el-col :span="6"
-        >Bilnummer:
-        <div class="grid-content ep-bg-purple"
-      /></el-col>
-      <el-col :span="6"
-        >Dato:
-        <div class="grid-content ep-bg-purple"
-      /></el-col>
-      <el-col :span="6"
-        >Pris
-        <div class="grid-content ep-bg-purple"
-      /></el-col>
-      <el-col :span="6"
-        >Bet
-        <div class="grid-content ep-bg-purple"
-      /></el-col>
+      <el-col :span="6">{{ plass }}</el-col>
+      <el-col :span="6">
+        <slot name="bilnummer"></slot>
+        <!-- Her settes bilnummeret eller plussikonet -->
+      </el-col>
+      <el-col :span="6">{{ nasjonalitet }}</el-col>
+      <el-col :span="6">{{ innsjekk }}</el-col>
+      <el-col :span="6">{{ utsjekk }}</el-col>
+      <el-col :span="6">{{ pris }}</el-col>
     </el-row>
-    <!-- <p v-for="o in 4" :key="o" class="text item">
-      {{ "List item " + o }}
-    </p> -->
   </el-card>
 </template>
 <script>
 export default {
-  name: "GuestBookCard", // Changed to a multi-word name
+  name: "GuestBookCard",
   props: {
-    plass: {
-      type: Number,
-      required: true, // Sørger for at prop-en alltid er tilgjengelig
-    },
+    plass: Number,
+    bilnummer: String,
+    nasjonalitet: String,
+    innsjekk: String,
+    pris: [Number, String], // Pris kan være et tall eller tom
+    utsjekk: String,
   },
 };
 </script>
@@ -59,5 +47,10 @@ export default {
   flex-direction: column; /* Plasserer tekst og innhold vertikalt */
   justify-content: center; /* Sentrerer innholdet vertikalt */
   border-radius: 4px;
+}
+.add-symbol {
+  font-size: 1.5rem;
+  color: #888; /* Grå farge for å indikere tom plass */
+  cursor: pointer; /* Kan brukes til å indikere at man kan legge til noe */
 }
 </style>
