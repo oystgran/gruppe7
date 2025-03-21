@@ -1,25 +1,94 @@
 <template>
   <div class="bookCards">
-    <GuestBookCard
-      v-for="index in 42"
-      :key="index"
-      :plass="index"
-      :nasjonalitet="guests[index]?.Nasjonalitet"
-      :innsjekk="
-        guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : ''
-      "
-      :utsjekk="guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : ''"
-      :pris="guests[index]?.Pris"
-    >
-      <template v-slot:bilnummer>
-        <span v-if="guests[index]?.Bilnummer">{{
-          guests[index]?.Bilnummer
-        }}</span>
-        <el-icon v-else class="plus-icon">
-          <CirclePlusFilled />
-        </el-icon>
-      </template>
-    </GuestBookCard>
+    <!-- First group: 1 to 14 -->
+    <div class="group">
+      <GuestBookCard
+        v-for="index in 14"
+        :key="index"
+        :plass="index"
+        :nasjonalitet="guests[index - 1]?.Nasjonalitet"
+        :innsjekk="
+          guests[index - 1]?.Innsjekk
+            ? formatDate(guests[index - 1].Innsjekk)
+            : ''
+        "
+        :utsjekk="
+          guests[index - 1]?.Utsjekk
+            ? formatDate(guests[index - 1].Utsjekk)
+            : ''
+        "
+        :pris="guests[index - 1]?.Pris"
+      >
+        <template v-slot:bilnummer>
+          <span v-if="guests[index - 1]?.Bilnummer">{{
+            guests[index - 1]?.Bilnummer
+          }}</span>
+          <el-icon v-else class="plus-icon">
+            <CirclePlusFilled />
+          </el-icon>
+        </template>
+      </GuestBookCard>
+    </div>
+
+    <!-- Second group: 15 to 28 -->
+    <div class="group">
+      <GuestBookCard
+        v-for="index in 14"
+        :key="index + 14"
+        :plass="index + 14"
+        :nasjonalitet="guests[index + 13]?.Nasjonalitet"
+        :innsjekk="
+          guests[index + 13]?.Innsjekk
+            ? formatDate(guests[index + 13].Innsjekk)
+            : ''
+        "
+        :utsjekk="
+          guests[index + 13]?.Utsjekk
+            ? formatDate(guests[index + 13].Utsjekk)
+            : ''
+        "
+        :pris="guests[index + 13]?.Pris"
+      >
+        <template v-slot:bilnummer>
+          <span v-if="guests[index + 13]?.Bilnummer">{{
+            guests[index + 13]?.Bilnummer
+          }}</span>
+          <el-icon v-else class="plus-icon">
+            <CirclePlusFilled />
+          </el-icon>
+        </template>
+      </GuestBookCard>
+    </div>
+
+    <!-- Third group: 29 to 42 -->
+    <div class="group">
+      <GuestBookCard
+        v-for="index in 14"
+        :key="index + 28"
+        :plass="index + 28"
+        :nasjonalitet="guests[index + 27]?.Nasjonalitet"
+        :innsjekk="
+          guests[index + 27]?.Innsjekk
+            ? formatDate(guests[index + 27].Innsjekk)
+            : ''
+        "
+        :utsjekk="
+          guests[index + 27]?.Utsjekk
+            ? formatDate(guests[index + 27].Utsjekk)
+            : ''
+        "
+        :pris="guests[index + 27]?.Pris"
+      >
+        <template v-slot:bilnummer>
+          <span v-if="guests[index + 27]?.Bilnummer">{{
+            guests[index + 27]?.Bilnummer
+          }}</span>
+          <el-icon v-else class="plus-icon">
+            <CirclePlusFilled />
+          </el-icon>
+        </template>
+      </GuestBookCard>
+    </div>
   </div>
 </template>
 
