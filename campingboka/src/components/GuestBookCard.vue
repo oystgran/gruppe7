@@ -1,15 +1,14 @@
 <template>
   <el-card shadow="hover">
-    <el-row :gutter="20">
-      <el-col :span="6">{{ plass }}</el-col>
-      <el-col :span="6">
+    <el-row :gutter="10">
+      <el-col :span="1">{{ plass }}</el-col>
+      <el-col :span="5">
         <slot name="bilnummer"></slot>
-        <!-- Her settes bilnummeret eller plussikonet -->
       </el-col>
-      <el-col :span="6">{{ nasjonalitet }}</el-col>
-      <el-col :span="6">{{ innsjekk }}</el-col>
-      <el-col :span="6">{{ utsjekk }}</el-col>
-      <el-col :span="6">{{ pris }}</el-col>
+      <el-col :span="5">{{ nasjonalitet }}</el-col>
+      <el-col :span="5">{{ innsjekk }} </el-col>
+      <el-col :span="5">{{ utsjekk }} </el-col>
+      <el-col :span="2">{{ pris }}</el-col>
     </el-row>
   </el-card>
 </template>
@@ -29,28 +28,24 @@ export default {
 
 <style scoped>
 .el-card {
-  height: auto; /* Automatisk høyde for innhold */
-  display: grid; /* Bruk grid i stedet for flex */
-  grid-template-columns: repeat(5, 1fr); /* 5 kolonner med lik bredde */
-  gap: 20px; /* Avstand mellom elementene */
-  min-height: 40px;
+  height: auto; /* Sørger for at kortet har automatisk høyde basert på innholdet */
+  min-height: 62px;
 }
 
 .el-row {
-  display: grid; /* Bruk grid for å arrangere kolonner */
-  grid-template-columns: repeat(5, 1fr); /* Del opp i 5 kolonner */
-  gap: 20px; /* Avstand mellom kolonnene */
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Sørger for at alle kolonner strekker seg over samme høyde */
+  min-height: 22.88px;
 }
 
 .el-col {
   display: flex;
-  flex-direction: column; /* Plasserer tekst og innhold vertikalt */
-  justify-content: center; /* Sentrerer innholdet vertikalt */
-  border-radius: 4px;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100px;
+  /* border-radius: 4px; */
 }
-.add-symbol {
-  font-size: 1.5rem;
-  color: #888; /* Grå farge for å indikere tom plass */
-  cursor: pointer; /* Kan brukes til å indikere at man kan legge til noe */
-}
+
+/* Spesifikk stil for innsjekk og utsjekk kolonne */
 </style>
