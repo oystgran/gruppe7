@@ -60,7 +60,7 @@ button {
 }
 
 .modal {
-    position: center;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -69,7 +69,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    z-index: 10;
 }
 
 .modal-content {
@@ -85,7 +85,7 @@ button {
 
 .modal-image {
     width: 100%;
-    max-width: 600px;
+    max-width: 700px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
