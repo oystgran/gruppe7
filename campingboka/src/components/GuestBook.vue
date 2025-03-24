@@ -18,6 +18,7 @@
             : ''
         "
         :pris="guests[index - 1]?.Pris"
+        @click="openModalWithGuest(index)"
       >
         <template v-slot:bilnummer>
           <span v-if="guests[index - 1]?.Bilnummer">{{
@@ -48,6 +49,7 @@
             : ''
         "
         :pris="guests[index + 13]?.Pris"
+        @click="openModalWithGuest(index + 14)"
       >
         <template v-slot:bilnummer>
           <span v-if="guests[index + 13]?.Bilnummer">{{
@@ -78,6 +80,7 @@
             : ''
         "
         :pris="guests[index + 27]?.Pris"
+        @click="openModalWithGuest(index + 27)"
       >
         <template v-slot:bilnummer>
           <span v-if="guests[index + 27]?.Bilnummer">{{
@@ -130,6 +133,20 @@ export default {
       if (!timestamp) return "";
       const date = timestamp.toDate(); // Konverter Timestamp til Date
       return date.toLocaleDateString(); // Returner datoen som en lokal streng
+    },
+    openModalWithGuest(index) {
+      const guest = this.guests[index];
+
+      // Check if guest exists
+      if (!guest) {
+        console.error("No guest found at index", index + 1);
+        return;
+      }
+
+      console.log("Selected guest:", guest);
+
+      // Emit the selected guest data to the parent (BookScreen)
+      this.$emit("showAddGuestModal", guest); // Pass the whole guest object
     },
   },
 };

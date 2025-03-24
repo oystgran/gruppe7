@@ -1,18 +1,45 @@
 <template>
   <div class="book-screen">
-    <!-- <AgGridTable></AgGridTable> -->
-    <GuestBook></GuestBook>
+    <!-- GuestBook component -->
+    <GuestBook @showAddGuestModal="handleShowModal" />
+
+    <!-- AddGuestModal component, passing the visibility and guest data -->
+    <AddGuestModal
+      :visible="showAddGuestModal"
+      :initialPlass="selectedPlass"
+      @close="closeModal"
+    />
   </div>
 </template>
 
 <script>
 // Import the renamed 'GuestBook' component
 import GuestBook from "@/components/GuestBook.vue";
+import AddGuestModal from "@/components/AddGuestModal.vue";
 
 export default {
   name: "BookScreen",
-  components: {
-    GuestBook, // Register 'GuestBook' here
+  components: { GuestBook, AddGuestModal },
+  data() {
+    return {
+      showAddGuestModal: false, // Controls modal visibility
+      selectedPlass: null, // Store the selected guest's place (can be null or a default value)
+    };
+  },
+  methods: {
+    // Handle showing the modal
+    handleShowModal(guest) {
+      if (guest) {
+        this.selectedPlass = guest.Plass; // Set the selected guest's place if the guest exists
+      } else {
+        this.selectedPlass = "Default Place"; // Set to a default value if no guest data is passed
+      }
+      this.showAddGuestModal = true; // Always open the modal
+    },
+    // Close the modal
+    closeModal() {
+      this.showAddGuestModal = false; // Close the modal
+    },
   },
 };
 </script>
