@@ -1,6 +1,12 @@
 <template>
     <div class="map-screen">
-        <MapComponent />  
+        <MapComponent @rectangle-clicked="handleRectangleClicked"/>  
+
+        <AddGuestModal
+        :visible="showAddGuestModal"
+        :initialPlass="selectedPlass"
+        @close="showAddGuestModal = false"/>
+
 
         <el-button type="primary" @click="openModal">Vis plakat</el-button>
 
@@ -16,18 +22,25 @@
 <script>
 import posterMap from '@/assets/posterMap.png';
 import MapComponent from '@/components/MapComponent.vue';
+import AddGuestModal from '@/components/AddGuestModal.vue';
 
 
 export default {
     name: 'MapScreen',
-    components: { MapComponent },
+    components: { MapComponent, AddGuestModal },
     data() {
         return {
             posterMap: posterMap,
-            isModalOpen: false
+            isModalOpen: false,
+            showAddGuestModal: false,
+            selectedPlass: null,
         };
     },
     methods: {
+        handleRectangleClicked(number) {
+            this.selectedPlass = number;
+            this.showAddGuestModal = true;
+        },
         openModal() {
             this.isModalOpen = true;
         },
@@ -60,7 +73,7 @@ button {
 }
 
 .modal {
-    position: center;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
@@ -69,7 +82,7 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1;
+    z-index: 10;
 }
 
 .modal-content {
@@ -85,7 +98,7 @@ button {
 
 .modal-image {
     width: 100%;
-    max-width: 600px;
+    max-width: 700px;
     border-radius: 10px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }

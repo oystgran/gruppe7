@@ -1,8 +1,6 @@
 <template>
     <div class="add-guest-modal">        
-        <el-button type="primary" @click="openModal">Legg til ny gjest</el-button>
-
-        <div v-if="isModalOpen" class="modal">
+        <div v-if="visible" class="modal">
             <div class="modal-content">
                 <span class="close" @click="closeModal">&times;</span>
 
@@ -76,14 +74,33 @@ import { nationalitiesEn } from '@/tools/countries-en';
 
 export default {
     name: 'AddGuestModal',
+    props: {
+    initialPlass: {
+        type: Number,
+        default: 1
+    },
+    visible: {
+        type: Boolean,
+        default: false
+    }
+    },    
+    watch: {
+        initialPlass(newVal) {
+            this.guest.plass = newVal;
+        },
+        visible(newVal) {
+         if (newVal) {
+           this.resetGuest();
+        }
+        }
+    },
     data() {
     return {
-      isModalOpen: false,
       guest: {
         navn: '',
         bilnummer: '',
         nasjonalitet: '',
-        plass: 1,
+        plass: this.initialPlass,
         persons: 1,
         pris: null,
         innsjekk: new Date(),
@@ -93,12 +110,22 @@ export default {
     };
   },
     methods: {
-        openModal() {
-            this.isModalOpen = true;
-        },
         closeModal() {
-            this.isModalOpen = false;
+            this.$emit('close');
         },
+
+        resetGuest() {
+        this.guest = {
+            navn: '',
+            bilnummer: '',
+            nasjonalitet: '',
+            plass: this.initialPlass,
+            persons: 1,
+            pris: 0,
+            innsjekk: new Date(),
+            utsjekk: null,
+        };
+    },
 
         querySearch(queryString, cb) {
       const results = queryString
@@ -126,16 +153,6 @@ export default {
 
         this.closeModal();
 
-        // Clear
-        this.guest = {
-          navn: '',
-          bilnummer: '',
-          nasjonalitet: '',
-          plass: 1,
-          pris: 0,
-          innsjekk: new Date(),
-          utsjekk: null,
-        };
       } catch (error) {
         console.error('Feil ved lagring:', error);
         this.$message.error('Kunne ikke lagre gjesten.');
