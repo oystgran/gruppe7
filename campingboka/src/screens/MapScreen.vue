@@ -2,10 +2,10 @@
     <div class="map-screen">
         <MapComponent @rectangle-clicked="handleRectangleClicked"/>  
 
-        <AddGuestModal ref="addGuestModal"
-            v-if="showAddGuestModal"
-            :initialPlass="selectedPlass"
-            @close="showAddGuestModal = false" />
+        <AddGuestModal
+        :visible="showAddGuestModal"
+        :initialPlass="selectedPlass"
+        @close="showAddGuestModal = false"/>
 
 
         <el-button type="primary" @click="openModal">Vis plakat</el-button>
