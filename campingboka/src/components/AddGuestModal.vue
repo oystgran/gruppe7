@@ -76,6 +76,12 @@ import { nationalitiesEn } from '@/tools/countries-en';
 
 export default {
     name: 'AddGuestModal',
+    props: {
+    initialPlass: {
+      type: Number,
+      default: 1
+    }
+    },    
     data() {
     return {
       isModalOpen: false,
@@ -83,7 +89,7 @@ export default {
         navn: '',
         bilnummer: '',
         nasjonalitet: '',
-        plass: 1,
+        plass: this.initialPlass,
         persons: 1,
         pris: null,
         innsjekk: new Date(),
@@ -96,8 +102,10 @@ export default {
         openModal() {
             this.isModalOpen = true;
         },
+
         closeModal() {
             this.isModalOpen = false;
+            this.$emit('close');
         },
 
         querySearch(queryString, cb) {
@@ -131,7 +139,8 @@ export default {
           navn: '',
           bilnummer: '',
           nasjonalitet: '',
-          plass: 1,
+          plass: this.initialPlass,
+          persons: 1,
           pris: 0,
           innsjekk: new Date(),
           utsjekk: null,
