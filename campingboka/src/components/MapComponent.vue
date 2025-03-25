@@ -105,7 +105,7 @@ export default {
 
 <style scoped>
 .svg-container {
-  width: 80%;
+  width: 75%;
   margin: 0 auto;
   display: flex;
   justify-content: center;

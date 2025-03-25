@@ -2,9 +2,12 @@
     <div class="dashboard-screen">
       <div class="dashboard-content">
         <div class="left-panel">
+          <DateNavigator v-model="myDate" />
+          <!-- <p>Selected date: {{ myDate.toDateString() }}</p> -->
           <h1>Dashboard</h1>
           <p>Campingboka</p>
           <el-button>I am ElButton</el-button>
+
           <AddGuestModal
             :visible="showAddGuestModal"
             :initialPlass="selectedPlass"
@@ -22,22 +25,28 @@
 
 <script>
 import AddGuestModal from '@/components/AddGuestModal.vue';
+import DateNavigator from '@/components/DateNavigator.vue';
 import MapComponent from '@/components/MapComponent.vue';
 import { ElButton } from 'element-plus';
 
 export default {
   name: 'ControlScreen',
-  components: { ElButton, AddGuestModal, MapComponent },
+  components: { ElButton, AddGuestModal, MapComponent, DateNavigator},
   data() {
     return {
       showAddGuestModal: false,
       selectedPlass: null,
+      myDate: new Date(),
     };
   },
   methods: {
     handleRectangleClicked(number) {
       this.selectedPlass = number;
       this.showAddGuestModal = true;
+    },
+    handleDateUpdate(newDate) {
+      console.log("Selected Date:", newDate);
+      // Logikk for å endre hva som vises basert på dato
     },
   },
 };

@@ -1,5 +1,7 @@
 <template>
     <div class="map-screen">
+        <DateNavigator v-model="myDate" />
+
         <MapComponent @rectangle-clicked="handleRectangleClicked"/>  
 
         <AddGuestModal
@@ -23,11 +25,12 @@
 import posterMap from '@/assets/posterMap.png';
 import MapComponent from '@/components/MapComponent.vue';
 import AddGuestModal from '@/components/AddGuestModal.vue';
+import DateNavigator from '@/components/DateNavigator.vue';
 
 
 export default {
     name: 'MapScreen',
-    components: { MapComponent, AddGuestModal },
+    components: { MapComponent, AddGuestModal, DateNavigator },
     data() {
         return {
             posterMap: posterMap,
@@ -40,6 +43,10 @@ export default {
         handleRectangleClicked(number) {
             this.selectedPlass = number;
             this.showAddGuestModal = true;
+        },
+        handleDateUpdate(newDate) {
+            console.log("Selected Date:", newDate);
+            // Logikk for å endre hva som vises basert på dato
         },
         openModal() {
             this.isModalOpen = true;
