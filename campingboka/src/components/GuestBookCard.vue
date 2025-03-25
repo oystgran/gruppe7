@@ -1,6 +1,6 @@
 <template>
   <el-card shadow="hover">
-    <el-row :gutter="10">
+    <el-row :gutter="30">
       <el-col :span="1">{{ plass }}</el-col>
       <el-col :span="5">
         <slot name="bilnummer"></slot>
@@ -29,11 +29,17 @@ export default {
 <style scoped>
 .el-card {
   height: auto; /* Sørger for at kortet har automatisk høyde basert på innholdet */
-  min-height: 62px;
+  min-height: 52px;
+  --el-card-padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: left;
 }
 
 .el-card_body {
-  padding: -10px;
+}
+.el-card-is-hover-shadow {
+  background-color: green;
 }
 
 .el-row {

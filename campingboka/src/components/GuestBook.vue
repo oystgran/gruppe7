@@ -180,11 +180,11 @@ export default {
   border-radius: 4px;
 } */
 .plus-icon {
-  font-size: 20.74px;
+  font-size: 30.74px;
   color: #1da03b;
   vertical-align: middle;
 }
 .el-card__body {
-  padding: 15.3px !important;
+  /* padding: 15.3px !important; */
 }
 </style>
