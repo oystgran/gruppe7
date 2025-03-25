@@ -1,18 +1,41 @@
 <template>
   <div class="book-screen">
-    <!-- <AgGridTable></AgGridTable> -->
-    <GuestBook></GuestBook>
+    <!-- GuestBook component -->
+    <GuestBook @showAddGuestModal="handleShowModal" />
+
+    <!-- AddGuestModal component, passing the visibility and guest data -->
+    <AddGuestModal
+      :visible="showAddGuestModal"
+      :initialPlass="selectedPlass"
+      @close="closeModal"
+    />
   </div>
 </template>
 
 <script>
 // Import the renamed 'GuestBook' component
 import GuestBook from "@/components/GuestBook.vue";
+import AddGuestModal from "@/components/AddGuestModal.vue";
 
 export default {
   name: "BookScreen",
-  components: {
-    GuestBook, // Register 'GuestBook' here
+  components: { GuestBook, AddGuestModal },
+  data() {
+    return {
+      showAddGuestModal: false, // Controls modal visibility
+      selectedPlass: null, // Store the selected guest's place (can be null or a default value)
+    };
+  },
+  methods: {
+    // Handle showing the modal
+    handleShowModal(guestData) {
+      this.selectedPlass = guestData.Plass;
+      this.showAddGuestModal = true;
+    },
+    closeModal() {
+      this.showAddGuestModal = false;
+      this.selectedPlass = null;
+    },
   },
 };
 </script>
@@ -30,4 +53,10 @@ export default {
   font-size: 1.2em;
   color: #555;
 }
+/* .plus-icon {
+  font-size: 30.74px;
+  color: #1da03b;
+  vertical-align: middle;
+  visibility: hidden;
+} */
 </style>
