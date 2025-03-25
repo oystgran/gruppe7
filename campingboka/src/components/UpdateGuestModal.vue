@@ -4,7 +4,7 @@
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
 
-        <h2>Gjest</h2>
+        <h2>Edit Guest</h2>
 
         <el-form
           :model="guest"
