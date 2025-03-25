@@ -1,11 +1,11 @@
 <template>
     <el-menu
       :default-active="$route.path"
-      class="custom-nav"
+      class="nav-bar"
       mode="horizontal"
       background-color="#394856"
       text-color="#fff"
-      active-text-color="#333"
+      active-text-color="white"
       router
       :ellipsis="false"
       
@@ -17,7 +17,7 @@
       <el-menu-item index="/archive">Arkiv</el-menu-item>
 
 
-      <el-sub-menu index="/tools" ref="toolsMenu">
+      <el-sub-menu index="/tools" :class="{ 'is-active': isVerktoyActive }">  
       <template #title>Verktøy</template>
       <el-menu-item index="/control">Kontroll</el-menu-item>
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
@@ -31,111 +31,65 @@
 <script>
 export default {
   name: "NavBar",
-
-  methods: {
-
-    setDropdownPosition() {
-    this.$nextTick(() => {
-      const submenu = this.$refs.toolsMenu?.$el;
-      const dropdown = document.querySelector('.el-menu--horizontal > .el-menu--popup');
-      if (submenu && dropdown) {
-        const submenuRect = submenu.getBoundingClientRect();
-        dropdown.style.position = 'absolute';
-        dropdown.style.left = `${submenuRect.left + window.scrollX}px`;
-        dropdown.style.top = `${submenuRect.bottom + window.scrollY}px`;
-        dropdown.style.width = `${submenuRect.width}px`;
-        
-        dropdown.style.margin = '0';
-        dropdown.style.padding = '0';
-        dropdown.style.transform = 'none';
-      }
-    });
-  }
-},
-
-  mounted() {
-    window.addEventListener('resize', this.setDropdownPosition);
-    window.addEventListener('scroll', this.setDropdownPosition);
-    this.setDropdownPosition();
-  },
-
-  beforeUnmount() {
-    window.removeEventListener('resize', this.setDropdownPosition);
-    window.removeEventListener('scroll', this.setDropdownPosition);
+  computed: {
+    isVerktoyActive() {
+      return ["/control", "/boatRental", "/weather"].includes(this.$route.path);
+    }
   }
 };
 </script>
 
-<style>
-.custom-nav {
+<style scoped>
+.nav-bar {
+  background-color: #394856;
+  padding: 0 20px;
   height: 50px;
-  display: flex;
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  position: relative;
-  font-family: Avenir, Helvetica, Arial, sans-serif  !important;
-  font-weight: bold !important;
-  color: #ffffff !important;
-}
-
-.custom-nav::after {
-  content: none;
-}
-
-.custom-nav .el-menu-item,
-.custom-nav .el-sub-menu,
-.custom-nav .el-sub-menu__title {
-  flex: 1;
-  margin: 0 !important;
-  text-align: center;
   line-height: 50px;
-  font-weight: bolder;
-  border-radius: 7px 7px 0 0;
+  border: none;
+  width: auto;
 }
 
-/* Override ELement Plus styles*/
-body .el-menu--horizontal .el-menu--popup .el-menu-item {
-  font-family: Avenir, Helvetica, Arial, sans-serif  !important;
-  color: #ffffff !important;
-  font-weight: bold !important;
-  text-align: center;
-  justify-content: center;
-  height: 50px !important;
-  line-height: 50px !important;
-}
-
-/* Override ELement Plus styles*/
-body .el-menu--horizontal .el-menu--popup {
-  position: absolute !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  top: -8px !important; 
-  left: 0 !important;
-  transform: none !important;
-  overflow: hidden;
-  border-radius: 0 0 7px 7px;
-}
-
-.custom-nav .el-sub-menu__title {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Menu Items */
+.nav-bar .el-menu-item,
+.nav-bar .el-sub-menu__title {
+  padding: 0 15px;
 }
 
 /* Hover */
-.custom-nav .el-menu-item:hover,
-.custom-nav .el-sub-menu:hover {
-  background-color: #252f38;
+.nav-bar .el-menu-item:hover,
+.nav-bar .el-sub-menu__title:hover {
+  background-color: #2e3a46;
 }
 
 /* Active */
-.custom-nav .el-menu-item.is-active,
-.custom-nav .el-sub-menu.is-active {
+.nav-bar .el-menu-item.is-active,
+.nav-bar .el-sub-menu.is-active .el-sub-menu__title {
   background-color: white !important;
   color: #333 !important;
-  border-bottom: none !important;
-  margin-bottom: 0;
 }
 
-</style> 
+/* Dropdown menu */
+.el-menu--horizontal .el-menu--popup {
+  background-color: #394856;
+  border-radius: 0 0 6px 6px;
+  overflow: hidden;
+}
+
+.el-menu--popup .el-menu-item.is-active {
+  background-color: #2e3a46 !important;
+  color: white !important;
+}
+
+.el-menu--horizontal .el-menu--popup .el-menu-item {
+  color: #fff;
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-weight: lighter;
+  height: 50px;
+  line-height: 50px;
+  padding: 0 20px;
+}
+
+.el-menu--horizontal .el-menu--popup .el-menu-item:hover {
+  background-color: #2e3a46;
+}
+</style>
