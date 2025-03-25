@@ -141,7 +141,7 @@ export default {
         console.log("Tom plass valgt:", index);
         this.$emit("showAddGuestModal", { Plass: index }); // emit med kun plassnummer eller tom objekt
       } else {
-        // Hvis plassen er opptatt, gjør ingenting eller vis informasjon om gjesten hvis ønskelig
+        this.$emit("showUpdateGuestModal", { Plass: index });
         console.log("Plassen er allerede opptatt:", guest);
       }
     },
