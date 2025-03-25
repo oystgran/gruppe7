@@ -2,12 +2,11 @@
     <div class="dashboard-screen">
       <div class="dashboard-content">
         <div class="left-panel">
+          <DateNavigator v-model="myDate" />
+          <!-- <p>Selected date: {{ myDate.toDateString() }}</p> -->
           <h1>Dashboard</h1>
           <p>Campingboka</p>
           <el-button>I am ElButton</el-button>
-
-          <DateNavigator v-model="myDate" />
-            <!-- <p>Selected date: {{ myDate.toDateString() }}</p> -->
 
           <AddGuestModal
             :visible="showAddGuestModal"
