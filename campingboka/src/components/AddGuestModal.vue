@@ -11,11 +11,11 @@
             @submit.prevent="addGuest"
           >
             <el-form-item label="Navn">
-              <el-input v-model="guest.navn" required clearable/>
+              <el-input v-model="guest.navn" required clearable />
             </el-form-item>
   
             <el-form-item label="Bilnummer">
-              <el-input v-model="guest.bilnummer" required clearable/>
+              <el-input v-model="guest.bilnummer" required clearable />
             </el-form-item>
   
             <el-form-item label="Nasjonalitet">
@@ -25,8 +25,17 @@
                 placeholder="Velg nasjonalitet"
                 required
                 clearable
-                @blur="validateNationality" 
-              />
+                @blur="validateNationality"
+              >
+                <template v-slot="{ item }">
+                  <img
+                    :src="item.flag"
+                    alt="flag"
+                    style="width:20px; height:auto; margin-right:8px;"
+                  />
+                  <span>{{ item.value }}</span>
+                </template>
+              </el-autocomplete>
             </el-form-item>
   
             <el-form-item label="Innsjekk">
@@ -48,19 +57,21 @@
             </el-form-item>
   
             <el-form-item label="Plass">
-              <el-input-number v-model="guest.plass" :min="1" :max="42"/>
+              <el-input-number v-model="guest.plass" :min="1" :max="42" />
             </el-form-item>
   
             <el-form-item label="Personer">
-              <el-input-number v-model="guest.persons" :min="1" :max="99"/>
+              <el-input-number v-model="guest.persons" :min="1" :max="99" />
             </el-form-item>
   
             <el-form-item label="Pris">
-              <el-input-number v-model="guest.pris" :controls="false" :min="0"/>
+              <el-input-number v-model="guest.pris" :controls="false" :min="0" />
             </el-form-item>
   
             <el-form-item>
-              <el-button type="success" native-type="submit" style="margin-left:20px;">Legg til +</el-button>
+              <el-button type="success" native-type="submit" style="margin-left:20px;">
+                Legg til +
+              </el-button>
             </el-form-item>
           </el-form>
         </div>
@@ -71,7 +82,7 @@
   <script>
   import { db } from '@/main.js';
   import { Timestamp } from 'firebase/firestore';
-  import { nationalities3 } from '@/tools/countries.js';
+  import { countries } from '@/tools/countries.js';
   
   export default {
     name: 'AddGuestModal',
@@ -127,27 +138,28 @@
         };
       },
   
+      // Search code + name.
       querySearch(queryString, cb) {
         let results;
         if (!queryString) {
-          results = Object.values(nationalities3);
+          results = Object.entries(countries);
         } else {
           const lowerQuery = queryString.toLowerCase();
-          results = Object.entries(nationalities3)
-            .filter(([abbr, country]) =>
-              abbr.toLowerCase().includes(lowerQuery) ||
-              country.toLowerCase().includes(lowerQuery)
-            )
-            .map(([, country]) => country); // eslint-disable-line no-unused-vars
+          results = Object.entries(countries).filter(([code, { name }]) =>
+            code.toLowerCase().includes(lowerQuery) ||
+            name.toLowerCase().includes(lowerQuery)
+          );
         }
-        results = [...new Set(results)];
-        cb(results.map(n => ({ value: n })));
+        const suggestions = results.map(([code, { name, flag }]) => ({
+          value: name,
+          code,
+          flag
+        }));
+        cb(suggestions);
       },
   
-      // This method validates the selected nationality. If the current value is not
-      // either empty or in the list of valid country names, it resets the field.
       validateNationality() {
-        const validCountries = Object.values(nationalities3);
+        const validCountries = Object.values(countries).map(country => country.name);
         if (this.guest.nasjonalitet && !validCountries.includes(this.guest.nasjonalitet)) {
           this.guest.nasjonalitet = "";
         }
@@ -177,8 +189,8 @@
           console.error('Feil ved lagring:', error);
           this.$message.error('Kunne ikke lagre gjesten.');
         }
-      },
-    },
+      }
+    }
   };
   </script>
   
