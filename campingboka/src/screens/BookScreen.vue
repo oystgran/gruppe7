@@ -53,4 +53,10 @@ export default {
   font-size: 1.2em;
   color: #555;
 }
+/* .plus-icon {
+  font-size: 30.74px;
+  color: #1da03b;
+  vertical-align: middle;
+  visibility: hidden;
+} */
 </style>

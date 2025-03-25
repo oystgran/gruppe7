@@ -1,13 +1,13 @@
 <template>
   <el-card shadow="hover">
     <el-row :gutter="30">
-      <el-col :span="1">{{ plass }}</el-col>
-      <el-col :span="5">
+      <el-col :span="2">{{ plass }}</el-col>
+      <el-col :span="7" style="font-weight: bold">
         <slot name="bilnummer"></slot>
       </el-col>
-      <el-col :span="5">{{ nasjonalitet }}</el-col>
-      <el-col :span="5">{{ innsjekk }} </el-col>
-      <el-col :span="5">{{ utsjekk }} </el-col>
+      <el-col :span="4">{{ nasjonalitet }}</el-col>
+      <el-col :span="4">{{ innsjekk }} </el-col>
+      <el-col :span="4">{{ utsjekk }} </el-col>
       <el-col :span="2">{{ pris }}</el-col>
     </el-row>
   </el-card>
@@ -31,9 +31,9 @@ export default {
   height: auto; /* Sørger for at kortet har automatisk høyde basert på innholdet */
   min-height: 52px;
   --el-card-padding: 10px;
-  display: flex;
+  /* display: flex;
   align-items: center;
-  justify-content: left;
+  justify-content: left; */
 }
 
 .el-card_body {
@@ -44,9 +44,9 @@ export default {
 
 .el-row {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center; /* Sørger for at alle kolonner strekker seg over samme høyde */
-  min-height: 22.88px;
+  min-height: 35.88px;
 }
 
 .el-col {

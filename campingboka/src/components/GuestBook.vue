@@ -155,7 +155,6 @@ export default {
   width: 100vw;
   /* gap: 10px; */ /* Valgfritt: Mellomrom mellom kortene */
 }
-
 /* Når skjermen er for smal for 3 kolonner (f.eks. under 1100px) → 2 kolonner */
 @media (max-width: 1100px) {
   .bookCards {
@@ -179,12 +178,19 @@ export default {
 .el-col {
   border-radius: 4px;
 } */
+.el-card__body {
+  /* padding: 15.3px !important; */
+}
 .plus-icon {
   font-size: 30.74px;
   color: #1da03b;
   vertical-align: middle;
+  visibility: hidden;
 }
-.el-card__body {
-  /* padding: 15.3px !important; */
+.plus-icon:hover {
+  font-size: 30.74px;
+  color: #1da03b;
+  vertical-align: middle;
+  visibility: visible;
 }
 </style>
