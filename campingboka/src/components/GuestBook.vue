@@ -3,6 +3,7 @@
     <!-- First group: 1 to 14 -->
     <div class="group1">
       <GuestBookCard
+        class="guestcard"
         v-for="index in 14"
         :key="index"
         :plass="index"
@@ -30,6 +31,7 @@
     <!-- Second group: 15 to 28 -->
     <div class="group2">
       <GuestBookCard
+        class="guestcard"
         v-for="index in 14"
         :key="index + 14"
         :plass="index + 14"
@@ -61,6 +63,7 @@
     <!-- Third group: 29 to 42 -->
     <div class="group3">
       <GuestBookCard
+        class="guestcard"
         v-for="index in 14"
         :key="index + 28"
         :plass="index + 28"
@@ -183,14 +186,20 @@ export default {
 }
 .plus-icon {
   font-size: 30.74px;
-  color: #1da03b;
+  color: #39484645;
   vertical-align: middle;
   visibility: hidden;
 }
-.plus-icon:hover {
-  font-size: 30.74px;
-  color: #1da03b;
-  vertical-align: middle;
-  visibility: visible;
+.guestcard {
+  cursor: pointer;
+}
+.guestcard:hover {
+  background-color: hsl(0, 0%, 94%);
+}
+.guestcard:hover .plus-icon {
+  visibility: visible; /* Make the icon visible when the guestcard is hovered */
+  display: flex;
+  align-items: left;
+  justify-content: left;
 }
 </style>
