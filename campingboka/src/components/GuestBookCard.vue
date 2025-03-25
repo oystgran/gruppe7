@@ -32,6 +32,10 @@ export default {
   min-height: 62px;
 }
 
+.el-card_body {
+  padding: -10px;
+}
+
 .el-row {
   display: flex;
   justify-content: center;

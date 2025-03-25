@@ -28,17 +28,13 @@ export default {
   },
   methods: {
     // Handle showing the modal
-    handleShowModal(guest) {
-      if (guest) {
-        this.selectedPlass = guest.Plass; // Set the selected guest's place if the guest exists
-      } else {
-        this.selectedPlass = "Default Place"; // Set to a default value if no guest data is passed
-      }
-      this.showAddGuestModal = true; // Always open the modal
+    handleShowModal(guestData) {
+      this.selectedPlass = guestData.Plass;
+      this.showAddGuestModal = true;
     },
-    // Close the modal
     closeModal() {
-      this.showAddGuestModal = false; // Close the modal
+      this.showAddGuestModal = false;
+      this.selectedPlass = null;
     },
   },
 };

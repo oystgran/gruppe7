@@ -6,24 +6,20 @@
         v-for="index in 14"
         :key="index"
         :plass="index"
-        :nasjonalitet="guests[index - 1]?.Nasjonalitet"
+        :nasjonalitet="guests[index]?.Nasjonalitet"
         :innsjekk="
-          guests[index - 1]?.Innsjekk
-            ? formatDate(guests[index - 1].Innsjekk)
-            : ''
+          guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : ''
         "
         :utsjekk="
-          guests[index - 1]?.Utsjekk
-            ? formatDate(guests[index - 1].Utsjekk)
-            : ''
+          guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : ''
         "
-        :pris="guests[index - 1]?.Pris"
+        :pris="guests[index]?.Pris"
         @click="openModalWithGuest(index)"
       >
         <template v-slot:bilnummer>
-          <span v-if="guests[index - 1]?.Bilnummer">{{
-            guests[index - 1]?.Bilnummer
-          }}</span>
+          <span v-if="guests[index]?.Bilnummer">
+            {{ guests[index]?.Bilnummer }}
+          </span>
           <el-icon v-else class="plus-icon">
             <CirclePlusFilled />
           </el-icon>
@@ -37,23 +33,23 @@
         v-for="index in 14"
         :key="index + 14"
         :plass="index + 14"
-        :nasjonalitet="guests[index + 13]?.Nasjonalitet"
+        :nasjonalitet="guests[index + 14]?.Nasjonalitet"
         :innsjekk="
-          guests[index + 13]?.Innsjekk
-            ? formatDate(guests[index + 13].Innsjekk)
+          guests[index + 14]?.Innsjekk
+            ? formatDate(guests[index + 14].Innsjekk)
             : ''
         "
         :utsjekk="
-          guests[index + 13]?.Utsjekk
-            ? formatDate(guests[index + 13].Utsjekk)
+          guests[index + 14]?.Utsjekk
+            ? formatDate(guests[index + 14].Utsjekk)
             : ''
         "
-        :pris="guests[index + 13]?.Pris"
+        :pris="guests[index + 14]?.Pris"
         @click="openModalWithGuest(index + 14)"
       >
         <template v-slot:bilnummer>
-          <span v-if="guests[index + 13]?.Bilnummer">{{
-            guests[index + 13]?.Bilnummer
+          <span v-if="guests[index + 14]?.Bilnummer">{{
+            guests[index + 14]?.Bilnummer
           }}</span>
           <el-icon v-else class="plus-icon">
             <CirclePlusFilled />
@@ -68,23 +64,23 @@
         v-for="index in 14"
         :key="index + 28"
         :plass="index + 28"
-        :nasjonalitet="guests[index + 27]?.Nasjonalitet"
+        :nasjonalitet="guests[index + 28]?.Nasjonalitet"
         :innsjekk="
-          guests[index + 27]?.Innsjekk
-            ? formatDate(guests[index + 27].Innsjekk)
+          guests[index + 28]?.Innsjekk
+            ? formatDate(guests[index + 28].Innsjekk)
             : ''
         "
         :utsjekk="
-          guests[index + 27]?.Utsjekk
-            ? formatDate(guests[index + 27].Utsjekk)
+          guests[index + 28]?.Utsjekk
+            ? formatDate(guests[index + 28].Utsjekk)
             : ''
         "
-        :pris="guests[index + 27]?.Pris"
-        @click="openModalWithGuest(index + 27)"
+        :pris="guests[index + 28]?.Pris"
+        @click="openModalWithGuest(index + 28)"
       >
         <template v-slot:bilnummer>
-          <span v-if="guests[index + 27]?.Bilnummer">{{
-            guests[index + 27]?.Bilnummer
+          <span v-if="guests[index + 28]?.Bilnummer">{{
+            guests[index + 28]?.Bilnummer
           }}</span>
           <el-icon v-else class="plus-icon">
             <CirclePlusFilled />
@@ -137,16 +133,14 @@ export default {
     openModalWithGuest(index) {
       const guest = this.guests[index];
 
-      // Check if guest exists
+      // Hvis det IKKE finnes noen gjest på denne plassen (altså ruten er tom)
       if (!guest) {
-        console.error("No guest found at index", index + 1);
-        return;
+        console.log("Tom plass valgt:", index);
+        this.$emit("showAddGuestModal", { Plass: index }); // emit med kun plassnummer eller tom objekt
+      } else {
+        // Hvis plassen er opptatt, gjør ingenting eller vis informasjon om gjesten hvis ønskelig
+        console.log("Plassen er allerede opptatt:", guest);
       }
-
-      console.log("Selected guest:", guest);
-
-      // Emit the selected guest data to the parent (BookScreen)
-      this.$emit("showAddGuestModal", guest); // Pass the whole guest object
     },
   },
 };
