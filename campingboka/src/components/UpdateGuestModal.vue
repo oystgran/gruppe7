@@ -27,7 +27,16 @@
               placeholder="Velg nasjonalitet"
               required
               clearable
-            />
+            >
+              <template v-slot="{ item }">
+                <img
+                  :src="item.flag"
+                  alt="flag"
+                  style="width: 20px; height: auto; margin-right: 8px"
+                />
+                <span>{{ item.value }}</span>
+              </template>
+            </el-autocomplete>
           </el-form-item>
 
           <el-form-item label="Innsjekk">
@@ -92,7 +101,7 @@
 <script>
 import { db } from "@/main.js";
 import { Timestamp } from "firebase/firestore";
-import { nationalitiesEn } from "@/tools/countries-en";
+import { countries } from "@/tools/countries.js";
 
 export default {
   name: "AddGuestModal",
@@ -128,7 +137,6 @@ export default {
         innsjekk: new Date(),
         utsjekk: null,
       },
-      nationalitiesEn,
     };
   },
   methods: {
@@ -149,14 +157,36 @@ export default {
       };
     },
 
+    // Search code + name.
     querySearch(queryString, cb) {
-      const results = queryString
-        ? nationalitiesEn.filter((n) =>
-            n.toLowerCase().includes(queryString.toLowerCase())
-          )
-        : nationalitiesEn;
-
-      cb(results.map((n) => ({ value: n })));
+      let results;
+      if (!queryString) {
+        results = Object.entries(countries);
+      } else {
+        const lowerQuery = queryString.toLowerCase();
+        results = Object.entries(countries).filter(
+          ([code, { name }]) =>
+            code.toLowerCase().includes(lowerQuery) ||
+            name.toLowerCase().includes(lowerQuery)
+        );
+      }
+      const suggestions = results.map(([code, { name, flag }]) => ({
+        value: name,
+        code,
+        flag,
+      }));
+      cb(suggestions);
+    },
+    validateNationality() {
+      const validCountries = Object.values(countries).map(
+        (country) => country.name
+      );
+      if (
+        this.guest.nasjonalitet &&
+        !validCountries.includes(this.guest.nasjonalitet)
+      ) {
+        this.guest.nasjonalitet = "";
+      }
     },
     async addGuest() {
       try {
@@ -174,7 +204,7 @@ export default {
             Plass: this.guest.plass,
             Pris: this.guest.pris,
             Innsjekk: Timestamp.fromDate(this.guest.innsjekk),
-            Utsjekk: Timestamp.fromDate(this.guest.utsjekk),
+            Utsjekk: Timestamp.fromDate(utsjekkDato),
           });
 
         this.$message.success("Gjest lagt til!");
