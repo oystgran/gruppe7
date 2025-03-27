@@ -114,21 +114,8 @@ export default {
       guests: {}, // Objekt for å holde gjestedataene
     };
   },
-  async mounted() {
-    const latestQuery = query(
-      collection(db, "Camping", "Gjester", "Gjester"),
-      orderBy("Plass")
-    );
-    const snapshot = await getDocs(latestQuery);
-
-    let guestsData = {};
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      guestsData[data.Plass] = data; // Bruk plassnummer som nøkkel
-    });
-
-    console.log("Gjester hentet:", guestsData);
-    this.guests = guestsData; // Lagre gjestedataene
+  mounted() {
+    this.loadGuests();
   },
   methods: {
     formatDate(timestamp) {
@@ -147,6 +134,21 @@ export default {
         this.$emit("showUpdateGuestModal", { Plass: index });
         console.log("Plassen er allerede opptatt:", guest);
       }
+    },
+    async loadGuests() {
+      const latestQuery = query(
+        collection(db, "Camping", "Gjester", "Gjester"),
+        orderBy("Plass")
+      );
+      const snapshot = await getDocs(latestQuery);
+
+      let guestsData = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        guestsData[data.Plass] = data;
+      });
+
+      this.guests = guestsData;
     },
   },
 };

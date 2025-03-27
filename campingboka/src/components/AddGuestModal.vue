@@ -195,6 +195,7 @@ export default {
           });
 
         this.$message.success("Gjest lagt til!");
+        this.$emit("guestAdded");
         this.closeModal();
       } catch (error) {
         console.error("Feil ved lagring:", error);

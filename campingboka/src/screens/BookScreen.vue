@@ -2,6 +2,7 @@
   <div class="book-screen">
     <!-- GuestBook component -->
     <GuestBook
+      ref="guestBook"
       @showAddGuestModal="handleShowAddModal"
       @showUpdateGuestModal="handleShowUpdateModal"
     />
@@ -11,6 +12,7 @@
       :visible="showAddGuestModal"
       :initialPlass="selectedPlass"
       @close="closeModal"
+      @guestAdded="refreshGuestList"
     />
     <UpdateGuestModal
       :visible="showUpdateGuestModal"
@@ -50,6 +52,9 @@ export default {
       this.showAddGuestModal = false;
       this.showUpdateGuestModal = false;
       this.selectedPlass = null;
+    },
+    refreshGuestList() {
+      this.$refs.guestBook.loadGuests();
     },
   },
 };
