@@ -1,4 +1,5 @@
 <template>
+  <DateNavigator />
   <div class="bookCards">
     <!-- First group: 1 to 14 -->
     <div class="group1">
@@ -99,33 +100,23 @@ import { db } from "@/main";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
+import DateNavigator from "./DateNavigator.vue";
 
 export default {
   name: "GuestBook",
   components: {
     GuestBookCard,
     CirclePlusFilled,
+    DateNavigator,
   },
+  emits: ["showAddGuestModal", "showUpdateGuestModal"],
   data() {
     return {
       guests: {}, // Objekt for å holde gjestedataene
     };
   },
-  async mounted() {
-    const latestQuery = query(
-      collection(db, "Camping", "Gjester", "Gjester"),
-      orderBy("Plass")
-    );
-    const snapshot = await getDocs(latestQuery);
-
-    let guestsData = {};
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      guestsData[data.Plass] = data; // Bruk plassnummer som nøkkel
-    });
-
-    console.log("Gjester hentet:", guestsData);
-    this.guests = guestsData; // Lagre gjestedataene
+  mounted() {
+    this.loadGuests();
   },
   methods: {
     formatDate(timestamp) {
@@ -135,15 +126,27 @@ export default {
     },
     openModalWithGuest(index) {
       const guest = this.guests[index];
-
-      // Hvis det IKKE finnes noen gjest på denne plassen (altså ruten er tom)
       if (!guest) {
-        console.log("Tom plass valgt:", index);
-        this.$emit("showAddGuestModal", { Plass: index }); // emit med kun plassnummer eller tom objekt
+        this.$emit("showAddGuestModal", { Plass: index });
       } else {
-        // Hvis plassen er opptatt, gjør ingenting eller vis informasjon om gjesten hvis ønskelig
-        console.log("Plassen er allerede opptatt:", guest);
+        // Send hele gjesten, inkludert Plass som identifikator
+        this.$emit("showUpdateGuestModal", guest);
       }
+    },
+    async loadGuests() {
+      const latestQuery = query(
+        collection(db, "Camping", "Gjester", "Gjester"),
+        orderBy("Plass")
+      );
+      const snapshot = await getDocs(latestQuery);
+
+      let guestsData = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        guestsData[data.Plass] = data;
+      });
+
+      this.guests = guestsData;
     },
   },
 };
@@ -159,14 +162,14 @@ export default {
   /* gap: 10px; */ /* Valgfritt: Mellomrom mellom kortene */
 }
 /* Når skjermen er for smal for 3 kolonner (f.eks. under 1100px) → 2 kolonner */
-@media (max-width: 1100px) {
+@media (max-width: 1300px) {
   .bookCards {
     grid-template-columns: repeat(2, minmax(350px, 1fr));
   }
 }
 
 /* Når skjermen er for smal for 2 kolonner (f.eks. under 750px) → 1 kolonne */
-@media (max-width: 750px) {
+@media (max-width: 960px) {
   .bookCards {
     grid-template-columns: repeat(1, minmax(350px, 1fr));
   }

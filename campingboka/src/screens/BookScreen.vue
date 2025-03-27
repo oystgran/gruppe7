@@ -1,13 +1,25 @@
 <template>
   <div class="book-screen">
     <!-- GuestBook component -->
-    <GuestBook @showAddGuestModal="handleShowModal" />
+    <GuestBook
+      ref="guestBook"
+      @showAddGuestModal="handleShowAddModal"
+      @showUpdateGuestModal="handleShowUpdateModal"
+    />
 
     <!-- AddGuestModal component, passing the visibility and guest data -->
     <AddGuestModal
       :visible="showAddGuestModal"
       :initialPlass="selectedPlass"
       @close="closeModal"
+      @guestAdded="refreshGuestList"
+    />
+    <UpdateGuestModal
+      :visible="showUpdateGuestModal"
+      :initialPlass="selectedPlass"
+      :guest="updateGuestData"
+      @close="closeModal"
+      @guestUpdated="refreshGuestList"
     />
   </div>
 </template>
@@ -16,25 +28,37 @@
 // Import the renamed 'GuestBook' component
 import GuestBook from "@/components/GuestBook.vue";
 import AddGuestModal from "@/components/AddGuestModal.vue";
+import UpdateGuestModal from "@/components/UpdateGuestModal.vue";
 
 export default {
   name: "BookScreen",
-  components: { GuestBook, AddGuestModal },
+  components: { GuestBook, AddGuestModal, UpdateGuestModal },
   data() {
     return {
       showAddGuestModal: false, // Controls modal visibility
+      showUpdateGuestModal: false,
       selectedPlass: null, // Store the selected guest's place (can be null or a default value)
+      updateGuestData: null,
     };
   },
   methods: {
     // Handle showing the modal
-    handleShowModal(guestData) {
+    handleShowAddModal(guestData) {
       this.selectedPlass = guestData.Plass;
       this.showAddGuestModal = true;
     },
+    handleShowUpdateModal(guestData) {
+      this.selectedPlass = guestData.Plass;
+      this.updateGuestData = guestData;
+      this.showUpdateGuestModal = true;
+    },
     closeModal() {
       this.showAddGuestModal = false;
+      this.showUpdateGuestModal = false;
       this.selectedPlass = null;
+    },
+    refreshGuestList() {
+      this.$refs.guestBook.loadGuests();
     },
   },
 };

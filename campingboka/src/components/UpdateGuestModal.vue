@@ -1,31 +1,32 @@
 <template>
-  <div class="add-guest-modal">
+  <div class="update-guest-modal">
     <div v-if="visible" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
-        <h2>Gjest</h2>
+
+        <h2>Edit Guest</h2>
+
         <el-form
-          :model="guest"
+          :model="form"
           label-width="90px"
           label-position="left"
           @submit.prevent="addGuest"
         >
           <el-form-item label="Navn">
-            <el-input v-model="guest.navn" required clearable />
+            <el-input v-model="form.navn" required clearable />
           </el-form-item>
 
           <el-form-item label="Bilnummer">
-            <el-input v-model="guest.bilnummer" required clearable />
+            <el-input v-model="form.bilnummer" required clearable />
           </el-form-item>
 
           <el-form-item label="Nasjonalitet">
             <el-autocomplete
-              v-model="guest.nasjonalitet"
+              v-model="form.nasjonalitet"
               :fetch-suggestions="querySearch"
               placeholder="Velg nasjonalitet"
               required
               clearable
-              @blur="validateNationality"
             >
               <template v-slot="{ item }">
                 <img
@@ -40,7 +41,7 @@
 
           <el-form-item label="Innsjekk">
             <el-date-picker
-              v-model="guest.innsjekk"
+              v-model="form.innsjekk"
               type="datetime"
               placeholder="Velg innsjekksdato"
               required
@@ -49,7 +50,7 @@
 
           <el-form-item label="Utsjekk">
             <el-date-picker
-              v-model="guest.utsjekk"
+              v-model="form.utsjekk"
               type="date"
               placeholder="Velg utsjekksdato"
               required
@@ -57,25 +58,34 @@
           </el-form-item>
 
           <el-form-item label="Plass">
-            <el-input-number v-model="guest.plass" :min="1" :max="42" />
+            <el-input-number
+              v-model="form.plass"
+              :min="1"
+              :max="42"
+              class="plassfelt"
+            />
           </el-form-item>
 
           <el-form-item label="Personer">
-            <el-input-number v-model="guest.persons" :min="1" :max="99" />
+            <el-input-number
+              v-model="form.persons"
+              :min="1"
+              :max="99"
+              class="personerfelt"
+            />
           </el-form-item>
 
           <el-form-item label="Pris">
-            <el-input-number v-model="guest.pris" :controls="false" :min="0" />
+            <el-input-number
+              v-model="form.pris"
+              :controls="false"
+              :min="0"
+              class="prisfelt"
+            />
           </el-form-item>
 
           <el-form-item>
-            <el-button
-              type="success"
-              native-type="submit"
-              style="margin-left: 20px"
-            >
-              Legg til +
-            </el-button>
+            <el-button type="primary" @click="updateGuest">Oppdater</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -89,37 +99,39 @@ import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries.js";
 
 export default {
-  name: "AddGuestModal",
+  name: "UpdateGuestModal",
   props: {
-    initialPlass: {
-      type: Number,
-      default: 1,
-    },
-    visible: {
-      type: Boolean,
-      default: false,
-    },
+    visible: Boolean,
+    initialPlass: Number,
+    guest: Object,
   },
   watch: {
-    initialPlass(newVal) {
-      this.guest.plass = newVal;
-    },
-    visible(newVal) {
-      if (newVal) {
-        this.resetGuest();
-      }
+    guest: {
+      immediate: true,
+      handler(newGuest) {
+        if (newGuest) {
+          this.form = {
+            navn: newGuest.Navn,
+            bilnummer: newGuest.Bilnummer,
+            nasjonalitet: newGuest.Nasjonalitet,
+            pris: newGuest.Pris,
+            plass: newGuest.Plass,
+            innsjekk: newGuest.Innsjekk?.toDate?.() || null,
+            utsjekk: newGuest.Utsjekk?.toDate?.() || null,
+          };
+        }
+      },
     },
   },
   data() {
     return {
-      guest: {
+      form: {
         navn: "",
         bilnummer: "",
         nasjonalitet: "",
-        plass: this.initialPlass,
-        persons: 1,
         pris: 0,
-        innsjekk: new Date(),
+        plass: null,
+        innsjekk: null,
         utsjekk: null,
       },
     };
@@ -142,6 +154,44 @@ export default {
       };
     },
 
+    async updateGuest() {
+      try {
+        const utsjekkDato = new Date(this.form.utsjekk);
+        utsjekkDato.setHours(12, 0, 0, 0);
+
+        const collectionRef = db
+          .collection("Camping")
+          .doc("Gjester")
+          .collection("Gjester");
+
+        const snapshot = await collectionRef
+          .where("Plass", "==", this.form.plass)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          const docRef = snapshot.docs[0].ref;
+          await docRef.update({
+            Navn: this.form.navn,
+            Bilnummer: this.form.bilnummer,
+            Nasjonalitet: this.form.nasjonalitet,
+            Pris: this.form.pris,
+            Innsjekk: Timestamp.fromDate(this.form.innsjekk),
+            Utsjekk: Timestamp.fromDate(utsjekkDato),
+          });
+
+          this.$message.success("Gjest oppdatert!");
+          this.$emit("guestUpdated");
+          this.$emit("close");
+        } else {
+          this.$message.error("Fant ikke gjesten i databasen.");
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error("Noe gikk galt under oppdatering.");
+      }
+    },
+
     // Search code + name.
     querySearch(queryString, cb) {
       let results;
@@ -162,7 +212,6 @@ export default {
       }));
       cb(suggestions);
     },
-
     validateNationality() {
       const validCountries = Object.values(countries).map(
         (country) => country.name
@@ -174,7 +223,6 @@ export default {
         this.guest.nasjonalitet = "";
       }
     },
-
     async addGuest() {
       try {
         const utsjekkDato = new Date(this.guest.utsjekk);
@@ -195,7 +243,7 @@ export default {
           });
 
         this.$message.success("Gjest lagt til!");
-        this.$emit("guestAdded");
+
         this.closeModal();
       } catch (error) {
         console.error("Feil ved lagring:", error);
