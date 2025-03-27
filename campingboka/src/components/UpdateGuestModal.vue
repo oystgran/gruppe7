@@ -142,7 +142,7 @@ export default {
     },
 
     resetGuest() {
-      this.guest = {
+      this.form = {
         navn: "",
         bilnummer: "",
         nasjonalitet: "",
@@ -217,10 +217,10 @@ export default {
         (country) => country.name
       );
       if (
-        this.guest.nasjonalitet &&
-        !validCountries.includes(this.guest.nasjonalitet)
+        this.form.nasjonalitet &&
+        !validCountries.includes(this.form.nasjonalitet)
       ) {
-        this.guest.nasjonalitet = "";
+        this.form.nasjonalitet = "";
       }
     },
     async addGuest() {
