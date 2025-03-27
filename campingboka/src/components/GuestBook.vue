@@ -109,6 +109,7 @@ export default {
     CirclePlusFilled,
     DateNavigator,
   },
+  emits: ["showAddGuestModal", "showUpdateGuestModal"],
   data() {
     return {
       guests: {}, // Objekt for å holde gjestedataene
@@ -125,14 +126,11 @@ export default {
     },
     openModalWithGuest(index) {
       const guest = this.guests[index];
-
-      // Hvis det IKKE finnes noen gjest på denne plassen (altså ruten er tom)
       if (!guest) {
-        console.log("Tom plass valgt:", index);
-        this.$emit("showAddGuestModal", { Plass: index }); // emit med kun plassnummer eller tom objekt
+        this.$emit("showAddGuestModal", { Plass: index });
       } else {
-        this.$emit("showUpdateGuestModal", { Plass: index });
-        console.log("Plassen er allerede opptatt:", guest);
+        // Send hele gjesten, inkludert Plass som identifikator
+        this.$emit("showUpdateGuestModal", guest);
       }
     },
     async loadGuests() {

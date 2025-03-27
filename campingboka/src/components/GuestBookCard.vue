@@ -5,16 +5,33 @@
       <el-col :span="6" style="font-weight: bold">
         <slot name="bilnummer"></slot>
       </el-col>
-      <el-col :span="2" style="display: flex; align-items: center; gap: 6px">
+      <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
+        <el-tooltip
+          v-if="country"
+          :content="country.name"
+          placement="top"
+          effect="dark"
+          :hide-after="0"
+        >
+          <img
+            :src="country.flag"
+            :alt="country.name"
+            width="20"
+            height="15"
+            style="cursor: pointer"
+          />
+        </el-tooltip>
+      </el-col>
+      <!-- <el-col :span="2" style="display: flex; align-items: center; gap: 6px">
         <img
           v-if="countryFlag"
           :src="countryFlag"
           :alt="countryCode"
-          width="20"
-          height="15"
+          width="32"
+          height="21"
           :title="nasjonalitet"
         />
-      </el-col>
+      </el-col> -->
       <!-- <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
         <img
           v-if="country"
@@ -33,6 +50,7 @@
 </template>
 <script>
 import { countries } from "@/tools/countries";
+import { ElTooltip } from "element-plus";
 
 export default {
   name: "GuestBookCard",
@@ -45,14 +63,20 @@ export default {
     utsjekk: String,
   },
   computed: {
-    countryCode() {
+    country() {
+      if (!this.nasjonalitet) return null;
+
+      // Sjekk om nasjonaliteten er en landkode som finnes i countries
+      if (countries[this.nasjonalitet]) {
+        return countries[this.nasjonalitet];
+      }
+
+      // Hvis nasjonaliteten er skrevet som navn ("Argentina") → prøv å finne koden
       const entry = Object.entries(countries).find(
-        ([code, data]) => data.name === this.nasjonalitet
+        ([code, data]) =>
+          data.name.toLowerCase() === this.nasjonalitet.toLowerCase()
       );
-      return entry ? entry[0] : null;
-    },
-    countryFlag() {
-      return this.countryCode ? countries[this.countryCode].flag : null;
+      return entry ? entry[1] : null;
     },
   },
 };

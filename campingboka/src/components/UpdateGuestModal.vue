@@ -7,22 +7,22 @@
         <h2>Edit Guest</h2>
 
         <el-form
-          :model="guest"
+          :model="form"
           label-width="90px"
           label-position="left"
           @submit.prevent="addGuest"
         >
           <el-form-item label="Navn">
-            <el-input v-model="guest.navn" required clearable />
+            <el-input v-model="form.navn" required clearable />
           </el-form-item>
 
           <el-form-item label="Bilnummer">
-            <el-input v-model="guest.bilnummer" required clearable />
+            <el-input v-model="form.bilnummer" required clearable />
           </el-form-item>
 
           <el-form-item label="Nasjonalitet">
             <el-autocomplete
-              v-model="guest.nasjonalitet"
+              v-model="form.nasjonalitet"
               :fetch-suggestions="querySearch"
               placeholder="Velg nasjonalitet"
               required
@@ -41,7 +41,7 @@
 
           <el-form-item label="Innsjekk">
             <el-date-picker
-              v-model="guest.innsjekk"
+              v-model="form.innsjekk"
               type="datetime"
               placeholder="Velg innsjekksdato"
               required
@@ -50,7 +50,7 @@
 
           <el-form-item label="Utsjekk">
             <el-date-picker
-              v-model="guest.utsjekk"
+              v-model="form.utsjekk"
               type="date"
               placeholder="Velg utsjekksdato"
               required
@@ -59,7 +59,7 @@
 
           <el-form-item label="Plass">
             <el-input-number
-              v-model="guest.plass"
+              v-model="form.plass"
               :min="1"
               :max="42"
               class="plassfelt"
@@ -68,7 +68,7 @@
 
           <el-form-item label="Personer">
             <el-input-number
-              v-model="guest.persons"
+              v-model="form.persons"
               :min="1"
               :max="99"
               class="personerfelt"
@@ -77,7 +77,7 @@
 
           <el-form-item label="Pris">
             <el-input-number
-              v-model="guest.pris"
+              v-model="form.pris"
               :controls="false"
               :min="0"
               class="prisfelt"
@@ -85,12 +85,7 @@
           </el-form-item>
 
           <el-form-item>
-            <el-button
-              type="success"
-              native-type="submit"
-              style="margin-left: 20px"
-              >Legg til +</el-button
-            >
+            <el-button type="primary" @click="updateGuest">Oppdater</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -104,37 +99,39 @@ import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries.js";
 
 export default {
-  name: "AddGuestModal",
+  name: "UpdateGuestModal",
   props: {
-    initialPlass: {
-      type: Number,
-      default: 1,
-    },
-    visible: {
-      type: Boolean,
-      default: false,
-    },
+    visible: Boolean,
+    initialPlass: Number,
+    guest: Object,
   },
   watch: {
-    initialPlass(newVal) {
-      this.guest.plass = newVal;
-    },
-    visible(newVal) {
-      if (newVal) {
-        this.resetGuest();
-      }
+    guest: {
+      immediate: true,
+      handler(newGuest) {
+        if (newGuest) {
+          this.form = {
+            navn: newGuest.Navn,
+            bilnummer: newGuest.Bilnummer,
+            nasjonalitet: newGuest.Nasjonalitet,
+            pris: newGuest.Pris,
+            plass: newGuest.Plass,
+            innsjekk: newGuest.Innsjekk?.toDate?.() || null,
+            utsjekk: newGuest.Utsjekk?.toDate?.() || null,
+          };
+        }
+      },
     },
   },
   data() {
     return {
-      guest: {
+      form: {
         navn: "",
         bilnummer: "",
         nasjonalitet: "",
-        plass: this.initialPlass,
-        persons: 1,
-        pris: null,
-        innsjekk: new Date(),
+        pris: 0,
+        plass: null,
+        innsjekk: null,
         utsjekk: null,
       },
     };
@@ -155,6 +152,44 @@ export default {
         innsjekk: new Date(),
         utsjekk: null,
       };
+    },
+
+    async updateGuest() {
+      try {
+        const utsjekkDato = new Date(this.form.utsjekk);
+        utsjekkDato.setHours(12, 0, 0, 0);
+
+        const collectionRef = db
+          .collection("Camping")
+          .doc("Gjester")
+          .collection("Gjester");
+
+        const snapshot = await collectionRef
+          .where("Plass", "==", this.form.plass)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          const docRef = snapshot.docs[0].ref;
+          await docRef.update({
+            Navn: this.form.navn,
+            Bilnummer: this.form.bilnummer,
+            Nasjonalitet: this.form.nasjonalitet,
+            Pris: this.form.pris,
+            Innsjekk: Timestamp.fromDate(this.form.innsjekk),
+            Utsjekk: Timestamp.fromDate(utsjekkDato),
+          });
+
+          this.$message.success("Gjest oppdatert!");
+          this.$emit("guestUpdated");
+          this.$emit("close");
+        } else {
+          this.$message.error("Fant ikke gjesten i databasen.");
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error("Noe gikk galt under oppdatering.");
+      }
     },
 
     // Search code + name.

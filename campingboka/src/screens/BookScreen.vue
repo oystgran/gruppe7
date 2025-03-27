@@ -17,7 +17,9 @@
     <UpdateGuestModal
       :visible="showUpdateGuestModal"
       :initialPlass="selectedPlass"
+      :guest="updateGuestData"
       @close="closeModal"
+      @guestUpdated="refreshGuestList"
     />
   </div>
 </template>
@@ -36,6 +38,7 @@ export default {
       showAddGuestModal: false, // Controls modal visibility
       showUpdateGuestModal: false,
       selectedPlass: null, // Store the selected guest's place (can be null or a default value)
+      updateGuestData: null,
     };
   },
   methods: {
@@ -46,6 +49,7 @@ export default {
     },
     handleShowUpdateModal(guestData) {
       this.selectedPlass = guestData.Plass;
+      this.updateGuestData = guestData;
       this.showUpdateGuestModal = true;
     },
     closeModal() {
