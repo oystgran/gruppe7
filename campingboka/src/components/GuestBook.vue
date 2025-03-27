@@ -1,4 +1,5 @@
 <template>
+  <DateNavigator />
   <div class="bookCards">
     <!-- First group: 1 to 14 -->
     <div class="group1">
@@ -99,12 +100,14 @@ import { db } from "@/main";
 import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
+import DateNavigator from "./DateNavigator.vue";
 
 export default {
   name: "GuestBook",
   components: {
     GuestBookCard,
     CirclePlusFilled,
+    DateNavigator,
   },
   data() {
     return {
@@ -159,14 +162,14 @@ export default {
   /* gap: 10px; */ /* Valgfritt: Mellomrom mellom kortene */
 }
 /* Når skjermen er for smal for 3 kolonner (f.eks. under 1100px) → 2 kolonner */
-@media (max-width: 1100px) {
+@media (max-width: 1300px) {
   .bookCards {
     grid-template-columns: repeat(2, minmax(350px, 1fr));
   }
 }
 
 /* Når skjermen er for smal for 2 kolonner (f.eks. under 750px) → 1 kolonne */
-@media (max-width: 750px) {
+@media (max-width: 960px) {
   .bookCards {
     grid-template-columns: repeat(1, minmax(350px, 1fr));
   }

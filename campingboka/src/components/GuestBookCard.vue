@@ -2,10 +2,10 @@
   <el-card shadow="hover">
     <el-row :gutter="30">
       <el-col :span="2">{{ plass }}</el-col>
-      <el-col :span="7" style="font-weight: bold">
+      <el-col :span="6" style="font-weight: bold">
         <slot name="bilnummer"></slot>
       </el-col>
-      <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
+      <el-col :span="2" style="display: flex; align-items: center; gap: 6px">
         <img
           v-if="countryFlag"
           :src="countryFlag"
