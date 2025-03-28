@@ -16,7 +16,12 @@
         </div>
   
         <div class="right-panel">
-          <MapComponent @rectangle-clicked="handleRectangleClicked" style="width: 100%; height: 100%;" />
+          <MapComponent 
+          @rectangle-clicked="handleRectangleClicked" 
+          style=" 
+          transform: rotate(30deg);
+          transform-origin: center;" />
+
         </div>
       </div>
     </div>
@@ -80,7 +85,7 @@ export default {
   align-self: flex-start;
   justify-content: center;
   border-left: 1px solid #eee;
-  overflow: hidden;
+  height: 100%;
 }
 
 h1 {
