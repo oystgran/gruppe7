@@ -188,7 +188,7 @@ export default {
 
 <style scoped>
 .svg-container {
-  width: 75%;
+  width: 80%;
   margin: 0 auto;
   display: flex;
   justify-content: center;
@@ -202,12 +202,19 @@ svg {
 
 rect {
   cursor: pointer;
-  transition: fill 0.0s;
 }
 
 rect:hover {
   fill: black;
   stroke: black;
+}
+
+.spots g text {
+  opacity: 0;
+}
+
+.spots g:hover text {
+  opacity: 1;
 }
 
 text {
