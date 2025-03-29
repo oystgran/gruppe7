@@ -59,38 +59,61 @@
           </el-form-item>
 
           <el-form-item label="Plass">
-            <el-input-number
-              v-model="form.plass"
-              :min="1"
-              :max="42"
-              class="plassfelt"
-            />
+            <div style="display: flex; align-items: center">
+              <el-input-number
+                v-model="form.plass"
+                :min="1"
+                :max="42"
+                style="min-width: 100px"
+              />
+              <span
+                v-if="isFjordplass"
+                style="opacity: 0.6; font-size: 12px; margin-left: 12px"
+              >
+                +120 kr (fjord)
+              </span>
+            </div>
           </el-form-item>
 
           <el-form-item label="Voksne">
-            <el-input-number
-              v-model="form.voksne"
-              :min="0"
-              :max="10"
-              class="personerfelt"
-            />
+            <div style="display: flex; align-items: center">
+              <el-input-number
+                v-model="form.voksne"
+                :min="0"
+                :max="10"
+                style="min-width: 100px"
+              />
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
+                >+40 kr</span
+              >
+            </div>
           </el-form-item>
 
           <el-form-item label="Barn">
-            <el-input-number
-              v-model="form.barn"
-              :min="0"
-              :max="10"
-              class="personerfelt"
-            />
+            <div style="display: flex; align-items: center">
+              <el-input-number
+                v-model="form.barn"
+                :min="0"
+                :max="10"
+                style="min-width: 100px"
+              />
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
+                >+20 kr</span
+              >
+            </div>
           </el-form-item>
 
           <el-form-item label="Strøm">
-            <el-switch
-              v-model="form.elektrisitet"
-              active-text="Ja"
-              inactive-text="Nei"
-            />
+            <div style="display: flex; align-items: center; margin-left: 17px">
+              <el-switch
+                v-model="form.elektrisitet"
+                active-text="Ja"
+                inactive-text="Nei"
+              />
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
+                >+50 kr</span
+              >
+            </div>
           </el-form-item>
 
           <el-form-item label="Pris">
