@@ -117,6 +117,21 @@ import { db } from "@/main.js";
 import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries.js";
 
+const GRUNNPRIS = 340;
+const FJORDTILLEGG = 120;
+const PRIS_VOKSEN = 40;
+const PRIS_BARN = 20;
+const PRIS_EL = 50;
+
+const FJORDPLASS_NUMMER = new Set([
+  ...Array.from({ length: 19 }, (_, i) => i + 1), // 1–19
+  38,
+  39,
+  40,
+  41,
+  42,
+]);
+
 export default {
   name: "UpdateGuestModal",
   props: {
@@ -175,7 +190,7 @@ export default {
       const plass = this.form.plass;
       const voksne = this.form.voksne || 0;
       const barn = this.form.barn || 0;
-      const el = this.form.elektrisitet ? 50 : 0;
+      const el = this.form.elektrisitet ? PRIS_EL : 0;
 
       // Sjekk om vi har gyldige datoer
       if (!this.form.innsjekk || !this.form.utsjekk) {
@@ -186,8 +201,6 @@ export default {
       // Regn ut antall netter
       const innsjekk = new Date(this.form.innsjekk);
       const utsjekk = new Date(this.form.utsjekk);
-
-      // Nullstill klokkeslett for riktig døgnberegning
       innsjekk.setHours(0, 0, 0, 0);
       utsjekk.setHours(0, 0, 0, 0);
 
@@ -199,17 +212,18 @@ export default {
         return;
       }
 
-      // Regn ut pris basert på plass
-      let grunnpris = 160;
-      if ((plass >= 1 && plass <= 19) || (plass >= 38 && plass <= 42)) {
-        grunnpris = 190;
-      }
+      const fjordTillegg = FJORDPLASS_NUMMER.has(plass) ? FJORDTILLEGG : 0;
 
-      const totalPris = netter * (grunnpris + voksne * 40 + barn * 20 + el);
+      const totalPris =
+        netter *
+        (GRUNNPRIS +
+          fjordTillegg +
+          voksne * PRIS_VOKSEN +
+          barn * PRIS_BARN +
+          el);
 
       this.form.pris = totalPris;
     },
-
     closeModal() {
       this.$emit("close");
     },

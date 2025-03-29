@@ -195,7 +195,6 @@ export default {
           });
 
         this.$message.success("Gjest lagt til!");
-        this.$emit("guestAdded");
         this.closeModal();
       } catch (error) {
         console.error("Feil ved lagring:", error);
@@ -265,10 +264,7 @@ button {
   font-size: 34px;
   font-weight: bold;
   cursor: pointer;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 8px 10px;
   color: black;
 }
 
@@ -280,18 +276,10 @@ button {
 
 .modal-content .el-form .el-input-number {
   width: 50%;
-  margin-left: 14px;
+  margin-left: 10px;
 }
 
 .close:hover {
   color: red;
-}
-.plassfelt {
-}
-.personerfelt {
-}
-.prisfelt {
-}
-.el-form-item__content {
 }
 </style>
