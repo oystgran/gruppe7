@@ -60,11 +60,10 @@
 
           <el-form-item label="Plass">
             <div style="display: flex; align-items: center">
-              <el-input-number
-                v-model="form.plass"
-                :min="1"
-                :max="42"
-                style="min-width: 100px"
+              <el-input
+                :value="form.plass"
+                disabled
+                style="width: 100px; margin-left: 14px"
               />
               <span
                 v-if="isFjordplass"
@@ -207,6 +206,11 @@ export default {
         utsjekk: null,
       },
     };
+  },
+  computed: {
+    isFjordplass() {
+      return FJORDPLASS_NUMMER.has(this.form.plass);
+    },
   },
   methods: {
     beregnPris() {
