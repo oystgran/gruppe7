@@ -135,6 +135,27 @@
               {{ prisOppsummering }}
             </div>
           </el-form-item>
+          <div
+            v-if="prisDifferanse"
+            style="font-size: 13px; margin-top: 5px; text-align: right"
+          >
+            <div style="opacity: 0.6">
+              Tidligere pris: {{ prisDifferanse.original }} kr
+            </div>
+            <div style="opacity: 0.6">Ny pris: {{ prisDifferanse.ny }} kr</div>
+            <div
+              style="font-weight: bold; color: #d32f2f"
+              v-if="prisDifferanse.tillegg > 0"
+            >
+              Tillegg å betale: {{ prisDifferanse.tillegg }} kr
+            </div>
+            <div
+              style="font-weight: bold; color: #388e3c"
+              v-else-if="prisDifferanse.tillegg < 0"
+            >
+              Refunderes: {{ -prisDifferanse.tillegg }} kr
+            </div>
+          </div>
 
           <el-form-item>
             <el-button
@@ -194,7 +215,7 @@ export default {
             barn: newGuest.Barn || 0,
             elektrisitet: newGuest.Elektrisitet ?? false,
           };
-          this.beregnPris();
+          this.originalPris = newGuest.Pris || 0;
         }
       },
     },
@@ -221,6 +242,7 @@ export default {
         innsjekk: null,
         utsjekk: null,
       },
+      originalPris: 0,
     };
   },
   computed: {
@@ -250,6 +272,15 @@ export default {
       const totalPris = netter * prisPerNatt;
 
       return `${netter} netter × ${prisPerNatt} kr = ${totalPris} kr`;
+    },
+    prisDifferanse() {
+      if (!this.form.innsjekk || !this.form.utsjekk) return null;
+      const differanse = this.form.pris - this.originalPris;
+      return {
+        original: this.originalPris,
+        ny: this.form.pris,
+        tillegg: differanse,
+      };
     },
   },
   methods: {
