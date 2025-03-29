@@ -134,28 +134,27 @@
             >
               {{ prisOppsummering }}
             </div>
+            <div style="font-size: 13px; opacity: 0.9">
+              <div style="opacity: 0.6">
+                Tidligere pris: {{ prisDifferanse.original }} kr
+              </div>
+              <div style="opacity: 0.6">
+                Ny pris: {{ prisDifferanse.ny }} kr
+              </div>
+              <div
+                style="font-weight: bold; color: #d32f2f"
+                v-if="prisDifferanse.tillegg > 0"
+              >
+                Tillegg å betale: {{ prisDifferanse.tillegg }} kr
+              </div>
+              <div
+                style="font-weight: bold; color: #388e3c"
+                v-else-if="prisDifferanse.tillegg < 0"
+              >
+                Refunderes: {{ -prisDifferanse.tillegg }} kr
+              </div>
+            </div>
           </el-form-item>
-          <div
-            v-if="prisDifferanse"
-            style="font-size: 13px; margin-top: 5px; text-align: right"
-          >
-            <div style="opacity: 0.6">
-              Tidligere pris: {{ prisDifferanse.original }} kr
-            </div>
-            <div style="opacity: 0.6">Ny pris: {{ prisDifferanse.ny }} kr</div>
-            <div
-              style="font-weight: bold; color: #d32f2f"
-              v-if="prisDifferanse.tillegg > 0"
-            >
-              Tillegg å betale: {{ prisDifferanse.tillegg }} kr
-            </div>
-            <div
-              style="font-weight: bold; color: #388e3c"
-              v-else-if="prisDifferanse.tillegg < 0"
-            >
-              Refunderes: {{ -prisDifferanse.tillegg }} kr
-            </div>
-          </div>
 
           <el-form-item>
             <el-button
