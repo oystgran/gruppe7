@@ -98,6 +98,7 @@
               v-model="form.pris"
               :controls="false"
               :min="0"
+              :disabled="true"
               class="prisfelt"
             />
           </el-form-item>
@@ -140,8 +141,17 @@ export default {
             barn: newGuest.Barn || 0,
             elektrisitet: newGuest.Elektrisitet ?? false,
           };
+          this.beregnPris();
         }
       },
+    },
+
+    // 👇🏽 Denne må ligge HER inne i watch!
+    form: {
+      handler() {
+        this.beregnPris();
+      },
+      deep: true,
     },
   },
   data() {
@@ -161,6 +171,45 @@ export default {
     };
   },
   methods: {
+    beregnPris() {
+      const plass = this.form.plass;
+      const voksne = this.form.voksne || 0;
+      const barn = this.form.barn || 0;
+      const el = this.form.elektrisitet ? 50 : 0;
+
+      // Sjekk om vi har gyldige datoer
+      if (!this.form.innsjekk || !this.form.utsjekk) {
+        this.form.pris = 0;
+        return;
+      }
+
+      // Regn ut antall netter
+      const innsjekk = new Date(this.form.innsjekk);
+      const utsjekk = new Date(this.form.utsjekk);
+
+      // Nullstill klokkeslett for riktig døgnberegning
+      innsjekk.setHours(0, 0, 0, 0);
+      utsjekk.setHours(0, 0, 0, 0);
+
+      const tid = utsjekk.getTime() - innsjekk.getTime();
+      const netter = tid / (1000 * 60 * 60 * 24);
+
+      if (netter <= 0) {
+        this.form.pris = 0;
+        return;
+      }
+
+      // Regn ut pris basert på plass
+      let grunnpris = 160;
+      if ((plass >= 1 && plass <= 19) || (plass >= 38 && plass <= 42)) {
+        grunnpris = 190;
+      }
+
+      const totalPris = netter * (grunnpris + voksne * 40 + barn * 20 + el);
+
+      this.form.pris = totalPris;
+    },
+
     closeModal() {
       this.$emit("close");
     },
