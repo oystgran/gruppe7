@@ -12,6 +12,7 @@
           placement="top"
           effect="dark"
           :hide-after="0"
+          popper-class="custom-tooltip"
         >
           <img
             :src="country.flag"
@@ -113,5 +114,10 @@ export default {
   /* border-radius: 4px; */
 }
 
+.custom-tooltip {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: #fff; /* optional */
+}
 /* Spesifikk stil for innsjekk og utsjekk kolonne */
 </style>

@@ -3,9 +3,10 @@
     <div v-if="visible" class="modal">
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
-
-        <h2>Edit Guest</h2>
-
+        <!-- <h2>Edit Guest</h2> -->
+        <h2 v-if="form.plass" style="margin-bottom: 20px">
+          Plass nr. {{ form.plass }}
+        </h2>
         <el-form
           :model="form"
           label-width="90px"
@@ -66,12 +67,29 @@
             />
           </el-form-item>
 
-          <el-form-item label="Personer">
+          <el-form-item label="Voksne">
             <el-input-number
-              v-model="form.persons"
-              :min="1"
-              :max="99"
+              v-model="form.voksne"
+              :min="0"
+              :max="10"
               class="personerfelt"
+            />
+          </el-form-item>
+
+          <el-form-item label="Barn">
+            <el-input-number
+              v-model="form.barn"
+              :min="0"
+              :max="10"
+              class="personerfelt"
+            />
+          </el-form-item>
+
+          <el-form-item label="Strøm">
+            <el-switch
+              v-model="form.elektrisitet"
+              active-text="Ja"
+              inactive-text="Nei"
             />
           </el-form-item>
 
@@ -118,6 +136,9 @@ export default {
             plass: newGuest.Plass,
             innsjekk: newGuest.Innsjekk?.toDate?.() || null,
             utsjekk: newGuest.Utsjekk?.toDate?.() || null,
+            voksne: newGuest.Voksne || 1,
+            barn: newGuest.Barn || 0,
+            elektrisitet: newGuest.Elektrisitet ?? false,
           };
         }
       },
@@ -131,6 +152,9 @@ export default {
         nasjonalitet: "",
         pris: 0,
         plass: null,
+        voksne: 1,
+        barn: 0,
+        elektrisitet: false, // nytt felt
         innsjekk: null,
         utsjekk: null,
       },
@@ -176,6 +200,9 @@ export default {
             Bilnummer: this.form.bilnummer,
             Nasjonalitet: this.form.nasjonalitet,
             Pris: this.form.pris,
+            Voksne: this.form.voksne,
+            Barn: this.form.barn,
+            Elektrisitet: this.form.elektrisitet,
             Innsjekk: Timestamp.fromDate(this.form.innsjekk),
             Utsjekk: Timestamp.fromDate(utsjekkDato),
           });

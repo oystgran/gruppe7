@@ -145,7 +145,7 @@ export default {
         const data = doc.data();
         guestsData[data.Plass] = data;
       });
-
+      console.log(guestsData);
       this.guests = guestsData;
     },
   },
