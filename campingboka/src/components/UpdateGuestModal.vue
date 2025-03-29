@@ -123,10 +123,26 @@
               :disabled="true"
               class="prisfelt"
             />
+            <div
+              v-if="prisOppsummering"
+              style="
+                text-align: right;
+                font-size: 13px;
+                opacity: 0.7;
+                margin-bottom: 10px;
+              "
+            >
+              {{ prisOppsummering }}
+            </div>
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="updateGuest">Oppdater</el-button>
+            <el-button
+              type="primary"
+              @click="updateGuest"
+              style="margin-left: 20px"
+              >Oppdater</el-button
+            >
           </el-form-item>
         </el-form>
       </div>
@@ -210,6 +226,30 @@ export default {
   computed: {
     isFjordplass() {
       return FJORDPLASS_NUMMER.has(this.form.plass);
+    },
+    prisOppsummering() {
+      const plass = this.form.plass;
+      const voksne = this.form.voksne || 0;
+      const barn = this.form.barn || 0;
+      const el = this.form.elektrisitet ? PRIS_EL : 0;
+
+      if (!this.form.innsjekk || !this.form.utsjekk) return "";
+
+      const innsjekk = new Date(this.form.innsjekk);
+      const utsjekk = new Date(this.form.utsjekk);
+      innsjekk.setHours(0, 0, 0, 0);
+      utsjekk.setHours(0, 0, 0, 0);
+      const netter = (utsjekk - innsjekk) / (1000 * 60 * 60 * 24);
+
+      if (netter <= 0) return "";
+
+      const fjordTillegg = FJORDPLASS_NUMMER.has(plass) ? FJORDTILLEGG : 0;
+
+      const prisPerNatt =
+        GRUNNPRIS + fjordTillegg + voksne * PRIS_VOKSEN + barn * PRIS_BARN + el;
+      const totalPris = netter * prisPerNatt;
+
+      return `${netter} netter × ${prisPerNatt} kr = ${totalPris} kr`;
     },
   },
   methods: {
