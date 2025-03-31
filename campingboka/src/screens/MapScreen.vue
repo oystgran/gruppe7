@@ -2,7 +2,11 @@
     <div class="map-screen">
         <DateNavigator v-model="myDate" />
 
-        <MapComponent @rectangle-clicked="handleRectangleClicked"/>  
+        <MapComponent 
+        @rectangle-clicked="handleRectangleClicked" 
+        style="transform: rotate(-10deg);
+        transform-origin: center;"
+        />  
 
         <AddGuestModal
         :visible="showAddGuestModal"
