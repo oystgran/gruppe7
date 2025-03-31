@@ -65,11 +65,11 @@
               <el-input
                 :value="form.plass"
                 disabled
-                style="width: 100px; margin-left: 24px"
+                style="width: 100px; margin-left: 25px"
                 input-style="text-align: center"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px">
-                {{ isFjordplass ? "+120 kr (fjordplass)" : "Standardplass" }}
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 30px">
+                {{ isFjordplass ? "Fjordplass" : "Standardplass" }}
               </span>
             </div>
           </el-form-item>
@@ -174,7 +174,7 @@
             <el-button
               type="primary"
               @click="handleSubmit"
-              style="margin-left: 25px"
+              style="margin-left: 30px"
             >
               {{ mode === "add" ? "Legg til +" : "Oppdater" }}
             </el-button>
@@ -267,6 +267,9 @@ export default {
     },
   },
   computed: {
+    isFjordplass() {
+      return FJORDPLASS_NUMMER.has(this.form.plass);
+    },
     prisOppsummering() {
       if (!this.form.innsjekk || !this.form.utsjekk) return "";
 
