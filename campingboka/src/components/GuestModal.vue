@@ -109,7 +109,7 @@
                 active-text="Ja"
                 inactive-text="Nei"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 48px"
                 >+50 kr</span
               >
             </div>
@@ -136,7 +136,10 @@
               {{ prisOppsummering }}
             </div>
 
-            <div v-if="prisDifferanse" style="font-size: 13px; opacity: 0.9">
+            <div
+              v-if="prisDifferanse && prisDifferanse.tillegg !== 0"
+              style="font-size: 13px; opacity: 0.9"
+            >
               <div style="opacity: 0.6">
                 Tidligere pris: {{ prisDifferanse.original }} kr
               </div>
