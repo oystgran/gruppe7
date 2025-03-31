@@ -65,7 +65,7 @@
               <el-input
                 :value="form.plass"
                 disabled
-                style="width: 100px; margin-left: 14px"
+                style="width: 100px; margin-left: 24px"
                 input-style="text-align: center"
               />
               <span style="opacity: 0.6; font-size: 12px; margin-left: 12px">
@@ -103,26 +103,59 @@
           </el-form-item>
 
           <el-form-item label="Strøm">
-            <div style="display: flex; align-items: center; margin-left: 17px">
+            <div style="display: flex; align-items: center; margin-left: 25px">
               <el-switch
                 v-model="form.elektrisitet"
                 active-text="Ja"
                 inactive-text="Nei"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 48px"
+              <span style="opacity: 0.6; font-size: 12px; margin-left: 40px"
                 >+50 kr</span
               >
             </div>
           </el-form-item>
 
           <el-form-item label="Pris">
-            <el-input-number
-              v-model="form.pris"
-              :controls="false"
-              :min="0"
-              :disabled="true"
-              class="prisfelt"
-            />
+            <div style="display: flex; align-items: center">
+              <el-input-number
+                v-model="form.pris"
+                :controls="false"
+                :min="0"
+                :disabled="true"
+                class="prisfelt"
+              />
+
+              <el-popover
+                v-if="prisDifferanse && prisDifferanse.tillegg !== 0"
+                placement="right"
+                width="220"
+                trigger="hover"
+              >
+                <template #reference>
+                  <el-icon style="margin-left: 8px; cursor: pointer">
+                    <info-filled />
+                  </el-icon>
+                </template>
+
+                <div style="font-size: 13px">
+                  <div style="opacity: 0.6">
+                    Tidligere pris: {{ prisDifferanse.original }} kr
+                  </div>
+                  <div style="opacity: 0.6">
+                    Ny pris: {{ prisDifferanse.ny }} kr
+                  </div>
+                  <div
+                    v-if="prisDifferanse.tillegg > 0"
+                    style="font-weight: bold; color: #d32f2f"
+                  >
+                    Tillegg å betale: {{ prisDifferanse.tillegg }} kr
+                  </div>
+                  <div v-else style="font-weight: bold; color: #388e3c">
+                    Refunderes: {{ -prisDifferanse.tillegg }} kr
+                  </div>
+                </div>
+              </el-popover>
+            </div>
 
             <div
               v-if="prisOppsummering"
@@ -130,34 +163,10 @@
                 text-align: right;
                 font-size: 13px;
                 opacity: 0.7;
-                margin-bottom: 10px;
+                margin-top: 6px;
               "
             >
               {{ prisOppsummering }}
-            </div>
-
-            <div
-              v-if="prisDifferanse && prisDifferanse.tillegg !== 0"
-              style="font-size: 13px; opacity: 0.9"
-            >
-              <div style="opacity: 0.6">
-                Tidligere pris: {{ prisDifferanse.original }} kr
-              </div>
-              <div style="opacity: 0.6">
-                Ny pris: {{ prisDifferanse.ny }} kr
-              </div>
-              <div
-                style="font-weight: bold; color: #d32f2f"
-                v-if="prisDifferanse.tillegg > 0"
-              >
-                Tillegg å betale: {{ prisDifferanse.tillegg }} kr
-              </div>
-              <div
-                style="font-weight: bold; color: #388e3c"
-                v-else-if="prisDifferanse.tillegg < 0"
-              >
-                Refunderes: {{ -prisDifferanse.tillegg }} kr
-              </div>
             </div>
           </el-form-item>
 
@@ -165,7 +174,7 @@
             <el-button
               type="primary"
               @click="handleSubmit"
-              style="margin-left: 20px"
+              style="margin-left: 25px"
             >
               {{ mode === "add" ? "Legg til +" : "Oppdater" }}
             </el-button>
@@ -180,6 +189,7 @@
 import { db } from "@/main";
 import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries";
+import { InfoFilled } from "@element-plus/icons-vue";
 
 const GRUNNPRIS = 340;
 const FJORDTILLEGG = 120;
@@ -197,6 +207,9 @@ const FJORDPLASS_NUMMER = new Set([
 
 export default {
   name: "GuestModal",
+  components: {
+    InfoFilled, // 👈 registrer ikonet her
+  },
   props: {
     visible: Boolean,
     initialPlass: Number,
