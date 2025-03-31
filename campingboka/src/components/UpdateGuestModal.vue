@@ -252,22 +252,34 @@ export default {
       return FJORDPLASS_NUMMER.has(this.form.plass);
     },
     prisOppsummering() {
-      const plass = this.form.plass;
+      if (!this.form.innsjekk || !this.form.utsjekk) return "";
+
+      // Lag rene datoobjekter og nullstill tiden
+      const innsjekk = new Date(this.form.innsjekk);
+      const utsjekk = new Date(this.form.utsjekk);
+
+      // OBS: sørg for at innsjekk og utsjekk faktisk er Date-objekter
+      if (
+        !(innsjekk instanceof Date) ||
+        isNaN(innsjekk) ||
+        !(utsjekk instanceof Date) ||
+        isNaN(utsjekk)
+      )
+        return "";
+
+      innsjekk.setHours(0, 0, 0, 0);
+      utsjekk.setHours(0, 0, 0, 0);
+
+      const netter = Math.ceil((utsjekk - innsjekk) / (1000 * 60 * 60 * 24));
+      if (netter <= 0) return "";
+      if (netter <= 0) return "";
+
       const voksne = this.form.voksne || 0;
       const barn = this.form.barn || 0;
       const el = this.form.elektrisitet ? PRIS_EL : 0;
-
-      if (!this.form.innsjekk || !this.form.utsjekk) return "";
-
-      const innsjekk = new Date(this.form.innsjekk);
-      const utsjekk = new Date(this.form.utsjekk);
-      innsjekk.setHours(0, 0, 0, 0);
-      utsjekk.setHours(0, 0, 0, 0);
-      const netter = (utsjekk - innsjekk) / (1000 * 60 * 60 * 24);
-
-      if (netter <= 0) return "";
-
-      const fjordTillegg = FJORDPLASS_NUMMER.has(plass) ? FJORDTILLEGG : 0;
+      const fjordTillegg = FJORDPLASS_NUMMER.has(this.form.plass)
+        ? FJORDTILLEGG
+        : 0;
 
       const prisPerNatt =
         GRUNNPRIS + fjordTillegg + voksne * PRIS_VOKSEN + barn * PRIS_BARN + el;
@@ -305,7 +317,7 @@ export default {
       utsjekk.setHours(0, 0, 0, 0);
 
       const tid = utsjekk.getTime() - innsjekk.getTime();
-      const netter = tid / (1000 * 60 * 60 * 24);
+      const netter = Math.ceil(tid / (1000 * 60 * 60 * 24));
 
       if (netter <= 0) {
         this.form.pris = 0;
