@@ -123,6 +123,7 @@
               :disabled="true"
               class="prisfelt"
             />
+
             <div
               v-if="prisOppsummering"
               style="
@@ -134,7 +135,9 @@
             >
               {{ prisOppsummering }}
             </div>
-            <div style="font-size: 13px; opacity: 0.9">
+
+            <!-- ✅ NY: Vises kun hvis prisDifferanse finnes -->
+            <div v-if="prisDifferanse" style="font-size: 13px; opacity: 0.9">
               <div style="opacity: 0.6">
                 Tidligere pris: {{ prisDifferanse.original }} kr
               </div>

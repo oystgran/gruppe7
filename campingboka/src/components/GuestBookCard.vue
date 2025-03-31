@@ -51,7 +51,7 @@
 </template>
 <script>
 import { countries } from "@/tools/countries";
-import { ElTooltip } from "element-plus";
+//import { ElTooltip } from "element-plus";
 
 export default {
   name: "GuestBookCard",
@@ -65,7 +65,8 @@ export default {
   },
   computed: {
     country() {
-      if (!this.nasjonalitet) return null;
+      if (!this.nasjonalitet || typeof this.nasjonalitet !== "string")
+        return null;
 
       // Sjekk om nasjonaliteten er en landkode som finnes i countries
       if (countries[this.nasjonalitet]) {
@@ -74,8 +75,9 @@ export default {
 
       // Hvis nasjonaliteten er skrevet som navn ("Argentina") → prøv å finne koden
       const entry = Object.entries(countries).find(
-        ([code, data]) =>
-          data.name.toLowerCase() === this.nasjonalitet.toLowerCase()
+        (
+          [, data] // tom plass for første element = ignoreres
+        ) => data?.name?.toLowerCase() === this.nasjonalitet.toLowerCase()
       );
       return entry ? entry[1] : null;
     },
