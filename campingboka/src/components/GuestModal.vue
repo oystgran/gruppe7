@@ -66,6 +66,7 @@
                 :value="form.plass"
                 disabled
                 style="width: 100px; margin-left: 14px"
+                input-style="text-align: center"
               />
               <span style="opacity: 0.6; font-size: 12px; margin-left: 12px">
                 {{ isFjordplass ? "+120 kr (fjordplass)" : "Standardplass" }}
