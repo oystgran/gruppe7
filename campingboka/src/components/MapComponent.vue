@@ -268,6 +268,11 @@ text {
   fill: red;
   stroke: red;
 }
+
+.occupied:hover {
+  fill: rgb(148, 0, 0);
+  stroke: rgb(148, 0, 0);
+}
 rect:hover {
   fill: black;
   stroke: black;

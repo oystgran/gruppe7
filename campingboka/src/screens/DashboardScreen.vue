@@ -6,12 +6,6 @@
           <h1>Dashboard</h1>
           <p>Campingboka</p>
           <el-button>I am ElButton</el-button>
-
-          <AddGuestModal
-            :visible="showAddGuestModal"
-            :initialPlass="selectedPlass"
-            @close="showAddGuestModal = false"
-          />
         </div>
   
         <div class="right-panel">
@@ -24,70 +18,96 @@
 
         </div>
       </div>
+    <component
+      v-if="showModal"
+      :is="modalComponent"
+      :visible="showModal"
+      :initialPlass="selectedPlass"
+      v-bind="modalProps"
+      @close="showModal = false"
+      @guestAdded="reloadGuests"
+      @guestUpdated="reloadGuests"
+    />
     </div>
   </template>
   
 
-<script>
-import AddGuestModal from '@/components/AddGuestModal.vue';
-import DateNavigator from '@/components/DateNavigator.vue';
-import MapComponent from '@/components/MapComponent.vue';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
-import { db } from '@/main.js';
-import { ElButton } from 'element-plus';
-
-export default {
-  name: 'DashboardScreen',
-  components: { ElButton, AddGuestModal, MapComponent, DateNavigator},
-  data() {
-    return {
-      showAddGuestModal: false,
-      selectedPlass: null,
-      myDate: new Date(),
-      guests: {}
-    };
-  },
-  mounted(){
-    this.loadGuests();
-  },
-  methods: {
-    async loadGuests() {
-
-      const latestQuery = query(
-      collection(db, "Camping", "Gjester", "Gjester"),
-      orderBy("Plass")
-    );
-    const snapshot = await getDocs(latestQuery);
-    let guestsData = {};
-    snapshot.forEach((doc) => {
-      const data = doc.data();
-      guestsData[data.Plass] = data;
-    });
-    this.guests = guestsData;
-  },
-
-    handleRectangleClicked(number) {
-      this.selectedPlass = number;
-      this.showAddGuestModal = true;
+  <script>
+  import AddGuestModal from '@/components/AddGuestModal.vue';
+  import UpdateGuestModal from '@/components/UpdateGuestModal.vue';
+  import DateNavigator from '@/components/DateNavigator.vue';
+  import MapComponent from '@/components/MapComponent.vue';
+  import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+  import { db } from '@/main.js';
+  import { ElButton } from 'element-plus';
+  
+  export default {
+    name: 'DashboardScreen',
+    components: { 
+      ElButton, 
+      AddGuestModal, 
+      UpdateGuestModal, 
+      MapComponent, 
+      DateNavigator 
     },
-    handleDateUpdate(newDate) {
-      console.log("Selected Date:", newDate);
-      // Logikk for å endre hva som vises basert på dato
+    data() {
+      return {
+        showModal: false,       
+        selectedPlass: null,
+        myDate: new Date(),
+        guests: {}            
+      };
     },
-  },
-  computed: {
-  filteredGuests() {
-    return Object.values(this.guests).filter(guest => {
-      if (!guest.Innsjekk || !guest.Utsjekk) return false;
-      const checkIn = guest.Innsjekk.toDate();
-      const checkOut = guest.Utsjekk.toDate();
-      return this.myDate >= checkIn && this.myDate <= checkOut;
-    });
-  }
-}
-
-};
-</script>
+    computed: {
+      filteredGuests() {
+        return Object.values(this.guests).filter(guest => {
+          if (!guest.Innsjekk || !guest.Utsjekk) return false;
+          const checkIn = guest.Innsjekk.toDate();
+          const checkOut = guest.Utsjekk.toDate();
+          return this.myDate >= checkIn && this.myDate <= checkOut;
+        });
+      },
+      isOccupied() {
+        return !!this.guests[this.selectedPlass];
+      },
+      modalComponent() {
+        return this.isOccupied ? UpdateGuestModal : AddGuestModal;
+      },
+      modalProps() {
+        return this.isOccupied ? { guest: this.guests[this.selectedPlass] } : {};
+      }
+    },
+    mounted() {
+      this.loadGuests();
+    },
+    methods: {
+      async loadGuests() {
+        const latestQuery = query(
+          collection(db, "Camping", "Gjester", "Gjester"),
+          orderBy("Plass")
+        );
+        const snapshot = await getDocs(latestQuery);
+        let guestsData = {};
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          guestsData[data.Plass] = data;
+        });
+        this.guests = guestsData;
+      },
+      handleRectangleClicked(number) {
+        this.selectedPlass = number;
+        this.showModal = true;
+      },
+      reloadGuests() {
+        this.loadGuests();
+      },
+      handleDateUpdate(newDate) {
+        console.log("Selected Date:", newDate);
+        // foreløpig tom
+      }
+    }
+  };
+  </script>
 
 <style scoped>
 .dashboard-screen {
