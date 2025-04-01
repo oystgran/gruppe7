@@ -169,17 +169,28 @@
               {{ prisOppsummering }}
             </div>
           </el-form-item>
-
-          <el-form-item>
-            <el-button
-              type="primary"
-              @click="handleSubmit"
-              style="margin-left: 30px"
-            >
-              {{ mode === "add" ? "Legg til +" : "Oppdater" }}
-            </el-button>
-          </el-form-item>
         </el-form>
+        <el-form-item v-if="mode === 'edit'">
+          <div style="display: flex">
+            <el-button type="primary" @click="handleSubmit">
+              Oppdater
+            </el-button>
+            <el-button type="danger" @click="confirmDelete">
+              <el-icon style=""><delete /></el-icon>
+              Slett
+            </el-button>
+          </div>
+        </el-form-item>
+
+        <el-form-item v-else>
+          <el-button
+            type="primary"
+            @click="handleSubmit"
+            style="margin-left: 30px"
+          >
+            Legg til
+          </el-button>
+        </el-form-item>
       </div>
     </div>
   </div>
@@ -189,7 +200,7 @@
 import { db } from "@/main";
 import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries";
-import { InfoFilled } from "@element-plus/icons-vue";
+import { InfoFilled, Delete } from "@element-plus/icons-vue";
 
 const GRUNNPRIS = 340;
 const FJORDTILLEGG = 120;
@@ -208,7 +219,8 @@ const FJORDPLASS_NUMMER = new Set([
 export default {
   name: "GuestModal",
   components: {
-    InfoFilled, // 👈 registrer ikonet her
+    InfoFilled,
+    delete: Delete,
   },
   props: {
     visible: Boolean,
@@ -305,6 +317,25 @@ export default {
     },
   },
   methods: {
+    async confirmDelete() {
+      try {
+        const navn = this.form.navn || "gjest";
+        const plass = this.form.plass;
+        await this.$confirm(
+          `Slett ${navn} fra Plass nr ${plass}?`,
+          "Er du sikker?",
+          {
+            confirmButtonText: "Ja, slett",
+            cancelButtonText: "Avbryt",
+            type: "warning",
+          }
+        );
+
+        await this.handleDelete(); // Hvis bruker bekrefter
+      } catch {
+        // Avbrutt
+      }
+    },
     resetForm() {
       this.form = {
         navn: "",
@@ -402,6 +433,34 @@ export default {
       } catch (err) {
         console.error(err);
         this.$message.error("Noe gikk galt ved lagring.");
+      }
+    },
+    async handleDelete() {
+      try {
+        const confirmed = confirm("Er du sikker på at du vil slette gjesten?");
+        if (!confirmed) return;
+
+        const collectionRef = db
+          .collection("Camping")
+          .doc("Gjester")
+          .collection("Gjester");
+
+        const snapshot = await collectionRef
+          .where("Plass", "==", this.form.plass)
+          .limit(1)
+          .get();
+
+        if (!snapshot.empty) {
+          await snapshot.docs[0].ref.delete();
+          this.$message.success("Gjest slettet!");
+          this.$emit("guestSaved"); // Oppdater listen
+          this.closeModal();
+        } else {
+          this.$message.error("Fant ikke gjesten i databasen.");
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error("Noe gikk galt ved sletting.");
       }
     },
   },
