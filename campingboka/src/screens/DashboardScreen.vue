@@ -121,6 +121,8 @@
 .right-panel :deep(.guest-tooltip) {
   transform: rotate(-30deg);
   transform-origin: center;
+  left: 200px;
+  top: 300px;
 }
 
 .dashboard-content {

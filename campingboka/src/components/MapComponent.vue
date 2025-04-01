@@ -209,11 +209,6 @@ export default {
     return {
       tooltipVisible: false,
       tooltipData: {},
-      tooltipStyle: {
-        position: 'absolute',
-        left: '200px',
-        top: '250px'
-      }
     };
   },
   methods: {

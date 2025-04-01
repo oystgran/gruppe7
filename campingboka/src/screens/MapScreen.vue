@@ -6,7 +6,8 @@
         :guests="filteredGuests"
         @rectangle-clicked="handleRectangleClicked" 
         style="transform: rotate(-10deg);
-        transform-origin: center;"
+        transform-origin: center;
+        "
         />  
 
         <component
@@ -179,5 +180,13 @@ button {
 
 .close:hover {
     color: red;
+}
+
+.guest-tooltip {
+    transform: rotate(10deg);
+    transform-origin: center;
+    position: absolute;
+    left: 400px;
+    top: 150px;
 }
 </style>
