@@ -171,13 +171,12 @@
           </el-form-item>
         </el-form>
         <el-form-item v-if="mode === 'edit'">
-          <div style="display: flex">
-            <el-button type="primary" @click="handleSubmit">
-              Oppdater
+          <div style="display: flex; margin-left: 30px; gap: 20px">
+            <el-button type="success" @click="handleSubmit">
+              <el-icon style="margin-right: 6px"><check /></el-icon>
             </el-button>
             <el-button type="danger" @click="confirmDelete">
               <el-icon style=""><delete /></el-icon>
-              Slett
             </el-button>
           </div>
         </el-form-item>
@@ -200,7 +199,7 @@
 import { db } from "@/main";
 import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries";
-import { InfoFilled, Delete } from "@element-plus/icons-vue";
+import { InfoFilled, Delete, Check } from "@element-plus/icons-vue";
 
 const GRUNNPRIS = 340;
 const FJORDTILLEGG = 120;
@@ -221,6 +220,7 @@ export default {
   components: {
     InfoFilled,
     delete: Delete,
+    Check,
   },
   props: {
     visible: Boolean,
@@ -437,9 +437,6 @@ export default {
     },
     async handleDelete() {
       try {
-        const confirmed = confirm("Er du sikker på at du vil slette gjesten?");
-        if (!confirmed) return;
-
         const collectionRef = db
           .collection("Camping")
           .doc("Gjester")
