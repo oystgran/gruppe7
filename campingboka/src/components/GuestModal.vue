@@ -172,7 +172,7 @@
         </el-form>
         <el-form-item v-if="mode === 'edit'">
           <div style="display: flex; margin-left: 30px; gap: 20px">
-            <el-button type="success" @click="handleSubmit">
+            <el-button type="success" @click="confirmUpdate">
               <el-icon style="margin-right: 6px"><check /></el-icon>
             </el-button>
             <el-button type="danger" @click="confirmDelete">
@@ -317,13 +317,29 @@ export default {
     },
   },
   methods: {
+    async confirmUpdate() {
+      try {
+        await this.$confirm(
+          `Oppdatere gjesten på plass nr ${this.form.plass}?`,
+          "Bekreft forandringer",
+          {
+            confirmButtonText: "Ja, oppdater",
+            cancelButtonText: "Avbryt",
+            type: "warning",
+          }
+        );
+        await this.handleSubmit(); // Fortsett hvis bruker bekrefter
+      } catch {
+        // Bruker avbrøt
+      }
+    },
     async confirmDelete() {
       try {
         const navn = this.form.navn || "gjest";
         const plass = this.form.plass;
         await this.$confirm(
           `Slett ${navn} fra Plass nr ${plass}?`,
-          "Er du sikker?",
+          "Bekreft Sletting",
           {
             confirmButtonText: "Ja, slett",
             cancelButtonText: "Avbryt",
