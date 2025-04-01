@@ -243,7 +243,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style >
 .svg-container {
   position: relative;
   width: 90%;
