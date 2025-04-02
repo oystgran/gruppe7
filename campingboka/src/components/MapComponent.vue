@@ -209,11 +209,6 @@ export default {
     return {
       tooltipVisible: false,
       tooltipData: {},
-      tooltipStyle: {
-        position: 'absolute',
-        left: '200px',
-        top: '250px'
-      }
     };
   },
   methods: {
@@ -243,7 +238,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style >
 .svg-container {
   position: relative;
   width: 90%;
@@ -267,6 +262,11 @@ text {
 .occupied {
   fill: red;
   stroke: red;
+}
+
+.occupied:hover {
+  fill: rgb(148, 0, 0);
+  stroke: rgb(148, 0, 0);
 }
 rect:hover {
   fill: black;

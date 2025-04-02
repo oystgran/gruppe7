@@ -3,16 +3,23 @@
         <DateNavigator v-model="myDate" />
 
         <MapComponent 
+        :guests="filteredGuests"
         @rectangle-clicked="handleRectangleClicked" 
         style="transform: rotate(-10deg);
-        transform-origin: center;"
+        transform-origin: center;
+        "
         />  
 
-        <AddGuestModal
-        :visible="showAddGuestModal"
+        <component
+        v-if="showModal"
+        :is="modalComponent"
+        :visible="showModal"
         :initialPlass="selectedPlass"
-        @close="showAddGuestModal = false"/>
-
+        v-bind="modalProps"
+        @close="showModal = false"
+        @guestAdded="reloadGuests"
+        @guestUpdated="reloadGuests"
+        />
 
         <el-button type="primary" @click="openModal">Vis plakat</el-button>
 
@@ -29,40 +36,83 @@
 import posterMap from '@/assets/posterMap.png';
 import MapComponent from '@/components/MapComponent.vue';
 import AddGuestModal from '@/components/AddGuestModal.vue';
+import UpdateGuestModal from '@/components/UpdateGuestModal.vue';
 import DateNavigator from '@/components/DateNavigator.vue';
-
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/main.js';
 
 export default {
-    name: 'MapScreen',
-    components: { MapComponent, AddGuestModal, DateNavigator },
-    data() {
-        return {
-            posterMap: posterMap,
-            isModalOpen: false,
-            showAddGuestModal: false,
-            selectedPlass: null,
-        };
+  name: 'MapScreen',
+  components: { 
+    MapComponent, 
+    DateNavigator, 
+    AddGuestModal, 
+    UpdateGuestModal 
+  },
+  data() {
+    return {
+      posterMap,
+      isPosterModalOpen: false,
+      showModal: false,
+      selectedPlass: null,
+      myDate: new Date(),
+      guests: {}
+    };
+  },
+  computed: {
+    filteredGuests() {
+      return Object.values(this.guests).filter(guest => {
+        if (!guest.Innsjekk || !guest.Utsjekk) return false;
+        const checkIn = guest.Innsjekk.toDate();
+        const checkOut = guest.Utsjekk.toDate();
+        return this.myDate >= checkIn && this.myDate <= checkOut;
+      });
     },
-    methods: {
-        handleRectangleClicked(number) {
-            this.selectedPlass = number;
-            this.showAddGuestModal = true;
-        },
-        handleDateUpdate(newDate) {
-            console.log("Selected Date:", newDate);
-            // Logikk for å endre hva som vises basert på dato
-        },
-        openModal() {
-            this.isModalOpen = true;
-        },
-        closeModal() {
-            this.isModalOpen = false;
-        }
+    isOccupied() {
+      return !!this.guests[this.selectedPlass];
+    },
+    modalComponent() {
+      return this.isOccupied ? UpdateGuestModal : AddGuestModal;
+    },
+    modalProps() {
+      return this.isOccupied ? { guest: this.guests[this.selectedPlass] } : {};
     }
+  },
+  mounted() {
+    this.loadGuests();
+  },
+  methods: {
+    async loadGuests() {
+      const latestQuery = query(
+        collection(db, "Camping", "Gjester", "Gjester"),
+        orderBy("Plass")
+      );
+      const snapshot = await getDocs(latestQuery);
+      let guestsData = {};
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        guestsData[data.Plass] = data;
+      });
+      this.guests = guestsData;
+    },
+    handleRectangleClicked(number) {
+      this.selectedPlass = number;
+      this.showModal = true;
+    },
+    reloadGuests() {
+      this.loadGuests();
+    },
+    openPosterModal() {
+      this.isPosterModalOpen = true;
+    },
+    closePosterModal() {
+      this.isPosterModalOpen = false;
+    }
+  }
 };
 </script>
 
-<style scoped>
+<style>
 .map-screen {
     text-align: center;
 }
@@ -130,5 +180,13 @@ button {
 
 .close:hover {
     color: red;
+}
+
+.guest-tooltip {
+    transform: rotate(10deg);
+    transform-origin: center;
+    position: absolute;
+    left: 400px;
+    top: 150px;
 }
 </style>
