@@ -1,96 +1,35 @@
 <template>
-  <DateNavigator v-model="selectedDate" />
-  <div class="bookCards">
-    <!-- First group: 1 to 14 -->
-    <div class="group1">
-      <GuestBookCard
-        class="guestcard"
-        v-for="index in 14"
-        :key="index"
-        :plass="index"
-        :nasjonalitet="guests[index]?.Nasjonalitet"
-        :innsjekk="
-          guests[index]?.Innsjekk ? formatDate(guests[index].Innsjekk) : ''
-        "
-        :utsjekk="
-          guests[index]?.Utsjekk ? formatDate(guests[index].Utsjekk) : ''
-        "
-        :pris="guests[index]?.Pris"
-        @click="openModalWithGuest(index)"
-      >
-        <template v-slot:bilnummer>
-          <span v-if="guests[index]?.Bilnummer">
-            {{ guests[index]?.Bilnummer }}
-          </span>
-          <el-icon v-else class="plus-icon">
-            <CirclePlusFilled />
-          </el-icon>
-        </template>
-      </GuestBookCard>
-    </div>
-
-    <!-- Second group: 15 to 28 -->
-    <div class="group2">
-      <GuestBookCard
-        class="guestcard"
-        v-for="index in 14"
-        :key="index + 14"
-        :plass="index + 14"
-        :nasjonalitet="guests[index + 14]?.Nasjonalitet"
-        :innsjekk="
-          guests[index + 14]?.Innsjekk
-            ? formatDate(guests[index + 14].Innsjekk)
-            : ''
-        "
-        :utsjekk="
-          guests[index + 14]?.Utsjekk
-            ? formatDate(guests[index + 14].Utsjekk)
-            : ''
-        "
-        :pris="guests[index + 14]?.Pris"
-        @click="openModalWithGuest(index + 14)"
-      >
-        <template v-slot:bilnummer>
-          <span v-if="guests[index + 14]?.Bilnummer">{{
-            guests[index + 14]?.Bilnummer
-          }}</span>
-          <el-icon v-else class="plus-icon">
-            <CirclePlusFilled />
-          </el-icon>
-        </template>
-      </GuestBookCard>
-    </div>
-
-    <!-- Third group: 29 to 42 -->
-    <div class="group3">
-      <GuestBookCard
-        class="guestcard"
-        v-for="index in 14"
-        :key="index + 28"
-        :plass="index + 28"
-        :nasjonalitet="guests[index + 28]?.Nasjonalitet"
-        :innsjekk="
-          guests[index + 28]?.Innsjekk
-            ? formatDate(guests[index + 28].Innsjekk)
-            : ''
-        "
-        :utsjekk="
-          guests[index + 28]?.Utsjekk
-            ? formatDate(guests[index + 28].Utsjekk)
-            : ''
-        "
-        :pris="guests[index + 28]?.Pris"
-        @click="openModalWithGuest(index + 28)"
-      >
-        <template v-slot:bilnummer>
-          <span v-if="guests[index + 28]?.Bilnummer">{{
-            guests[index + 28]?.Bilnummer
-          }}</span>
-          <el-icon v-else class="plus-icon">
-            <CirclePlusFilled />
-          </el-icon>
-        </template>
-      </GuestBookCard>
+  <div class="guestbook-wrapper">
+    <DateNavigator v-model="selectedDate" />
+    <div class="bookCards">
+      <div v-for="(gruppe, i) in groupedPlassIds" :key="i" class="gruppe">
+        <GuestBookCard
+          class="guestcard"
+          v-for="plassId in gruppe"
+          :key="plassId"
+          :plass="plassId"
+          :nasjonalitet="guests[plassId]?.Nasjonalitet"
+          :innsjekk="
+            guests[plassId]?.Innsjekk
+              ? formatDate(guests[plassId].Innsjekk)
+              : ''
+          "
+          :utsjekk="
+            guests[plassId]?.Utsjekk ? formatDate(guests[plassId].Utsjekk) : ''
+          "
+          :pris="guests[plassId]?.Pris"
+          @click="openModalWithGuest(plassId)"
+        >
+          <template v-slot:bilnummer>
+            <span v-if="guests[plassId]?.Bilnummer">
+              {{ guests[plassId]?.Bilnummer }}
+            </span>
+            <el-icon v-else class="plus-icon">
+              <CirclePlusFilled />
+            </el-icon>
+          </template>
+        </GuestBookCard>
+      </div>
     </div>
   </div>
 </template>
@@ -104,41 +43,36 @@ import DateNavigator from "./DateNavigator.vue";
 
 export default {
   name: "GuestBook",
-  components: {
-    GuestBookCard,
-    CirclePlusFilled,
-    DateNavigator,
-  },
+  components: { GuestBookCard, CirclePlusFilled, DateNavigator },
   emits: ["showAddGuestModal", "showUpdateGuestModal"],
-  data() {
-    return {
-      guests: {},
-      selectedDate: new Date(), // default = i dag
-    };
-  },
-  mounted() {
-    this.loadGuests();
-  },
   watch: {
     selectedDate() {
       this.loadGuests();
     },
   },
+  data() {
+    return {
+      guests: {},
+      selectedDate: new Date(),
+      windowWidth: window.innerWidth,
+    };
+  },
+  mounted() {
+    this.loadGuests();
+    window.addEventListener("resize", this.updateWindowWidth);
+  },
+  beforeUnmount() {
+    window.removeEventListener("resize", this.updateWindowWidth);
+  },
   methods: {
+    updateWindowWidth() {
+      this.windowWidth = window.innerWidth;
+    },
     formatDate(timestamp) {
       if (!timestamp) return "";
-      if (timestamp instanceof Date) {
-        return timestamp.toLocaleDateString();
-      }
-
-      if (timestamp.toDate) {
-        return timestamp.toDate().toLocaleDateString();
-      }
+      if (timestamp instanceof Date) return timestamp.toLocaleDateString();
+      if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
       return String(timestamp);
-    },
-    onDateChanged(newDate) {
-      this.selectedDate = new Date(newDate);
-      this.loadGuests();
     },
     openModalWithGuest(index) {
       const guest = this.guests[index];
@@ -159,17 +93,23 @@ export default {
 
       for (const docSnap of snapshot.docs) {
         const stay = docSnap.data();
-
         const innsjekk = stay.innsjekk?.toDate?.() || null;
         const utsjekk = stay.utsjekk?.toDate?.() || null;
-        const selected = this.selectedDate;
+        const selected = new Date(this.selectedDate);
 
         if (!innsjekk || !utsjekk) continue;
 
-        // Sjekk om valgt dato faller innenfor oppholdet
-        if (selected < innsjekk || selected > utsjekk) continue;
+        const innsjekkCheck = new Date(innsjekk);
+        const utsjekkCheck = new Date(utsjekk);
+        const selectedCheck = new Date(selected);
 
-        // Hent gjest
+        innsjekkCheck.setHours(0, 0, 0, 0);
+        utsjekkCheck.setHours(0, 0, 0, 0);
+        selectedCheck.setHours(0, 0, 0, 0);
+
+        if (selectedCheck < innsjekkCheck || selectedCheck >= utsjekkCheck)
+          continue;
+
         const guestRef = doc(db, "Gjest", stay.gjestId);
         const guestSnap = await getDoc(guestRef);
         const guest = guestSnap.exists() ? guestSnap.data() : null;
@@ -190,11 +130,32 @@ export default {
             Voksne: stay.voksne,
             Barn: stay.barn,
             Elektrisitet: stay.elektrisitet,
-            Plass: Number(plassId),
+            Plass: plassId,
           };
         });
       }
       this.guests = guestsData;
+    },
+  },
+  computed: {
+    groupCount() {
+      if (this.windowWidth <= 960) return 1;
+      if (this.windowWidth <= 1300) return 2;
+      return 3;
+    },
+    groupedPlassIds() {
+      const totalPlasser = 42;
+      const grupper = [];
+      const perGruppe = Math.ceil(totalPlasser / this.groupCount);
+
+      for (let i = 0; i < this.groupCount; i++) {
+        const start = i * perGruppe + 1;
+        const end = Math.min(start + perGruppe - 1, totalPlasser);
+        grupper.push(
+          Array.from({ length: end - start + 1 }, (_, j) => start + j)
+        );
+      }
+      return grupper;
     },
   },
 };
