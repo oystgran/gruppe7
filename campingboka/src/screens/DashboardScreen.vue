@@ -165,4 +165,9 @@ export default {
   border-left: 1px solid #eee;
   height: 100%;
 }
+
+::v-deep .guest-tooltip {
+  transform: rotate(-30deg) !important;
+  transform-origin: center !important;
+}
 </style>

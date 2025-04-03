@@ -156,7 +156,7 @@ export default {
 
 .top-panel {
   position: relative;
-  z-index: 20;
+  z-index: 10;
 }
 
 .map-panel {
@@ -173,7 +173,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 20;
 }
 .modal-content {
   background: white;
@@ -202,5 +202,10 @@ export default {
 }
 .close:hover {
   color: red;
+}
+
+.map-screen .guest-tooltip {
+  transform: rotate(10deg) !important;
+  transform-origin: center !important;
 }
 </style>
