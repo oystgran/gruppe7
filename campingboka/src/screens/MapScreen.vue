@@ -1,11 +1,15 @@
 <template>
   <div class="map-screen">
-    <DateNavigator v-model="myDate" />
-    <MapComponent 
+    <div class="top-panel">
+      <DateNavigator v-model="myDate" />
+    </div>
+    <div class="map-panel"><MapComponent 
       :guests="filteredGuests"
       @rectangle-clicked="handleRectangleClicked"
       style="transform: rotate(-10deg); transform-origin: center;"
     />
+  
+    </div>
     <GuestModal
       :visible="showAddGuestModal || showUpdateGuestModal"
       :mode="showAddGuestModal ? 'add' : 'edit'"
@@ -145,6 +149,19 @@ export default {
 <style>
 .map-screen {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top-panel {
+  position: relative;
+  z-index: 20;
+}
+
+.map-panel {
+  position: relative;
+  z-index: 1;
 }
 .modal {
   position: fixed;
