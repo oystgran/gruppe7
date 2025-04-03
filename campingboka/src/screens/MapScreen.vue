@@ -1,11 +1,15 @@
 <template>
   <div class="map-screen">
-    <DateNavigator v-model="myDate" />
-    <MapComponent 
+    <div class="top-panel">
+      <DateNavigator v-model="myDate" />
+    </div>
+    <div class="map-panel"><MapComponent 
       :guests="filteredGuests"
       @rectangle-clicked="handleRectangleClicked"
       style="transform: rotate(-10deg); transform-origin: center;"
     />
+  
+    </div>
     <GuestModal
       :visible="showAddGuestModal || showUpdateGuestModal"
       :mode="showAddGuestModal ? 'add' : 'edit'"
@@ -70,6 +74,11 @@ export default {
   mounted() {
     this.loadGuests();
   },
+  watch: {
+  myDate() {
+    this.loadGuests();
+  }
+},
   methods: {
     async loadGuests() {
       const snapshot = await getDocs(collection(db, "Overnattinger"));
@@ -140,6 +149,19 @@ export default {
 <style>
 .map-screen {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.top-panel {
+  position: relative;
+  z-index: 10;
+}
+
+.map-panel {
+  position: relative;
+  z-index: 1;
 }
 .modal {
   position: fixed;
@@ -151,7 +173,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 20;
 }
 .modal-content {
   background: white;
@@ -180,5 +202,10 @@ export default {
 }
 .close:hover {
   color: red;
+}
+
+.map-screen .guest-tooltip {
+  transform: rotate(10deg) !important;
+  transform-origin: center !important;
 }
 </style>

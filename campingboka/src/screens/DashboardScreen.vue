@@ -69,6 +69,11 @@ export default {
   mounted() {
     this.loadGuests();
   },
+  watch: {
+  myDate() {
+    this.loadGuests();
+  }
+},
   methods: {
     async loadGuests() {
       const snapshot = await getDocs(collection(db, "Overnattinger"));
@@ -159,5 +164,10 @@ export default {
   justify-content: center;
   border-left: 1px solid #eee;
   height: 100%;
+}
+
+::v-deep .guest-tooltip {
+  transform: rotate(-30deg) !important;
+  transform-origin: center !important;
 }
 </style>
