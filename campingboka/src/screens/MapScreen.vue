@@ -1,81 +1,70 @@
 <template>
-    <div class="map-screen">
-        <DateNavigator v-model="myDate" />
-
-        <MapComponent 
-        :guests="filteredGuests"
-        @rectangle-clicked="handleRectangleClicked" 
-        style="transform: rotate(-10deg);
-        transform-origin: center;
-        "
-        />  
-
-        <component
-        v-if="showModal"
-        :is="modalComponent"
-        :visible="showModal"
-        :initialPlass="selectedPlass"
-        v-bind="modalProps"
-        @close="showModal = false"
-        @guestAdded="reloadGuests"
-        @guestUpdated="reloadGuests"
-        />
-
-        <el-button type="primary" @click="openModal">Vis plakat</el-button>
-
-        <div v-if="isModalOpen" class="modal">
-            <div class="modal-content">
-                <span class="close" @click="closeModal">&times;</span>
-                <img :src="posterMap" alt="Kart" class="modal-image" />
-            </div>
-        </div>
+  <div class="map-screen">
+    <DateNavigator v-model="myDate" />
+    <MapComponent 
+      :guests="filteredGuests"
+      @rectangle-clicked="handleRectangleClicked"
+      style="transform: rotate(-10deg); transform-origin: center;"
+    />
+    <GuestModal
+      :visible="showAddGuestModal || showUpdateGuestModal"
+      :mode="showAddGuestModal ? 'add' : 'edit'"
+      :initialPlass="selectedPlass"
+      :guest="updateGuestData"
+      @close="closeModal"
+      @guestSaved="reloadGuests"
+    />
+    <el-button type="primary" @click="openPosterModal">Vis plakat</el-button>
+    <div v-if="isPosterModalOpen" class="modal">
+      <div class="modal-content">
+        <span class="close" @click="closePosterModal">&times;</span>
+        <img :src="posterMap" alt="Kart" class="modal-image" />
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
 import posterMap from '@/assets/posterMap.png';
 import MapComponent from '@/components/MapComponent.vue';
-import AddGuestModal from '@/components/AddGuestModal.vue';
-import UpdateGuestModal from '@/components/UpdateGuestModal.vue';
 import DateNavigator from '@/components/DateNavigator.vue';
-import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import GuestModal from '@/components/GuestModal.vue';
+import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
 import { db } from '@/main.js';
 
 export default {
   name: 'MapScreen',
-  components: { 
-    MapComponent, 
-    DateNavigator, 
-    AddGuestModal, 
-    UpdateGuestModal 
-  },
+  components: { MapComponent, DateNavigator, GuestModal },
   data() {
     return {
       posterMap,
       isPosterModalOpen: false,
-      showModal: false,
+      showAddGuestModal: false,
+      showUpdateGuestModal: false,
       selectedPlass: null,
       myDate: new Date(),
-      guests: {}
+      guests: {},
+      updateGuestData: null,
     };
   },
   computed: {
     filteredGuests() {
-      return Object.values(this.guests).filter(guest => {
-        if (!guest.Innsjekk || !guest.Utsjekk) return false;
-        const checkIn = guest.Innsjekk.toDate();
-        const checkOut = guest.Utsjekk.toDate();
-        return this.myDate >= checkIn && this.myDate <= checkOut;
+      const result = {};
+      Object.keys(this.guests).forEach(plass => {
+        const guest = this.guests[plass];
+        const checkIn =
+          guest.Innsjekk && guest.Innsjekk.toDate
+            ? guest.Innsjekk.toDate()
+            : new Date(guest.Innsjekk);
+        const checkOut =
+          guest.Utsjekk && guest.Utsjekk.toDate
+            ? guest.Utsjekk.toDate()
+            : new Date(guest.Utsjekk);
+        if (this.myDate >= checkIn && this.myDate <= checkOut) {
+          result[plass] = guest;
+        }
       });
-    },
-    isOccupied() {
-      return !!this.guests[this.selectedPlass];
-    },
-    modalComponent() {
-      return this.isOccupied ? UpdateGuestModal : AddGuestModal;
-    },
-    modalProps() {
-      return this.isOccupied ? { guest: this.guests[this.selectedPlass] } : {};
+      return result;
     }
   },
   mounted() {
@@ -83,21 +72,57 @@ export default {
   },
   methods: {
     async loadGuests() {
-      const latestQuery = query(
-        collection(db, "Camping", "Gjester", "Gjester"),
-        orderBy("Plass")
-      );
-      const snapshot = await getDocs(latestQuery);
-      let guestsData = {};
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        guestsData[data.Plass] = data;
-      });
+      const snapshot = await getDocs(collection(db, "Overnattinger"));
+      const guestsData = {};
+      for (const docSnap of snapshot.docs) {
+        const stay = docSnap.data();
+        const innsjekk =
+          stay.innsjekk?.toDate ? stay.innsjekk.toDate() : new Date(stay.innsjekk);
+        const utsjekk =
+          stay.utsjekk?.toDate ? stay.utsjekk.toDate() : new Date(stay.utsjekk);
+        if (!innsjekk || !utsjekk) continue;
+        if (this.myDate < innsjekk || this.myDate > utsjekk) continue;
+        const guestRef = doc(db, "Gjest", stay.gjestId);
+        const guestSnap = await getDoc(guestRef);
+        if (!guestSnap.exists()) continue;
+        const guest = guestSnap.data();
+        stay.plassId.forEach(plassId => {
+          guestsData[plassId] = {
+            gjestId: guestSnap.id,
+            overnattingId: docSnap.id,
+            Bilnummer: guest.bilnummer,
+            Nasjonalitet: guest.nasjonalitet,
+            Navn: guest.navn,
+            Vip: guest.vip,
+            Innsjekk: innsjekk,
+            Utsjekk: utsjekk,
+            Pris: stay.pris,
+            Voksne: stay.voksne,
+            Barn: stay.barn,
+            Elektrisitet: stay.elektrisitet,
+            Plass: Number(plassId)
+          };
+        });
+      }
       this.guests = guestsData;
     },
-    handleRectangleClicked(number) {
-      this.selectedPlass = number;
-      this.showModal = true;
+    handleRectangleClicked(plass) {
+      this.selectedPlass = Number(plass);
+      if (this.guests[this.selectedPlass]) {
+        this.updateGuestData = this.guests[this.selectedPlass];
+        this.showUpdateGuestModal = true;
+        this.showAddGuestModal = false;
+      } else {
+        this.updateGuestData = null;
+        this.showAddGuestModal = true;
+        this.showUpdateGuestModal = false;
+      }
+    },
+    closeModal() {
+      this.showAddGuestModal = false;
+      this.showUpdateGuestModal = false;
+      this.selectedPlass = null;
+      this.updateGuestData = null;
     },
     reloadGuests() {
       this.loadGuests();
@@ -114,79 +139,46 @@ export default {
 
 <style>
 .map-screen {
-    text-align: center;
+  text-align: center;
 }
-
-.map-screen h1 {
-    font-size: 2.5em;
-    color: #4CAF50;
-}
-
-.map-screen p {
-    font-size: 1.2em;
-    color: #555;
-}
-
-
-button {
-    font-size: 15px;
-    cursor: pointer;
-}
-
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
 }
-
 .modal-content {
-    position: relative;
-    background: white;
-    padding: 10px;
-    border-radius: 8px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: auto;
-    text-align: center;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: auto;
+  text-align: center;
 }
-
 .modal-image {
-    width: 100%;
-    max-width: 700px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 700px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
 }
-
 .close {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 34px;
-    font-weight: bold;
-    cursor: pointer;
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 10px;
-    padding-right: 10px;
-    color: black;
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 34px;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 8px 10px;
+  color: black;
 }
-
 .close:hover {
-    color: red;
-}
-
-.guest-tooltip {
-    transform: rotate(10deg);
-    transform-origin: center;
-    position: absolute;
-    left: 400px;
-    top: 150px;
+  color: red;
 }
 </style>
