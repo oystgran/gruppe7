@@ -69,6 +69,11 @@ export default {
   mounted() {
     this.loadGuests();
   },
+  watch: {
+  myDate() {
+    this.loadGuests();
+  }
+},
   methods: {
     async loadGuests() {
       const snapshot = await getDocs(collection(db, "Overnattinger"));
