@@ -257,18 +257,18 @@ export default {
       handler(newGuest) {
         if (this.mode === "edit" && newGuest) {
           this.form = {
-            navn: newGuest.Navn,
-            bilnummer: newGuest.Bilnummer,
-            nasjonalitet: newGuest.Nasjonalitet,
-            pris: newGuest.Pris,
-            plass: newGuest.Plass || this.initialPlass,
-            innsjekk: newGuest.Innsjekk || new Date(),
-            utsjekk: newGuest.Utsjekk || new Date(),
-            voksne: newGuest.Voksne || 1,
-            barn: newGuest.Barn || 0,
-            elektrisitet: newGuest.Elektrisitet ?? false,
+            navn: newGuest.navn,
+            bilnummer: newGuest.bilnummer,
+            nasjonalitet: newGuest.nasjonalitet,
+            pris: newGuest.pris,
+            plass: newGuest.plass || this.initialPlass,
+            innsjekk: newGuest.innsjekk || new Date(),
+            utsjekk: newGuest.utsjekk || new Date(),
+            voksne: newGuest.voksne || 1,
+            barn: newGuest.barn || 0,
+            elektrisitet: newGuest.elektrisitet ?? false,
           };
-          this.originalPris = newGuest.Pris || 0;
+          this.originalPris = newGuest.pris || 0;
         }
       },
     },
