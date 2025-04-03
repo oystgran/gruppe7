@@ -77,6 +77,9 @@ export default {
 
 <style scoped>
 .book-screen {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .book-screen h1 {

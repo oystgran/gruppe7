@@ -162,12 +162,22 @@ export default {
 
         const innsjekk = stay.innsjekk?.toDate?.() || null;
         const utsjekk = stay.utsjekk?.toDate?.() || null;
-        const selected = this.selectedDate;
+        const selected = new Date(this.selectedDate);
 
         if (!innsjekk || !utsjekk) continue;
 
-        // Sjekk om valgt dato faller innenfor oppholdet
-        if (selected < innsjekk || selected > utsjekk) continue;
+        // Bruk separate kopier til sammenligning:
+        const innsjekkCheck = new Date(innsjekk);
+        const utsjekkCheck = new Date(utsjekk);
+        const selectedCheck = new Date(selected);
+
+        innsjekkCheck.setHours(0, 0, 0, 0);
+        utsjekkCheck.setHours(0, 0, 0, 0);
+        selectedCheck.setHours(0, 0, 0, 0);
+
+        // Sammenligning:
+        if (selectedCheck < innsjekkCheck || selectedCheck >= utsjekkCheck)
+          continue;
 
         // Hent gjest
         const guestRef = doc(db, "Gjest", stay.gjestId);
