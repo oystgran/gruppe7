@@ -187,10 +187,10 @@ export default {
             Innsjekk: innsjekk,
             Utsjekk: utsjekk,
             Pris: stay.pris,
-            Voksne: guest.voksne,
-            Barn: guest.barn,
-            Elektrisitet: guest.elektrisitet,
-            Plass: plassId,
+            Voksne: stay.voksne,
+            Barn: stay.barn,
+            Elektrisitet: stay.elektrisitet,
+            Plass: Number(plassId),
           };
         });
       }
