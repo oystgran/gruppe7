@@ -68,8 +68,19 @@
                 style="width: 100px; margin-left: 25px"
                 input-style="text-align: center"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 30px">
-                {{ isFjordplass ? "Fjordplass" : "Standardplass" }}
+              <span
+                style="
+                  opacity: 0.6;
+                  font-size: 12px;
+                  margin-left: 30px;
+                  white-space: nowrap;
+                "
+              >
+                {{
+                  isFjordplass
+                    ? `Fjordplass + ${120 + 340}kr`
+                    : `Standardplass + ${340}kr`
+                }}
               </span>
             </div>
           </el-form-item>
@@ -82,9 +93,16 @@
                 :max="10"
                 style="min-width: 100px"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
-                >+40 kr</span
+              <span
+                style="
+                  opacity: 0.6;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  margin-left: 12px;
+                "
               >
+                + {{ form.voksne * 40 }} kr
+              </span>
             </div>
           </el-form-item>
 
@@ -96,9 +114,16 @@
                 :max="10"
                 style="min-width: 100px"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 12px"
-                >+20 kr</span
+              <span
+                style="
+                  opacity: 0.6;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  margin-left: 12px;
+                "
               >
+                + {{ form.barn * 20 }} kr
+              </span>
             </div>
           </el-form-item>
 
@@ -109,9 +134,16 @@
                 active-text="Ja"
                 inactive-text="Nei"
               />
-              <span style="opacity: 0.6; font-size: 12px; margin-left: 40px"
-                >+50 kr</span
+              <span
+                style="
+                  opacity: 0.6;
+                  font-size: 12px;
+                  white-space: nowrap;
+                  margin-left: 12px;
+                "
               >
+                {{ form.elektrisitet ? `+ ${50}kr` : "+ 0kr" }}
+              </span>
             </div>
           </el-form-item>
 
@@ -280,6 +312,14 @@ export default {
     },
   },
   computed: {
+    antallNetter() {
+      const innsjekk = new Date(this.form.innsjekk);
+      const utsjekk = new Date(this.form.utsjekk);
+      innsjekk.setHours(0, 0, 0, 0);
+      utsjekk.setHours(0, 0, 0, 0);
+      const netter = Math.ceil((utsjekk - innsjekk) / (1000 * 60 * 60 * 24));
+      return netter > 0 ? netter : 0;
+    },
     isFjordplass() {
       return FJORDPLASS_NUMMER.has(this.form.plass);
     },
