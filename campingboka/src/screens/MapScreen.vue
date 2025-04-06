@@ -207,5 +207,7 @@ export default {
 .map-screen .guest-tooltip {
   transform: rotate(10deg) !important;
   transform-origin: center !important;
+  left: auto !important;
+  top: auto !important;
 }
 </style>
