@@ -14,8 +14,10 @@
 </template>
 
 <script setup>
+// eslint-disable-next-line no-undef
+const emit = defineEmits(["update:rowData"]);
 import { ref, onMounted } from "vue";
-import { db } from "@/firebase";
+import { db } from "../main";
 import {
   collection,
   query,
@@ -24,8 +26,6 @@ import {
   doc,
   getDoc,
 } from "firebase/firestore";
-
-const emit = defineEmits(["update:rowData"]);
 const dateRange = ref([]);
 
 const fetchData = async () => {
