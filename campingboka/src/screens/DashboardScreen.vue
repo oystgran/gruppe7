@@ -164,6 +164,7 @@ export default {
   justify-content: center;
   border-left: 1px solid #eee;
   height: 100%;
+  overflow: hidden;
 }
 
 ::v-deep .guest-tooltip {
