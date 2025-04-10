@@ -1,16 +1,25 @@
 <template>
   <div class="archive-screen">
     <h1>Arkiv</h1>
-    <ArchiveTable></ArchiveTable>
+    <ArchiveFilter @update:rowData="filteredData = $event" />
+    <ArchiveTable :rowData="filteredData" />
   </div>
 </template>
 
 <script>
+import ArchiveFilter from "@/components/ArchiveFilter.vue";
 import ArchiveTable from "@/components/ArchiveTable.vue";
+
 export default {
   name: "ArchiveScreen",
   components: {
+    ArchiveFilter,
     ArchiveTable,
+  },
+  data() {
+    return {
+      filteredData: [],
+    };
   },
 };
 </script>
