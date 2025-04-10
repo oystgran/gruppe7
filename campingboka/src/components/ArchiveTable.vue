@@ -37,49 +37,49 @@ ModuleRegistry.registerModules([
 ]);
 
 export default {
-  name: "App",
-  components: {
-    AgGridVue, 
+  name: "ArchiveTable",
+  props: {
+    rowData: {
+      type: Array,
+      default: () => [],
+    },
   },
+  components: {
+    AgGridVue,
+  },
+  emits: ["update:rowData"],
   setup() {
     
     // Column Definitions
     const colDefs = ref([
-    {
-      field: "Startdato",
-      valueGetter: (params) => new Date(params.data.Startdato), // Konverter til Date
-      valueFormatter: (params) =>
-        params.value ? params.value.toLocaleDateString("no-NO") : "",
-    },
-    {
-      field: "Sluttdato",
-      valueGetter: (params) => new Date(params.data.Sluttdato),
-      valueFormatter: (params) =>
-        params.value ? params.value.toLocaleDateString("no-NO") : "",
-    },  
-    { field: "Navn" },
-    { field: "Bilnummer" },
-    { field: "Nasjonalitet" },
-    { field: "Plass" },
-
-    { field: "Pris" },
-    { field: "Elektrisitet" },
-    { field: "Voksne"},
-    { field: "Barn"}
-      
-    ]);
+  {
+    headerName: "Startdato",
+    field: "Startdato",
+    valueGetter: params => new Date(params.data.Startdato),
+    valueFormatter: params => params.value ? params.value.toLocaleDateString("no-NO") : "",
+  },
+  {
+    headerName: "Sluttdato",
+    field: "Sluttdato",
+    valueGetter: params => new Date(params.data.Sluttdato),
+    valueFormatter: params => params.value ? params.value.toLocaleDateString("no-NO") : "",
+  },
+  { headerName: "Navn", field: "navn" },
+  { headerName: "Bilnummer", field: "bilnummer" },
+  { headerName: "Nasjonalitet", field: "nasjonalitet" },
+  { headerName: "Plass", field: "Plass" },         // You already set `Plass` in uppercase in the merge
+  { headerName: "Pris", field: "pris" },
+  { headerName: "Elektrisitet", field: "elektrisitet" },
+  { headerName: "Voksne", field: "voksne" },
+  { headerName: "Barn", field: "barn" },
+]);
 
     const width = ref("100%");
-    const height = ref("100%");
+    const height = ref("85%");
 
-    /*         const setWidthAndHeight = (w, h) => {
-        width.value = w;
-        height.value = h;
-        }; */
-    // Funksjoner for å endre størrelsen
     const fillLarge = () => {
       width.value = "100%";
-      height.value = "100%";
+      height.value = "85%";
     };
 
     const fillMedium = () => {
