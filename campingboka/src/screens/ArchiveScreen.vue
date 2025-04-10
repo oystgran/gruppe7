@@ -1,7 +1,23 @@
 <template>
   <div class="archive-screen">
-    <ArchiveFilter @update:rowData="filteredData = $event" />
-    <ArchiveTable :rowData="filteredData" />
+    <div class="archive-panel">
+      <div class="search">
+        <ArchiveFilter @update:rowData="filteredData = $event" />
+      </div>
+      <div class="table">
+        <ArchiveTable :rowData="filteredData" />
+      </div>
+    </div>
+    <div class="stat-panel">
+      <div class="panel-upper">
+        <h2>Statistikk 1</h2>
+        <!-- innhold -->
+      </div>
+      <div class="panel-lower">
+        <h2>Statistikk 2</h2>
+        <!-- innhold -->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -25,26 +41,49 @@ export default {
 
 <style scoped>
 .archive-screen {
-  text-align: center;
-  margin-top: 50px;
-  width: 800px; /* 80% av viewport width */
-  max-width: 1200px; /* Valgfritt: setter en maks bredde */
-  height: 100vh; /* Sikrer at den fyller høyden av skjermen */
+  display: flex;
+  gap: 20px;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  max-height: 100%;
+
+  padding-top: 10px;
+  overflow-y: auto;
+}
+
+
+.archive-panel {
+  flex: 1;
+  overflow: auto;
+}
+
+.stat-panel {
+  width: 250px;
+  flex-shrink: 0;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin-left: auto;
-  margin-right: auto;
+  overflow: hidden;
 }
 
-.archive-screen h1 {
-  font-size: 2.5em;
-  color: #4caf50;
+.panel-upper,
+.panel-lower {
+  flex: 1 1 50%;
+  overflow: auto;
+  padding: 10px;
+}
+.panel-upper {
+  border-bottom: 1px solid #ccc;
 }
 
-.archive-screen p {
-  font-size: 1.2em;
-  color: #555;
+.search {
+  margin-bottom: 15px;
+}
+
+.table {
+  width: 100%;
 }
 </style>
