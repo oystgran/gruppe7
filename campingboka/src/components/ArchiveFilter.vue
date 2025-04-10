@@ -18,14 +18,8 @@
 const emit = defineEmits(["update:rowData"]);
 import { ref, onMounted } from "vue";
 import { db } from "../main";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
+
 const dateRange = ref([]);
 
 const fetchData = async () => {
@@ -34,7 +28,9 @@ const fetchData = async () => {
   const [start, end] = dateRange.value;
   const startDate = new Date(start);
   const endDate = new Date(end);
+  console.log("Henter overnattinger fra:", startDate, "til", endDate);
 
+  // 1. Hent overnattinger i datointervall
   const q = query(
     collection(db, "Overnattinger"),
     where("innsjekk", ">=", startDate),
@@ -42,25 +38,52 @@ const fetchData = async () => {
   );
 
   const snapshot = await getDocs(q);
-  const overnattinger = [];
+  const rawOvernattinger = snapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+  console.log("Antall overnattinger hentet:", rawOvernattinger.length);
+  console.table(rawOvernattinger);
 
-  for (const docSnap of snapshot.docs) {
-    const data = docSnap.data();
-    const gjestRef = doc(db, "Gjest", data.gjestId);
-    const gjestSnap = await getDoc(gjestRef);
-    const gjest = gjestSnap.exists() ? gjestSnap.data() : {};
+  // 2. Hent unike gjestId-er
+  const gjestIdSet = new Set(rawOvernattinger.map((o) => o.gjestId));
+  const gjestIds = Array.from(gjestIdSet);
+  console.log("Unike gjestId-er:", gjestIds);
 
-    overnattinger.push({
+  // 3. Hent gjester i batcher (maks 10 per Firestore-query)
+  const gjestMap = new Map();
+  const batchSize = 10;
+
+  for (let i = 0; i < gjestIds.length; i += batchSize) {
+    const batchIds = gjestIds.slice(i, i + batchSize);
+    console.log(`Henter gjester batch ${i / batchSize + 1}:`, batchIds);
+
+    const gjestQuery = query(
+      collection(db, "Gjest"),
+      where("__name__", "in", batchIds)
+    );
+    const gjestSnapshot = await getDocs(gjestQuery);
+    for (const gjestDoc of gjestSnapshot.docs) {
+      gjestMap.set(gjestDoc.id, gjestDoc.data());
+    }
+  }
+  console.log("Gjestedata hentet:", gjestMap);
+
+  // 4. Kombiner data + gjest
+  const overnattinger = rawOvernattinger.map((data) => {
+    const gjest = gjestMap.get(data.gjestId) || {};
+    const combined = {
+      ...data, // alle feltene fra Overnattinger
+      ...gjest, // alle feltene fra Gjest
       Plass: data.plassId?.[0] ?? "Ukjent",
-      Bilnummer: gjest.bilnummer || "-",
-      Nasjonalitet: gjest.nasjonalitet || "-",
-      Pris: data.pris,
       Startdato: new Date(data.innsjekk.seconds * 1000),
       Sluttdato: new Date(data.utsjekk.seconds * 1000),
-      Betalt: true, // Du kan utvide denne senere
-    });
-  }
+    };
+    console.log("Kombinert objekt:", combined);
+    return combined;
+  });
 
+  console.table(overnattinger);
   emit("update:rowData", overnattinger);
 };
 
