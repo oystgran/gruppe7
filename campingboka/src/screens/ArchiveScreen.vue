@@ -1,6 +1,5 @@
 <template>
   <div class="archive-screen">
-    <h1>Arkiv</h1>
     <ArchiveFilter @update:rowData="filteredData = $event" />
     <ArchiveTable :rowData="filteredData" />
   </div>
