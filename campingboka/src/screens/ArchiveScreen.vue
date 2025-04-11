@@ -10,12 +10,20 @@
     </div>
     <div class="stat-panel">
       <div class="panel-upper">
-        <h2>Statistikk 1</h2>
-        <!-- innhold -->
+        <h3>Gjester per nasjonalitet</h3>
+        <ArchiveChart
+          :chartData="nasjonalitetsData"
+          :chartOptions="nasjonalitetsOptions"
+          chartType="pie"
+        />
       </div>
       <div class="panel-lower">
-        <h2>Statistikk 2</h2>
-        <!-- innhold -->
+        <h3>Statistikk 2</h3>
+        <ArchiveChart
+          :chartData="elektrisitetData"
+          :chartOptions="elektrisitetOptions"
+          chartType="doughnut"
+        />
       </div>
     </div>
   </div>
@@ -24,17 +32,90 @@
 <script>
 import ArchiveFilter from "@/components/ArchiveFilter.vue";
 import ArchiveTable from "@/components/ArchiveTable.vue";
+import ArchiveChart from "@/components/ArchiveChart.vue"; // 👈 Legg til denne
 
 export default {
-  name: "ArchiveScreen",
   components: {
     ArchiveFilter,
     ArchiveTable,
+    ArchiveChart,
   },
   data() {
     return {
       filteredData: [],
     };
+  },
+  computed: {
+    nasjonalitetsData() {
+      const counts = {};
+      this.filteredData.forEach((row) => {
+        const land = row.nasjonalitet || "Ukjent";
+        counts[land] = (counts[land] || 0) + 1;
+      });
+
+      return {
+        labels: Object.keys(counts),
+        datasets: [
+          {
+            label: "Antall gjester per nasjonalitet",
+            data: Object.values(counts),
+            backgroundColor: [
+              "#FF6384",
+              "#36A2EB",
+              "#FFCE56",
+              "#8E44AD",
+              "#2ECC71",
+              "#F39C12",
+              "#3498DB",
+              "#E74C3C",
+              "#1ABC9C",
+              "#95A5A6",
+            ],
+          },
+        ],
+      };
+    },
+
+    elektrisitetData() {
+      const counts = { Ja: 0, Nei: 0 };
+      this.filteredData.forEach((row) => {
+        const brukt = row.elektrisitet ? "Ja" : "Nei";
+        counts[brukt]++;
+      });
+
+      return {
+        labels: ["Brukt strøm", "Ikke brukt strøm"],
+        datasets: [
+          {
+            label: "Elektrisitetsbruk",
+            data: [counts["Ja"], counts["Nei"]],
+            backgroundColor: ["#4CAF50", "#F44336"],
+          },
+        ],
+      };
+    },
+
+    elektrisitetOptions() {
+      return {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      };
+    },
+
+    nasjonalitetsOptions() {
+      return {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: "bottom",
+          },
+        },
+      };
+    },
   },
 };
 </script>
@@ -51,7 +132,6 @@ export default {
   padding-top: 10px;
   overflow-y: auto;
 }
-
 
 .archive-panel {
   flex: 1;
