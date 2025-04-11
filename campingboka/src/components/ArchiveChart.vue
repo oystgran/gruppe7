@@ -4,36 +4,40 @@
   </div>
 </template>
 
-<script setup>
-import { onMounted, watch, ref } from "vue";
+<script>
 import { Chart, registerables } from "chart.js";
+import { ref, onMounted, watch } from "vue";
 
 Chart.register(...registerables);
 
-const props = defineProps({
-  chartData: Object,
-  chartOptions: Object,
-  chartType: {
-    type: String,
-    default: "pie", // fallback til "pie" hvis ikke spesifisert
+export default {
+  props: {
+    chartData: Object,
+    chartOptions: Object,
+    chartType: {
+      type: String,
+      default: "pie",
+    },
   },
-});
+  setup(props) {
+    const canvas = ref(null);
+    let chartInstance = null;
 
-const canvas = ref(null);
-let chartInstance = null;
+    const renderChart = () => {
+      if (chartInstance) chartInstance.destroy();
+      chartInstance = new Chart(canvas.value, {
+        type: props.chartType,
+        data: props.chartData,
+        options: props.chartOptions,
+      });
+    };
 
-const renderChart = () => {
-  if (chartInstance) chartInstance.destroy();
+    onMounted(renderChart);
+    watch(() => props.chartData, renderChart, { deep: true });
 
-  chartInstance = new Chart(canvas.value, {
-    type: props.chartType,
-    data: props.chartData,
-    options: props.chartOptions,
-  });
+    return { canvas };
+  },
 };
-
-onMounted(renderChart);
-watch(() => props.chartData, renderChart, { deep: true });
 </script>
 
 <style scoped>
