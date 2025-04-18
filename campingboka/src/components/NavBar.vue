@@ -1,23 +1,20 @@
 <template>
-    <el-menu
-      :default-active="$route.path"
-      class="nav-bar"
-      mode="horizontal"
-      background-color="#394856"
-      text-color="#fff"
-      active-text-color="white"
-      router
-      :ellipsis="false"
-      
+  <el-menu
+    :default-active="$route.path"
+    class="nav-bar"
+    mode="horizontal"
+    background-color="#394856"
+    text-color="#fff"
+    active-text-color="white"
+    router
+    :ellipsis="false"
+  >
+    <el-menu-item index="/">Dashboard</el-menu-item>
+    <el-menu-item index="/book">Book</el-menu-item>
+    <el-menu-item index="/map">Kart</el-menu-item>
+    <el-menu-item index="/archive">Arkiv</el-menu-item>
 
-    >
-      <el-menu-item index="/">Dashboard</el-menu-item>
-      <el-menu-item index="/book">Book</el-menu-item>
-      <el-menu-item index="/map">Kart</el-menu-item>
-      <el-menu-item index="/archive">Arkiv</el-menu-item>
-
-
-      <el-sub-menu index="/tools" :class="{ 'is-active': isVerktoyActive }">  
+    <el-sub-menu index="/tools" :class="{ 'is-active': isVerktoyActive }">
       <template #title>Verktøy</template>
       <el-menu-item index="/control">Kontroll</el-menu-item>
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
@@ -26,16 +23,14 @@
   </el-menu>
 </template>
 
-
-
 <script>
 export default {
   name: "NavBar",
   computed: {
     isVerktoyActive() {
       return ["/control", "/boatRental", "/weather"].includes(this.$route.path);
-    }
-  }
+    },
+  },
 };
 </script>
 
