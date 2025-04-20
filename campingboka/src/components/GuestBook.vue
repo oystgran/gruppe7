@@ -1,6 +1,5 @@
 <template>
   <div class="guestbook-wrapper">
-    <DateNavigator v-model="selectedDate" />
     <div class="bookCards">
       <div v-for="(gruppe, i) in groupedPlassIds" :key="i" class="gruppe">
         <GuestBookCard
@@ -8,21 +7,23 @@
           v-for="plassId in gruppe"
           :key="plassId"
           :plass="plassId"
-          :nasjonalitet="guests[plassId]?.Nasjonalitet"
+          :nasjonalitet="store.guests[plassId]?.nasjonalitet"
           :innsjekk="
-            guests[plassId]?.Innsjekk
-              ? formatDate(guests[plassId].Innsjekk)
+            store.guests[plassId]?.innsjekk
+              ? formatDate(store.guests[plassId].innsjekk)
               : ''
           "
           :utsjekk="
-            guests[plassId]?.Utsjekk ? formatDate(guests[plassId].Utsjekk) : ''
+            store.guests[plassId]?.utsjekk
+              ? formatDate(store.guests[plassId].utsjekk)
+              : ''
           "
-          :pris="guests[plassId]?.Pris"
+          :pris="store.guests[plassId]?.pris"
           @click="openModalWithGuest(plassId)"
         >
           <template v-slot:bilnummer>
-            <span v-if="guests[plassId]?.Bilnummer">
-              {{ guests[plassId]?.Bilnummer }}
+            <span v-if="store.guests[plassId]?.bilnummer">
+              {{ store.guests[plassId]?.bilnummer }}
             </span>
             <el-icon v-else class="plus-icon">
               <CirclePlusFilled />
@@ -39,12 +40,17 @@ import { db } from "@/main";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
-import DateNavigator from "./DateNavigator.vue";
+import { useStaysStore } from "@/stores/stays";
 
 export default {
   name: "GuestBook",
-  components: { GuestBookCard, CirclePlusFilled, DateNavigator },
+  components: { GuestBookCard, CirclePlusFilled },
   emits: ["showAddGuestModal", "showUpdateGuestModal"],
+  setup() {
+    const store = useStaysStore();
+    console.log(store.count);
+    return { store };
+  },
   watch: {
     selectedDate() {
       this.loadGuests();
@@ -52,7 +58,6 @@ export default {
   },
   data() {
     return {
-      guests: {},
       selectedDate: new Date(),
       windowWidth: window.innerWidth,
     };

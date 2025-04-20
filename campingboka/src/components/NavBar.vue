@@ -20,18 +20,28 @@
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
       <el-menu-item index="/weather">Været</el-menu-item>
     </el-sub-menu>
+    <DateNavigator v-model="selectedDate" />
   </el-menu>
 </template>
 
-<script>
-export default {
-  name: "NavBar",
-  computed: {
-    isVerktoyActive() {
-      return ["/control", "/boatRental", "/weather"].includes(this.$route.path);
-    },
-  },
-};
+<script setup>
+import { computed, ref, watch } from "vue";
+import DateNavigator from "./DateNavigator.vue";
+import { useStaysStore } from "@/stores/stays";
+import { useRoute } from "vue-router";
+import { debounce } from "lodash";
+const store = useStaysStore();
+const isVerktoyActive = computed(() => {
+  return ["/control", "/boatRental", "/weather"].includes(useRoute.path);
+});
+const selectedDate = ref(new Date());
+console.log(store);
+watch(
+  selectedDate,
+  debounce(() => {
+    store.loadGuests(selectedDate);
+  }, 300)
+);
 </script>
 
 <style scoped>
