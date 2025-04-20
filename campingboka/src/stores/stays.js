@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { db } from "@/main";
 import { ref, computed } from "vue";
 import { keyBy } from "lodash";
+import dayjs from "dayjs";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 export const useStaysStore = defineStore("counter", () => {
   const count = ref(0);
@@ -16,8 +17,8 @@ export const useStaysStore = defineStore("counter", () => {
     /* console.log(selectedDate); */
     const staySpanningRange = query(
       collection(db, "Overnattinger"),
-      where("innsjekk", "<=", selectedDate.value),
-      where("utsjekk", ">=", selectedDate.value),
+      where("innsjekk", "<", dayjs(selectedDate.value).endOf("day").toDate()),
+      where("utsjekk", ">=", dayjs(selectedDate.value).endOf("day").toDate()),
       orderBy("innsjekk")
     );
     const staySpanningRangeSnapshot = await getDocs(staySpanningRange);
@@ -65,5 +66,59 @@ export const useStaysStore = defineStore("counter", () => {
       guestIdList.push(guest.gjestId);
     }); */
   }
-  return { count, doubleCount, increment, loadGuests, bookingsToday };
+  async function addGuest(guestData, overnattingData) {
+    const guestRef = await db.collection("Gjest").add(guestData);
+    const gjestId = guestRef.id;
+
+    await db.collection("Overnattinger").add({
+      ...overnattingData,
+      gjestId,
+    });
+  }
+  async function updateGuest(
+    gjestId,
+    guestData,
+    overnattingId,
+    overnattingData
+  ) {
+    await db.collection("Gjest").doc(gjestId).update(guestData);
+    await db
+      .collection("Overnattinger")
+      .doc(overnattingId)
+      .update({
+        ...overnattingData,
+        gjestId,
+      });
+  }
+  async function deleteGuest(gjestId, overnattingId) {
+    // Slett overnattingen først
+    await db.collection("Overnattinger").doc(overnattingId).delete();
+
+    // Sjekk om det finnes flere overnattinger for denne gjesten
+    const q = query(
+      collection(db, "Overnattinger"),
+      where("gjestId", "==", gjestId)
+    );
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      // Ingen andre overnattinger => trygt å slette gjesten
+      await db.collection("Gjest").doc(gjestId).delete();
+      console.log(`Gjest ${gjestId} ble slettet, ingen flere overnattinger.`);
+    } else {
+      console.log(
+        `Gjest ${gjestId} ble IKKE slettet fordi det finnes flere overnattinger.`
+      );
+    }
+  }
+  return {
+    count,
+    doubleCount,
+    increment,
+    loadGuests,
+    addGuest,
+    updateGuest,
+    deleteGuest,
+    bookingsToday,
+  };
 });

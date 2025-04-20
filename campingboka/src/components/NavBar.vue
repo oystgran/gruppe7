@@ -39,9 +39,12 @@ console.log(store);
 watch(
   selectedDate,
   debounce(() => {
+    console.log("selectedDate: ");
+    console.log(selectedDate);
     store.loadGuests(selectedDate);
   }, 300)
 );
+store.loadGuests(selectedDate);
 </script>
 
 <style scoped>

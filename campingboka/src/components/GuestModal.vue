@@ -229,10 +229,9 @@
 </template>
 
 <script>
-import { db } from "@/main";
-import { Timestamp } from "firebase/firestore";
 import { countries } from "@/tools/countries";
 import { InfoFilled, Delete, Check } from "@element-plus/icons-vue";
+import { useStaysStore } from "@/stores/stays";
 
 const GRUNNPRIS = 340;
 const FJORDTILLEGG = 120;
@@ -256,6 +255,7 @@ export default {
     Check,
   },
   props: {
+    selectedDate: Date,
     visible: Boolean,
     initialPlass: Number,
     guest: Object,
@@ -263,13 +263,14 @@ export default {
   },
   data() {
     return {
+      store: useStaysStore(),
       form: {
         navn: "",
         bilnummer: "",
         nasjonalitet: "",
         pris: 0,
         plass: this.initialPlass,
-        voksne: 1,
+        voksne: 0,
         barn: 0,
         elektrisitet: false,
         innsjekk: new Date(),
@@ -284,6 +285,11 @@ export default {
         this.resetForm();
       }
     },
+    initialPlass(newVal) {
+      if (this.mode === "add") {
+        this.form.plass = newVal;
+      }
+    },
     guest: {
       immediate: true,
       handler(newGuest) {
@@ -294,8 +300,12 @@ export default {
             nasjonalitet: newGuest.Nasjonalitet,
             pris: newGuest.Pris,
             plass: newGuest.Plass || this.initialPlass,
-            innsjekk: newGuest.Innsjekk || new Date(),
-            utsjekk: newGuest.Utsjekk || new Date(),
+            innsjekk: newGuest.Innsjekk?.toDate
+              ? newGuest.Innsjekk.toDate()
+              : new Date(newGuest.Innsjekk || Date.now()),
+            utsjekk: newGuest.Utsjekk?.toDate
+              ? newGuest.Utsjekk.toDate()
+              : new Date(newGuest.Utsjekk || Date.now()),
             voksne: newGuest.Voksne || 1,
             barn: newGuest.Barn || 0,
             elektrisitet: newGuest.Elektrisitet ?? false,
@@ -395,21 +405,16 @@ export default {
     },
     async handleDelete() {
       try {
-        // Slett overnatting
-        await db
-          .collection("Overnattinger")
-          .doc(this.guest.overnattingId)
-          .delete();
-
-        // Slett gjest også (valgfritt – kun hvis du vet den ikke har flere overnattinger)
-        await db.collection("Gjest").doc(this.guest.gjestId).delete();
-
-        this.$message.success("Gjest og overnatting slettet!");
+        await this.store.deleteGuest(
+          this.guest.gjestId,
+          this.guest.overnattingId
+        );
+        this.$message.success("Gjest slettet");
         this.$emit("guestSaved");
         this.closeModal();
       } catch (err) {
         console.error(err);
-        this.$message.error("Noe gikk galt ved sletting.");
+        this.$message.error("Sletting feilet");
       }
     },
     resetForm() {
@@ -419,7 +424,7 @@ export default {
         nasjonalitet: "",
         pris: 0,
         plass: this.initialPlass,
-        voksne: 1,
+        voksne: 0,
         barn: 0,
         elektrisitet: false,
         innsjekk: new Date(),
@@ -470,41 +475,32 @@ export default {
       const utsjekkDato = new Date(this.form.utsjekk);
       utsjekkDato.setHours(12, 0, 0, 0);
 
-      const gjestPayload = {
+      const guestPayload = {
         navn: this.form.navn,
         bilnummer: this.form.bilnummer,
         nasjonalitet: this.form.nasjonalitet,
       };
 
+      const stayPayload = {
+        plassId: [this.form.plass],
+        innsjekk: this.form.innsjekk,
+        utsjekk: utsjekkDato,
+        pris: this.form.pris,
+        voksne: this.form.voksne,
+        barn: this.form.barn,
+        elektrisitet: this.form.elektrisitet,
+      };
+
       try {
-        let gjestId;
-
         if (this.mode === "edit") {
-          gjestId = this.guest.gjestId;
-          await db.collection("Gjest").doc(gjestId).update(gjestPayload);
+          await this.store.updateGuest(
+            this.guest.gjestId,
+            guestPayload,
+            this.guest.overnattingId,
+            stayPayload
+          );
         } else {
-          const gjestRef = await db.collection("Gjest").add(gjestPayload);
-          gjestId = gjestRef.id;
-        }
-
-        const overnattingPayload = {
-          plassId: [this.form.plass],
-          innsjekk: Timestamp.fromDate(this.form.innsjekk),
-          utsjekk: Timestamp.fromDate(utsjekkDato),
-          pris: this.form.pris,
-          voksne: this.form.voksne,
-          barn: this.form.barn,
-          elektrisitet: this.form.elektrisitet,
-          gjestId: gjestId, // ✅ her bruker vi variabelen
-        };
-
-        if (this.mode === "edit") {
-          await db
-            .collection("Overnattinger")
-            .doc(this.guest.overnattingId)
-            .update(overnattingPayload);
-        } else {
-          await db.collection("Overnattinger").add(overnattingPayload);
+          await this.store.addGuest(guestPayload, stayPayload);
         }
 
         this.$message.success(
@@ -514,7 +510,7 @@ export default {
         this.closeModal();
       } catch (err) {
         console.error(err);
-        this.$message.error("Noe gikk galt ved lagring.");
+        this.$message.error("Noe gikk galt.");
       }
     },
   },
