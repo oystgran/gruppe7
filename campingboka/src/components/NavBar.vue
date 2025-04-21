@@ -20,7 +20,9 @@
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
       <el-menu-item index="/weather">Været</el-menu-item>
     </el-sub-menu>
-    <DateNavigator v-model="selectedDate" />
+    <div class="date-navigator-wrapper">
+      <DateNavigator v-model="selectedDate" />
+    </div>
   </el-menu>
 </template>
 
@@ -99,5 +101,11 @@ store.loadGuests(selectedDate);
 
 .el-menu--horizontal .el-menu--popup .el-menu-item:hover {
   background-color: #2e3a46;
+}
+.date-navigator-wrapper {
+  margin-left: auto;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
 }
 </style>
