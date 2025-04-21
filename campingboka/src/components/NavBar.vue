@@ -33,10 +33,10 @@ import { useStaysStore } from "@/stores/stays";
 import { useRoute } from "vue-router";
 import { debounce } from "lodash";
 const store = useStaysStore();
+const selectedDate = store.selectedDate;
 const isVerktoyActive = computed(() => {
   return ["/control", "/boatRental", "/weather"].includes(useRoute.path);
 });
-const selectedDate = ref(new Date());
 console.log(store);
 watch(
   selectedDate,
