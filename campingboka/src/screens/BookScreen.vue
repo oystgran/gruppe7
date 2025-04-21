@@ -36,6 +36,7 @@
 // Import the renamed 'GuestBook' component
 import GuestBook from "@/components/GuestBook.vue";
 import GuestModal from "@/components/GuestModal.vue";
+import { useStaysStore } from "@/stores/stays";
 /* import AddGuestModal from "@/components/AddGuestModal.vue";
 import UpdateGuestModal from "@/components/UpdateGuestModal.vue"; */
 
@@ -44,16 +45,15 @@ export default {
   components: { GuestBook, GuestModal },
   data() {
     return {
-      showAddGuestModal: false, // Controls modal visibility
+      showAddGuestModal: false,
       showUpdateGuestModal: false,
-      selectedPlass: null, // Store the selected guest's place (can be null or a default value)
+      selectedPlass: null,
       updateGuestData: null,
     };
   },
   methods: {
-    // Handle showing the modal
     handleShowAddModal(guestData) {
-      this.updateGuestData = null; // 👈 Nullstill for sikkerhet
+      this.updateGuestData = null;
       this.selectedPlass = guestData.Plass;
       this.showAddGuestModal = true;
     },
@@ -66,10 +66,11 @@ export default {
       this.showAddGuestModal = false;
       this.showUpdateGuestModal = false;
       this.selectedPlass = null;
-      this.updateGuestData = null; // 👈 Legg til dette
+      this.updateGuestData = null;
     },
     refreshGuestList() {
-      this.$refs.guestBook.loadGuests();
+      const store = useStaysStore();
+      store.loadGuests(store.selectedDate);
     },
   },
 };
