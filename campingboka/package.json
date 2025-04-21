@@ -13,9 +13,11 @@
     "ag-grid-vue3": "^33.1.1",
     "chart.js": "^4.4.8",
     "core-js": "^3.8.3",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.9.5",
     "firebase": "^11.4.0",
     "lodash": "^4.17.21",
+    "pinia": "^3.0.2",
     "vue": "^3.2.13",
     "vue-router": "^4.5.0"
   },

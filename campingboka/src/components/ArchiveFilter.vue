@@ -20,6 +20,7 @@ import { ref, onMounted } from "vue";
 import { db } from "../main";
 import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { uniqBy } from "lodash";
+import dayjs from "dayjs";
 
 const dateRange = ref([]);
 
@@ -27,8 +28,8 @@ const fetchData = async () => {
   if (!dateRange.value || dateRange.value.length < 2) return;
 
   const [start, end] = dateRange.value;
-  const startDate = new Date(start);
-  const endDate = new Date(end);
+  const startDate = dayjs(start).startOf("d").toDate();
+  const endDate = dayjs(end).endOf("d").toDate();
 
   // 1. Hent overnattinger i datointervall
   const startInsideRange = query(

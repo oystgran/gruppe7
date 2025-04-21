@@ -1,14 +1,11 @@
 <template>
   <div class="map-screen">
-    <div class="top-panel">
-      <DateNavigator v-model="myDate" />
-    </div>
-    <div class="map-panel"><MapComponent 
-      :guests="filteredGuests"
-      @rectangle-clicked="handleRectangleClicked"
-      style="transform: rotate(-10deg); transform-origin: center;"
-    />
-  
+    <div class="map-panel">
+      <MapComponent
+        :guests="store.bookingsToday"
+        @rectangle-clicked="handleRectangleClicked"
+        style="transform: rotate(-10deg); transform-origin: center"
+      />
     </div>
     <GuestModal
       :visible="showAddGuestModal || showUpdateGuestModal"
@@ -29,16 +26,18 @@
 </template>
 
 <script>
-import posterMap from '@/assets/posterMap.png';
-import MapComponent from '@/components/MapComponent.vue';
-import DateNavigator from '@/components/DateNavigator.vue';
-import GuestModal from '@/components/GuestModal.vue';
-import { collection, doc, getDoc, getDocs } from 'firebase/firestore';
-import { db } from '@/main.js';
-
+import posterMap from "@/assets/posterMap.png";
+import MapComponent from "@/components/MapComponent.vue";
+import GuestModal from "@/components/GuestModal.vue";
+import { useStaysStore } from "@/stores/stays";
 export default {
-  name: 'MapScreen',
-  components: { MapComponent, DateNavigator, GuestModal },
+  name: "MapScreen",
+  components: { MapComponent, GuestModal },
+  setup() {
+    const store = useStaysStore();
+    console.log(store.count);
+    return { store };
+  },
   data() {
     return {
       posterMap,
@@ -54,8 +53,9 @@ export default {
   computed: {
     filteredGuests() {
       const result = {};
-      Object.keys(this.guests).forEach(plass => {
-        const guest = this.guests[plass];
+      const guests = this.store.bookingsToday;
+      Object.keys(guests).forEach((plass) => {
+        const guest = guests[plass];
         const checkIn =
           guest.Innsjekk && guest.Innsjekk.toDate
             ? guest.Innsjekk.toDate()
@@ -64,61 +64,34 @@ export default {
           guest.Utsjekk && guest.Utsjekk.toDate
             ? guest.Utsjekk.toDate()
             : new Date(guest.Utsjekk);
+
         if (this.myDate >= checkIn && this.myDate <= checkOut) {
           result[plass] = guest;
         }
       });
       return result;
-    }
-  },
-  mounted() {
-    this.loadGuests();
-  },
-  watch: {
-  myDate() {
-    this.loadGuests();
-  }
-},
-  methods: {
-    async loadGuests() {
-      const snapshot = await getDocs(collection(db, "Overnattinger"));
-      const guestsData = {};
-      for (const docSnap of snapshot.docs) {
-        const stay = docSnap.data();
-        const innsjekk =
-          stay.innsjekk?.toDate ? stay.innsjekk.toDate() : new Date(stay.innsjekk);
-        const utsjekk =
-          stay.utsjekk?.toDate ? stay.utsjekk.toDate() : new Date(stay.utsjekk);
-        if (!innsjekk || !utsjekk) continue;
-        if (this.myDate < innsjekk || this.myDate > utsjekk) continue;
-        const guestRef = doc(db, "Gjest", stay.gjestId);
-        const guestSnap = await getDoc(guestRef);
-        if (!guestSnap.exists()) continue;
-        const guest = guestSnap.data();
-        stay.plassId.forEach(plassId => {
-          guestsData[plassId] = {
-            gjestId: guestSnap.id,
-            overnattingId: docSnap.id,
-            Bilnummer: guest.bilnummer,
-            Nasjonalitet: guest.nasjonalitet,
-            Navn: guest.navn,
-            Vip: guest.vip,
-            Innsjekk: innsjekk,
-            Utsjekk: utsjekk,
-            Pris: stay.pris,
-            Voksne: stay.voksne,
-            Barn: stay.barn,
-            Elektrisitet: stay.elektrisitet,
-            Plass: Number(plassId)
-          };
-        });
-      }
-      this.guests = guestsData;
     },
+  },
+  methods: {
     handleRectangleClicked(plass) {
       this.selectedPlass = Number(plass);
-      if (this.guests[this.selectedPlass]) {
-        this.updateGuestData = this.guests[this.selectedPlass];
+      const guest = this.store.bookingsToday[this.selectedPlass];
+
+      if (guest) {
+        this.updateGuestData = {
+          Navn: guest.navn,
+          Bilnummer: guest.bilnummer,
+          Nasjonalitet: guest.nasjonalitet,
+          Pris: guest.pris,
+          Plass: this.selectedPlass,
+          Innsjekk: guest.innsjekk,
+          Utsjekk: guest.utsjekk,
+          Voksne: guest.voksne,
+          Barn: guest.barn,
+          Elektrisitet: guest.elektrisitet,
+          overnattingId: guest.id,
+          gjestId: guest.gjestId,
+        };
         this.showUpdateGuestModal = true;
         this.showAddGuestModal = false;
       } else {
@@ -134,15 +107,20 @@ export default {
       this.updateGuestData = null;
     },
     reloadGuests() {
-      this.loadGuests();
+      this.store.loadGuests();
     },
     openPosterModal() {
       this.isPosterModalOpen = true;
     },
     closePosterModal() {
       this.isPosterModalOpen = false;
-    }
-  }
+    },
+  },
+  watch: {
+    myDate() {
+      this.store.loadGuests();
+    },
+  },
 };
 </script>
 

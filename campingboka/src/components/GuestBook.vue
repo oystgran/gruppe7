@@ -1,6 +1,5 @@
 <template>
   <div class="guestbook-wrapper">
-    <DateNavigator v-model="selectedDate" />
     <div class="bookCards">
       <div v-for="(gruppe, i) in groupedPlassIds" :key="i" class="gruppe">
         <GuestBookCard
@@ -8,21 +7,23 @@
           v-for="plassId in gruppe"
           :key="plassId"
           :plass="plassId"
-          :nasjonalitet="guests[plassId]?.Nasjonalitet"
+          :nasjonalitet="store.bookingsToday[plassId]?.nasjonalitet"
           :innsjekk="
-            guests[plassId]?.Innsjekk
-              ? formatDate(guests[plassId].Innsjekk)
+            store.bookingsToday[plassId]?.innsjekk
+              ? formatDate(store.bookingsToday[plassId].innsjekk)
               : ''
           "
           :utsjekk="
-            guests[plassId]?.Utsjekk ? formatDate(guests[plassId].Utsjekk) : ''
+            store.bookingsToday[plassId]?.utsjekk
+              ? formatDate(store.bookingsToday[plassId].utsjekk)
+              : ''
           "
-          :pris="guests[plassId]?.Pris"
+          :pris="store.bookingsToday[plassId]?.pris"
           @click="openModalWithGuest(plassId)"
         >
           <template v-slot:bilnummer>
-            <span v-if="guests[plassId]?.Bilnummer">
-              {{ guests[plassId]?.Bilnummer }}
+            <span v-if="store.bookingsToday[plassId]?.bilnummer">
+              {{ store.bookingsToday[plassId]?.bilnummer }}
             </span>
             <el-icon v-else class="plus-icon">
               <CirclePlusFilled />
@@ -35,30 +36,31 @@
 </template>
 
 <script>
-import { db } from "@/main";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
 import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
-import DateNavigator from "./DateNavigator.vue";
+import { useStaysStore } from "@/stores/stays";
 
 export default {
   name: "GuestBook",
-  components: { GuestBookCard, CirclePlusFilled, DateNavigator },
+  components: { GuestBookCard, CirclePlusFilled },
   emits: ["showAddGuestModal", "showUpdateGuestModal"],
+  setup() {
+    const store = useStaysStore();
+    console.log(store.count);
+    return { store };
+  },
   watch: {
     selectedDate() {
-      this.loadGuests();
+      this.store.loadGuests(this.selectedDate);
     },
   },
   data() {
     return {
-      guests: {},
       selectedDate: new Date(),
       windowWidth: window.innerWidth,
     };
   },
   mounted() {
-    this.loadGuests();
     window.addEventListener("resize", this.updateWindowWidth);
   },
   beforeUnmount() {
@@ -68,73 +70,32 @@ export default {
     updateWindowWidth() {
       this.windowWidth = window.innerWidth;
     },
-    formatDate(timestamp) {
-      if (!timestamp) return "";
-      if (timestamp instanceof Date) return timestamp.toLocaleDateString();
-      if (timestamp.toDate) return timestamp.toDate().toLocaleDateString();
-      return String(timestamp);
+    formatDate(value) {
+      const date =
+        value instanceof Date ? value : value?.toDate?.() ?? new Date(value);
+
+      return isNaN(date) ? "" : date.toLocaleDateString("no-NO");
     },
     openModalWithGuest(index) {
-      const guest = this.guests[index];
+      const guest = this.store.bookingsToday[index];
       if (!guest) {
         this.$emit("showAddGuestModal", { Plass: index });
       } else {
         this.$emit("showUpdateGuestModal", {
-          ...guest,
-          overnattingId: guest.overnattingId,
-          gjestId: guest.gjestId,
+          Navn: guest.navn,
+          Bilnummer: guest.bilnummer,
+          Nasjonalitet: guest.nasjonalitet,
+          Pris: guest.pris,
           Plass: index,
+          Innsjekk: guest.innsjekk,
+          Utsjekk: guest.utsjekk,
+          Voksne: guest.voksne,
+          Barn: guest.barn,
+          Elektrisitet: guest.elektrisitet,
+          overnattingId: guest.id, // ← fra firestore ID
+          gjestId: guest.gjestId,
         });
       }
-    },
-    async loadGuests() {
-      const snapshot = await getDocs(collection(db, "Overnattinger"));
-      const guestsData = {};
-
-      for (const docSnap of snapshot.docs) {
-        const stay = docSnap.data();
-        const innsjekk = stay.innsjekk?.toDate?.() || null;
-        const utsjekk = stay.utsjekk?.toDate?.() || null;
-        const selected = new Date(this.selectedDate);
-
-        if (!innsjekk || !utsjekk) continue;
-
-        const innsjekkCheck = new Date(innsjekk);
-        const utsjekkCheck = new Date(utsjekk);
-        const selectedCheck = new Date(selected);
-
-        innsjekkCheck.setHours(0, 0, 0, 0);
-        utsjekkCheck.setHours(0, 0, 0, 0);
-        selectedCheck.setHours(0, 0, 0, 0);
-
-        if (selectedCheck < innsjekkCheck || selectedCheck >= utsjekkCheck)
-          continue;
-
-        const guestRef = doc(db, "Gjest", stay.gjestId);
-        const guestSnap = await getDoc(guestRef);
-        const guest = guestSnap.exists() ? guestSnap.data() : null;
-
-        if (!guest) continue;
-
-        stay.plassId.forEach((plassId) => {
-          guestsData[plassId] = {
-            gjestId: guestSnap.id,
-            overnattingId: docSnap.id,
-            Bilnummer: guest.bilnummer,
-            Nasjonalitet: guest.nasjonalitet,
-            Navn: guest.navn,
-            Vip: guest.vip,
-            Innsjekk: innsjekk,
-            Utsjekk: utsjekk,
-            Pris: stay.pris,
-            Voksne: stay.voksne,
-            Barn: stay.barn,
-            Elektrisitet: stay.elektrisitet,
-            Plass: plassId,
-          };
-        });
-      }
-      this.guests = guestsData;
     },
   },
   computed: {

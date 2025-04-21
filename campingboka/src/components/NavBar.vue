@@ -20,18 +20,33 @@
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
       <el-menu-item index="/weather">Været</el-menu-item>
     </el-sub-menu>
+    <div class="date-navigator-wrapper">
+      <DateNavigator v-model="selectedDate" />
+    </div>
   </el-menu>
 </template>
 
-<script>
-export default {
-  name: "NavBar",
-  computed: {
-    isVerktoyActive() {
-      return ["/control", "/boatRental", "/weather"].includes(this.$route.path);
-    },
-  },
-};
+<script setup>
+import { computed, ref, watch } from "vue";
+import DateNavigator from "./DateNavigator.vue";
+import { useStaysStore } from "@/stores/stays";
+import { useRoute } from "vue-router";
+import { debounce } from "lodash";
+const store = useStaysStore();
+const isVerktoyActive = computed(() => {
+  return ["/control", "/boatRental", "/weather"].includes(useRoute.path);
+});
+const selectedDate = ref(new Date());
+console.log(store);
+watch(
+  selectedDate,
+  debounce(() => {
+    console.log("selectedDate: ");
+    console.log(selectedDate);
+    store.loadGuests(selectedDate);
+  }, 300)
+);
+store.loadGuests(selectedDate);
 </script>
 
 <style scoped>
@@ -86,5 +101,11 @@ export default {
 
 .el-menu--horizontal .el-menu--popup .el-menu-item:hover {
   background-color: #2e3a46;
+}
+.date-navigator-wrapper {
+  margin-left: auto;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
 }
 </style>
