@@ -14,7 +14,7 @@ export const useStaysStore = defineStore("counter", () => {
 
   async function loadGuests(selectedDate) {
     let guestIdList = [];
-    /* console.log(selectedDate); */
+
     const staySpanningRange = query(
       collection(db, "Overnattinger"),
       where("innsjekk", "<", dayjs(selectedDate.value).endOf("day").toDate()),
@@ -31,41 +31,41 @@ export const useStaysStore = defineStore("counter", () => {
       guestIdList.push(guest.gjestId);
     });
 
-    const guestsInRange = query(
-      collection(db, "Gjest"),
-      where("__name__", "in", guestIdList)
-    );
-    console.log("guestidlist: ");
-    console.log(guestIdList);
-    const guestsInRangeSnapshot = await getDocs(guestsInRange);
-    const responseGuestsSpanning = guestsInRangeSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const guestDataList = [];
+    const batchSize = 30;
 
-    console.log("responseGuestsSpanning");
-    console.log(responseGuestsSpanning);
+    for (let i = 0; i < guestIdList.length; i += batchSize) {
+      const batch = guestIdList.slice(i, i + batchSize);
+
+      const guestsInRange = query(
+        collection(db, "Gjest"),
+        where("__name__", "in", batch)
+      );
+      const snapshot = await getDocs(guestsInRange);
+      const guests = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      guestDataList.push(...guests);
+    }
+
     bookingsToday.value = keyBy(
       responseSpanning.map((booking) => {
         return {
           ...booking,
-          ...responseGuestsSpanning.find((guest) => {
-            return guest.id === booking.gjestId;
-          }),
+          ...guestDataList.find((guest) => guest.id === booking.gjestId),
         };
       }),
-      (stay) => {
-        return stay.plassId[0];
-      }
+      (stay) => stay.plassId[0]
     );
-    console.log("bookingstoday: ");
-    console.log(bookingsToday.value);
-    /* guestIdList.push(responseSpanning.gjestId); */
 
-    /* Object.values(guests.value).forEach((guest) => {
+    console.log("bookingstoday: ", bookingsToday.value);
+  }
+  /* guestIdList.push(responseSpanning.gjestId); */
+
+  /* Object.values(guests.value).forEach((guest) => {
       guestIdList.push(guest.gjestId);
     }); */
-  }
   async function addGuest(guestData, overnattingData) {
     const guestRef = await db.collection("Gjest").add(guestData);
     const gjestId = guestRef.id;
