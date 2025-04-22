@@ -74,10 +74,27 @@ export default {
     myDate() {
       this.store.loadGuests();
     },
+  },
+  methods: {
     handleRectangleClicked(plass) {
       this.selectedPlass = Number(plass);
-      if (this.guests[this.selectedPlass]) {
-        this.updateGuestData = this.guests[this.selectedPlass];
+      const guest = this.store.bookingsToday[this.selectedPlass];
+
+      if (guest) {
+        this.updateGuestData = {
+          Navn: guest.navn,
+          Bilnummer: guest.bilnummer,
+          Nasjonalitet: guest.nasjonalitet,
+          Pris: guest.pris,
+          Plass: this.selectedPlass,
+          Innsjekk: guest.innsjekk,
+          Utsjekk: guest.utsjekk,
+          Voksne: guest.voksne,
+          Barn: guest.barn,
+          Elektrisitet: guest.elektrisitet,
+          overnattingId: guest.id,
+          gjestId: guest.gjestId,
+        };
         this.showUpdateGuestModal = true;
         this.showAddGuestModal = false;
       } else {
