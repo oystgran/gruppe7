@@ -1409,17 +1409,17 @@
     </svg>
 
     <div v-if="tooltipVisible" :style="tooltipStyle" class="guest-tooltip">
-      <div class="guest-name">{{ tooltipData.Navn }}</div>
+      <div class="guest-name">{{ tooltipData.navn }}</div>
       <div class="guest-nationality">
         <img
-          v-if="countryFlag(tooltipData.Nasjonalitet)"
-          :src="countryFlag(tooltipData.Nasjonalitet)"
-          :alt="tooltipData.Nasjonalitet"
+          v-if="countryFlag(tooltipData.nasjonalitet)"
+          :src="countryFlag(tooltipData.nasjonalitet)"
+          :alt="tooltipData.nasjonalitet"
           width="20"
           height="15"
           style="margin-right: 8px"
         />
-        {{ tooltipData.Nasjonalitet }}
+        {{ tooltipData.nasjonalitet }}
       </div>
     </div>
   </div>
