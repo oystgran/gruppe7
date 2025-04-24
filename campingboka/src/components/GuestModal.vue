@@ -18,8 +18,8 @@
             <el-input v-model="form.name" required clearable />
           </el-form-item>
 
-          <el-form-item label="License plate">
-            <el-input v-model="form.license_plate" required clearable />
+          <el-form-item label="Car number">
+            <el-input v-model="form.car_number" required clearable />
           </el-form-item>
 
           <el-form-item label="Nationality">
@@ -224,7 +224,7 @@ export default {
       store: useStaysStore(),
       form: {
         name: "",
-        license_plate: "",
+        car_number: "",
         nationality: "",
         price: 0,
         spotId: this.initialSpotId,
@@ -243,7 +243,7 @@ export default {
         if (this.mode === "edit" && newGuest) {
           this.form = {
             name: newGuest.name,
-            license_plate: newGuest.license_plate,
+            car_number: newGuest.car_number,
             nationality: newGuest.nationality,
             price: newGuest.price,
             spotId: newGuest.spotId || this.initialSpotId,
@@ -324,7 +324,7 @@ export default {
 
       const guestPayload = {
         name: this.form.name,
-        license_plate: this.form.license_plate,
+        car_number: this.form.car_number,
         nationality: this.form.nationality,
       };
 
