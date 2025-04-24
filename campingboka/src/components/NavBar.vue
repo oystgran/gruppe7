@@ -62,6 +62,7 @@ store.loadGuests(selectedDate);
   line-height: 50px;
   border: none;
   width: auto;
+  z-index: 1000;
 }
 
 /* Menu Items */

@@ -48,14 +48,20 @@ export default {
     const store = useStaysStore();
     return { store };
   },
+  props: {
+    selectedDate: Date,
+  },
   watch: {
-    selectedDate() {
-      this.store.loadGuests(this.selectedDate);
+    selectedDate: {
+      immediate: true,
+      handler(newDate) {
+        this.store.loadGuests(newDate);
+      },
     },
   },
+
   data() {
     return {
-      selectedDate: new Date(),
       windowWidth: window.innerWidth,
     };
   },
@@ -92,7 +98,7 @@ export default {
           children: guest.children,
           electricity: guest.electricity,
           stayId: guest.id,
-          guestId: guest.guestId,
+          guestId: guest.guest_id,
         });
       }
     },

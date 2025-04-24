@@ -13,16 +13,23 @@ export const useStaysStore = defineStore("stays", () => {
   }
 
   async function loadGuests(selectedDate) {
-    if (!selectedDate.value) return;
+    if (!selectedDate) return;
 
-    const date = dayjs(selectedDate.value).format("YYYY-MM-DD");
+    const dateObj =
+      selectedDate.value instanceof Date ? selectedDate.value : selectedDate;
+    if (isNaN(dateObj)) {
+      console.warn("Invalid date in loadGuests:", selectedDate);
+      return;
+    }
+
+    const date = dayjs(dateObj).format("YYYY-MM-DD");
+
     const res = await fetch(`/api/stays?date=${date}`);
     const stays = await res.json();
 
-    bookingsToday.value = keyBy(stays, (stay) => stay.spot_id);
+    bookingsToday.value = { ...keyBy(stays, (stay) => stay.spot_id) };
     console.log("bookingstoday:", bookingsToday.value);
   }
-
   async function addGuest(guestData, stayData) {
     const res = await fetch("/api/stays", {
       method: "POST",
@@ -42,7 +49,22 @@ export const useStaysStore = defineStore("stays", () => {
         stay: stayData,
       }),
     });
+
     if (!res.ok) throw new Error("Failed to update guest and stay");
+
+    const updatedStay = {
+      id: stayId,
+      guest_id: gjestId,
+      name: guestData.name,
+      car_number: guestData.car_number,
+      nationality: guestData.nationality,
+      ...stayData,
+    };
+
+    bookingsToday.value = {
+      ...bookingsToday.value,
+      [stayData.spotId]: updatedStay,
+    };
   }
 
   async function deleteGuest(gjestId, stayId) {

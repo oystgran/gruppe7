@@ -2,29 +2,42 @@
   <div class="archive-screen">
     <div class="archive-panel">
       <div class="search">
-        <ArchiveFilter @update:rowData="filteredData = $event" />
+        <ArchiveFilter
+          @update:rowData="filteredData = $event"
+          @update:search="searchText = $event"
+        />
       </div>
       <div class="table">
-        <ArchiveTable :rowData="filteredData" />
+        <ArchiveTable :rowData="filteredData" :quickFilterText="searchText" />
       </div>
     </div>
     <div class="stat-panel">
       <div class="panel-upper">
-        <h3>Gjester per nasjonalitet</h3>
+        <h3>Guests by nationality</h3>
         <ArchiveChart
-          :chartData="nasjonalitetsData"
-          :chartOptions="nasjonalitetsOptions"
+          :chartData="nationalityData"
+          :chartOptions="nationalityOptions"
           chartType="pie"
         />
       </div>
       <div class="panel-lower">
-        <h3>Statistikk 2</h3>
+        <h3>Electricity usage</h3>
         <ArchiveChart
-          :chartData="elektrisitetData"
-          :chartOptions="elektrisitetOptions"
+          :chartData="electricityData"
+          :chartOptions="electricityOptions"
           chartType="doughnut"
         />
       </div>
+      <el-button
+        type="success"
+        plain
+        size="small"
+        icon="Download"
+        class="export-btn"
+        @click="exportNationalityCSV"
+      >
+        Export CSV
+      </el-button>
     </div>
   </div>
 </template>
@@ -32,7 +45,7 @@
 <script>
 import ArchiveFilter from "@/components/ArchiveFilter.vue";
 import ArchiveTable from "@/components/ArchiveTable.vue";
-import ArchiveChart from "@/components/ArchiveChart.vue"; // 👈 Legg til denne
+import ArchiveChart from "@/components/ArchiveChart.vue";
 
 export default {
   components: {
@@ -43,21 +56,46 @@ export default {
   data() {
     return {
       filteredData: [],
+      searchText: "",
     };
   },
-  computed: {
-    nasjonalitetsData() {
+  methods: {
+    exportNationalityCSV() {
       const counts = {};
       this.filteredData.forEach((row) => {
-        const land = row.nasjonalitet || "Ukjent";
-        counts[land] = (counts[land] || 0) + 1;
+        const country = row.nationality || "Unknown";
+        counts[country] = (counts[country] || 0) + 1;
+      });
+
+      const csvContent =
+        "data:text/csv;charset=utf-8," +
+        "Nationality,Count\n" +
+        Object.entries(counts)
+          .map(([country, count]) => `${country},${count}`)
+          .join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "nationalities.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+  },
+  computed: {
+    nationalityData() {
+      const counts = {};
+      this.filteredData.forEach((row) => {
+        const country = row.nationality || "Unknown";
+        counts[country] = (counts[country] || 0) + 1;
       });
 
       return {
         labels: Object.keys(counts),
         datasets: [
           {
-            label: "Antall gjester per nasjonalitet",
+            label: "Guests by nationality",
             data: Object.values(counts),
             backgroundColor: [
               "#FF6384",
@@ -76,26 +114,26 @@ export default {
       };
     },
 
-    elektrisitetData() {
-      const counts = { Ja: 0, Nei: 0 };
+    electricityData() {
+      const counts = { Yes: 0, No: 0 };
       this.filteredData.forEach((row) => {
-        const brukt = row.elektrisitet ? "Ja" : "Nei";
-        counts[brukt]++;
+        const used = row.electricity ? "Yes" : "No";
+        counts[used]++;
       });
 
       return {
-        labels: ["Brukt strøm", "Ikke brukt strøm"],
+        labels: ["Used electricity", "No electricity"],
         datasets: [
           {
-            label: "Elektrisitetsbruk",
-            data: [counts["Ja"], counts["Nei"]],
+            label: "Electricity usage",
+            data: [counts["Yes"], counts["No"]],
             backgroundColor: ["#4CAF50", "#F44336"],
           },
         ],
       };
     },
 
-    elektrisitetOptions() {
+    electricityOptions() {
       return {
         responsive: true,
         plugins: {
@@ -106,7 +144,7 @@ export default {
       };
     },
 
-    nasjonalitetsOptions() {
+    nationalityOptions() {
       return {
         responsive: true,
         plugins: {
@@ -128,8 +166,6 @@ export default {
   width: 100%;
   margin: 0 auto;
   max-height: 100%;
-
-  padding-top: 10px;
   overflow-y: auto;
 }
 
@@ -155,12 +191,12 @@ export default {
   overflow: auto;
   padding: 10px;
 }
+
 .panel-upper {
   border-bottom: 1px solid #ccc;
 }
 
 .search {
-  margin-bottom: 15px;
 }
 
 .table {
