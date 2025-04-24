@@ -9,12 +9,13 @@
     </div>
 
     <GuestModal
+      :key="selectedSpot + '-' + modalMode"
       :visible="showAddGuestModal || showUpdateGuestModal"
       :mode="showAddGuestModal ? 'add' : 'edit'"
-      :initialSpot="selectedSpot"
+      :initialSpotId="selectedSpot"
       :guest="updateGuestData"
       @close="closeModal"
-      @guestSaved="reloadGuests"
+      @guestSaved="refreshGuestList"
     />
 
     <el-button type="primary" @click="openPosterModal">Show Poster</el-button>

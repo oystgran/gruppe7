@@ -9,9 +9,10 @@
 
     <!-- GuestModal component -->
     <GuestModal
+      :key="selectedSpot + '-' + modalMode"
       :visible="showAddGuestModal || showUpdateGuestModal"
       :mode="showAddGuestModal ? 'add' : 'edit'"
-      :initialSpot="selectedSpot"
+      :initialSpotId="selectedSpot"
       :guest="updateGuestData"
       @close="closeModal"
       @guestSaved="refreshGuestList"
