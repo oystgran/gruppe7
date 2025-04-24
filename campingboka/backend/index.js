@@ -14,6 +14,9 @@ const pool = new Pool({
 const guestsRouter = require("./routes/guests")(pool);
 app.use("/api/guests", guestsRouter);
 
+const staysRouter = require("./routes/stays");
+app.use("/api/stays", staysRouter);
+
 app.listen(3000, () => {
   console.log("Backend server is running at http://localhost:3000");
 });
