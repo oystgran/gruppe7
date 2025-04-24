@@ -9,11 +9,12 @@
     </div>
 
     <GuestModal
-      :key="selectedSpot + '-' + modalMode"
+      :key="selectedSpot + '-' + (showAddGuestModal ? 'add' : 'edit')"
       :visible="showAddGuestModal || showUpdateGuestModal"
       :mode="showAddGuestModal ? 'add' : 'edit'"
       :initialSpotId="selectedSpot"
       :guest="updateGuestData"
+      :selectedDate="dateStore.selectedDate"
       @close="closeModal"
       @guestSaved="refreshGuestList"
     />
@@ -33,13 +34,15 @@ import posterMap from "@/assets/posterMap.png";
 import MapComponent from "@/components/MapComponent.vue";
 import GuestModal from "@/components/GuestModal.vue";
 import { useStaysStore } from "@/stores/stays";
+import { useDateStore } from "@/stores/dateStore";
 
 export default {
   name: "MapScreen",
   components: { MapComponent, GuestModal },
   setup() {
     const store = useStaysStore();
-    return { store };
+    const dateStore = useDateStore();
+    return { store, dateStore };
   },
   data() {
     return {

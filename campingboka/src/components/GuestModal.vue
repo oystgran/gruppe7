@@ -231,10 +231,28 @@ export default {
         adults: 0,
         children: 0,
         electricity: false,
-        check_in: new Date(),
         check_out: null,
       },
     };
+  },
+  mounted() {
+    if (!this.guest && this.mode === "add") {
+      const dateToUse =
+        this.selectedDate instanceof Date
+          ? new Date(this.selectedDate)
+          : new Date();
+      const today = new Date();
+      const isToday =
+        dateToUse.getDate() === today.getDate() &&
+        dateToUse.getMonth() === today.getMonth() &&
+        dateToUse.getFullYear() === today.getFullYear();
+
+      const checkIn = isToday
+        ? new Date()
+        : new Date(dateToUse.setHours(15, 0, 0, 0));
+
+      this.form.check_in = checkIn;
+    }
   },
   watch: {
     guest: {
@@ -268,6 +286,16 @@ export default {
       }
     },
   },
+  selectedDate: {
+    immediate: true,
+    handler(newDate) {
+      if (this.mode === "add" && newDate instanceof Date) {
+        const checkIn = new Date(newDate);
+        checkIn.setHours(15, 0, 0, 0);
+        this.form.check_in = checkIn;
+      }
+    },
+  },
   computed: {
     isFjordSpot() {
       return FJORD_SPOTS.has(this.form.spotId);
@@ -287,6 +315,14 @@ export default {
     },
   },
   methods: {
+    isToday(date) {
+      const today = new Date();
+      return (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      );
+    },
     calculateNights() {
       const checkIn = new Date(this.form.check_in);
       const checkOut = new Date(this.form.check_out);
