@@ -262,6 +262,11 @@ export default {
       },
       deep: true,
     },
+    initialSpotId(newSpotId) {
+      if (this.mode === "add") {
+        this.form.spotId = newSpotId;
+      }
+    },
   },
   computed: {
     isFjordSpot() {
@@ -329,7 +334,7 @@ export default {
       };
 
       const stayPayload = {
-        spotId: [this.form.spotId],
+        spotId: this.form.spotId,
         check_in: this.form.check_in,
         check_out: checkOutDate,
         price: this.form.price,

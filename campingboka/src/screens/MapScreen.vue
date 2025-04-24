@@ -79,7 +79,7 @@ export default {
       if (guest) {
         this.updateGuestData = {
           name: guest.name,
-          license_plate: guest.license_plate,
+          car_number: guest.car_number,
           nationality: guest.nationality,
           price: guest.price,
           spotId: this.selectedSpot,
@@ -89,7 +89,7 @@ export default {
           children: guest.children,
           electricity: guest.electricity,
           stayId: guest.id,
-          guestId: guest.guestId,
+          guestId: guest.guest_id,
         };
         this.showUpdateGuestModal = true;
         this.showAddGuestModal = false;
@@ -104,15 +104,6 @@ export default {
       this.showUpdateGuestModal = false;
       this.selectedSpot = null;
       this.updateGuestData = null;
-    },
-    reloadGuests() {
-      this.store.loadGuests();
-    },
-    openPosterModal() {
-      this.isPosterModalOpen = true;
-    },
-    closePosterModal() {
-      this.isPosterModalOpen = false;
     },
   },
 };
