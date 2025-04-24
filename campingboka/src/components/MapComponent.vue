@@ -1409,17 +1409,17 @@
     </svg>
 
     <div v-if="tooltipVisible" :style="tooltipStyle" class="guest-tooltip">
-      <div class="guest-name">{{ tooltipData.navn }}</div>
+      <div class="guest-name">{{ tooltipData.name }}</div>
       <div class="guest-nationality">
         <img
-          v-if="countryFlag(tooltipData.nasjonalitet)"
-          :src="countryFlag(tooltipData.nasjonalitet)"
-          :alt="tooltipData.nasjonalitet"
+          v-if="countryFlag(tooltipData.nationality)"
+          :src="countryFlag(tooltipData.nationality)"
+          :alt="tooltipData.nationality"
           width="20"
           height="15"
           style="margin-right: 8px"
         />
-        {{ tooltipData.nasjonalitet }}
+        {{ tooltipData.nationality }}
       </div>
     </div>
   </div>
@@ -1466,10 +1466,10 @@ export default {
     hideTooltip() {
       this.tooltipVisible = false;
     },
-    countryFlag(nasjonalitet) {
-      if (!nasjonalitet) return "";
+    countryFlag(nationality) {
+      if (!nationality) return "";
       const entry = Object.entries(countries).find(
-        ([, data]) => data.name.toLowerCase() === nasjonalitet.toLowerCase()
+        ([, data]) => data.name.toLowerCase() === nationality.toLowerCase()
       );
       return entry ? entry[1].flag : "";
     },

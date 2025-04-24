@@ -1,29 +1,29 @@
 <template>
   <div class="guestbook-wrapper">
     <div class="bookCards">
-      <div v-for="(gruppe, i) in groupedPlassIds" :key="i" class="gruppe">
+      <div v-for="(group, i) in groupedSpotIds" :key="i" class="group">
         <GuestBookCard
           class="guestcard"
-          v-for="plassId in gruppe"
-          :key="plassId"
-          :plass="plassId"
-          :nasjonalitet="store.bookingsToday[plassId]?.nasjonalitet"
-          :innsjekk="
-            store.bookingsToday[plassId]?.innsjekk
-              ? formatDate(store.bookingsToday[plassId].innsjekk)
+          v-for="spotId in group"
+          :key="spotId"
+          :spot="spotId"
+          :nationality="store.bookingsToday[spotId]?.nationality"
+          :checkIn="
+            store.bookingsToday[spotId]?.check_in
+              ? formatDate(store.bookingsToday[spotId].check_in)
               : ''
           "
-          :utsjekk="
-            store.bookingsToday[plassId]?.utsjekk
-              ? formatDate(store.bookingsToday[plassId].utsjekk)
+          :checkOut="
+            store.bookingsToday[spotId]?.check_out
+              ? formatDate(store.bookingsToday[spotId].check_out)
               : ''
           "
-          :pris="store.bookingsToday[plassId]?.pris"
-          @click="openModalWithGuest(plassId)"
+          :price="store.bookingsToday[spotId]?.price"
+          @click="openModalWithGuest(spotId)"
         >
-          <template v-slot:bilnummer>
-            <span v-if="store.bookingsToday[plassId]?.bilnummer">
-              {{ store.bookingsToday[plassId]?.bilnummer }}
+          <template v-slot:car_number>
+            <span v-if="store.bookingsToday[spotId]?.car_number">
+              {{ store.bookingsToday[spotId]?.car_number }}
             </span>
             <el-icon v-else class="plus-icon">
               <CirclePlusFilled />
@@ -46,7 +46,6 @@ export default {
   emits: ["showAddGuestModal", "showUpdateGuestModal"],
   setup() {
     const store = useStaysStore();
-    console.log(store.count);
     return { store };
   },
   watch: {
@@ -79,21 +78,21 @@ export default {
     openModalWithGuest(index) {
       const guest = this.store.bookingsToday[index];
       if (!guest) {
-        this.$emit("showAddGuestModal", { Plass: index });
+        this.$emit("showAddGuestModal", { spotId: index });
       } else {
         this.$emit("showUpdateGuestModal", {
-          Navn: guest.navn,
-          Bilnummer: guest.bilnummer,
-          Nasjonalitet: guest.nasjonalitet,
-          Pris: guest.pris,
-          Plass: index,
-          Innsjekk: guest.innsjekk,
-          Utsjekk: guest.utsjekk,
-          Voksne: guest.voksne,
-          Barn: guest.barn,
-          Elektrisitet: guest.elektrisitet,
-          overnattingId: guest.id, // ← fra firestore ID
-          gjestId: guest.gjestId,
+          name: guest.name,
+          car_number: guest.car_number,
+          nationality: guest.nationality,
+          price: guest.price,
+          spotId: index,
+          check_in: guest.check_in,
+          check_out: guest.check_out,
+          adults: guest.adults,
+          children: guest.children,
+          electricity: guest.electricity,
+          stayId: guest.id,
+          guestId: guest.guestId,
         });
       }
     },
@@ -104,19 +103,19 @@ export default {
       if (this.windowWidth <= 1300) return 2;
       return 3;
     },
-    groupedPlassIds() {
-      const totalPlasser = 42;
-      const grupper = [];
-      const perGruppe = Math.ceil(totalPlasser / this.groupCount);
+    groupedSpotIds() {
+      const totalSpots = 42;
+      const groups = [];
+      const perGroup = Math.ceil(totalSpots / this.groupCount);
 
       for (let i = 0; i < this.groupCount; i++) {
-        const start = i * perGruppe + 1;
-        const end = Math.min(start + perGruppe - 1, totalPlasser);
-        grupper.push(
+        const start = i * perGroup + 1;
+        const end = Math.min(start + perGroup - 1, totalSpots);
+        groups.push(
           Array.from({ length: end - start + 1 }, (_, j) => start + j)
         );
       }
-      return grupper;
+      return groups;
     },
   },
 };
@@ -126,36 +125,19 @@ export default {
 .bookCards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  grid-template-columns: repeat(3, minmax(350px, 1fr)); /* Maks 3 kolonner */
+  grid-template-columns: repeat(3, minmax(350px, 1fr));
   height: 100%;
   width: 100vw;
-  /* gap: 10px; */ /* Valgfritt: Mellomrom mellom kortene */
 }
-/* Når skjermen er for smal for 3 kolonner (f.eks. under 1100px) → 2 kolonner */
 @media (max-width: 1300px) {
   .bookCards {
     grid-template-columns: repeat(2, minmax(350px, 1fr));
   }
 }
-
-/* Når skjermen er for smal for 2 kolonner (f.eks. under 750px) → 1 kolonne */
 @media (max-width: 960px) {
   .bookCards {
     grid-template-columns: repeat(1, minmax(350px, 1fr));
   }
-}
-
-/* .el-row {
-  margin-bottom: 20px;
-}
-.el-row:last-child {
-  margin-bottom: 0;
-}
-.el-col {
-  border-radius: 4px;
-} */
-.el-card__body {
-  /* padding: 15.3px !important; */
 }
 .plus-icon {
   font-size: 30.74px;
@@ -170,7 +152,7 @@ export default {
   background-color: hsl(0, 0%, 94%);
 }
 .guestcard:hover .plus-icon {
-  visibility: visible; /* Make the icon visible when the guestcard is hovered */
+  visibility: visible;
   display: flex;
   align-items: left;
   justify-content: left;

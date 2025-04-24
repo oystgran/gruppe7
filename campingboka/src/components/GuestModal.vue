@@ -4,8 +4,8 @@
       <div class="modal-content">
         <span class="close" @click="closeModal">&times;</span>
         <h2 style="margin-bottom: 20px">
-          {{ mode === "add" ? "Legg til gjest" : "Oppdater gjest" }} (Plass nr.
-          {{ form.plass }})
+          {{ mode === "add" ? "Add guest" : "Update guest" }} (Spot no.
+          {{ form.spotId }})
         </h2>
 
         <el-form
@@ -14,19 +14,19 @@
           label-position="left"
           @submit.prevent="handleSubmit"
         >
-          <el-form-item label="Navn">
-            <el-input v-model="form.navn" required clearable />
+          <el-form-item label="Name">
+            <el-input v-model="form.name" required clearable />
           </el-form-item>
 
-          <el-form-item label="Bilnummer">
-            <el-input v-model="form.bilnummer" required clearable />
+          <el-form-item label="License plate">
+            <el-input v-model="form.license_plate" required clearable />
           </el-form-item>
 
-          <el-form-item label="Nasjonalitet">
+          <el-form-item label="Nationality">
             <el-autocomplete
-              v-model="form.nasjonalitet"
+              v-model="form.nationality"
               :fetch-suggestions="querySearch"
-              placeholder="Velg nasjonalitet"
+              placeholder="Select nationality"
               required
               clearable
               @blur="validateNationality"
@@ -42,28 +42,28 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="Innsjekk">
+          <el-form-item label="Check-in">
             <el-date-picker
-              v-model="form.innsjekk"
+              v-model="form.check_in"
               type="datetime"
-              placeholder="Velg innsjekksdato"
+              placeholder="Choose check-in date"
               required
             />
           </el-form-item>
 
-          <el-form-item label="Utsjekk">
+          <el-form-item label="Check-out">
             <el-date-picker
-              v-model="form.utsjekk"
+              v-model="form.check_out"
               type="date"
-              placeholder="Velg utsjekksdato"
+              placeholder="Choose check-out date"
               required
             />
           </el-form-item>
 
-          <el-form-item label="Plass">
+          <el-form-item label="Spot">
             <div style="display: flex; align-items: center">
               <el-input
-                :value="form.plass"
+                :value="form.spotId"
                 disabled
                 style="width: 100px; margin-left: 25px"
                 input-style="text-align: center"
@@ -77,18 +77,18 @@
                 "
               >
                 {{
-                  isFjordplass
-                    ? `Fjordplass + ${120 + 340}kr`
-                    : `Standardplass + ${340}kr`
+                  isFjordSpot
+                    ? `Fjord spot + ${120 + 340}kr`
+                    : `Standard spot + ${340}kr`
                 }}
               </span>
             </div>
           </el-form-item>
 
-          <el-form-item label="Voksne">
+          <el-form-item label="Adults">
             <div style="display: flex; align-items: center">
               <el-input-number
-                v-model="form.voksne"
+                v-model="form.adults"
                 :min="0"
                 :max="10"
                 style="min-width: 100px"
@@ -101,15 +101,15 @@
                   margin-left: 12px;
                 "
               >
-                + {{ form.voksne * 40 }} kr
+                + {{ form.adults * 40 }} kr
               </span>
             </div>
           </el-form-item>
 
-          <el-form-item label="Barn">
+          <el-form-item label="Children">
             <div style="display: flex; align-items: center">
               <el-input-number
-                v-model="form.barn"
+                v-model="form.children"
                 :min="0"
                 :max="10"
                 style="min-width: 100px"
@@ -122,17 +122,17 @@
                   margin-left: 12px;
                 "
               >
-                + {{ form.barn * 20 }} kr
+                + {{ form.children * 20 }} kr
               </span>
             </div>
           </el-form-item>
 
-          <el-form-item label="Strøm">
+          <el-form-item label="Electricity">
             <div style="display: flex; align-items: center; margin-left: 25px">
               <el-switch
-                v-model="form.elektrisitet"
-                active-text="Ja"
-                inactive-text="Nei"
+                v-model="form.electricity"
+                active-text="Yes"
+                inactive-text="No"
               />
               <span
                 style="
@@ -142,56 +142,24 @@
                   margin-left: 12px;
                 "
               >
-                {{ form.elektrisitet ? `+ ${50}kr` : "+ 0kr" }}
+                {{ form.electricity ? `+ ${50}kr` : "+ 0kr" }}
               </span>
             </div>
           </el-form-item>
 
-          <el-form-item label="Pris">
+          <el-form-item label="Price">
             <div style="display: flex; align-items: center">
               <el-input-number
-                v-model="form.pris"
+                v-model="form.price"
                 :controls="false"
                 :min="0"
                 :disabled="true"
-                class="prisfelt"
+                class="price-field"
               />
-
-              <el-popover
-                v-if="prisDifferanse && prisDifferanse.tillegg !== 0"
-                placement="right"
-                width="220"
-                trigger="hover"
-                :visible="true"
-              >
-                <template #reference>
-                  <el-icon style="margin-left: 8px; cursor: pointer">
-                    <info-filled />
-                  </el-icon>
-                </template>
-
-                <div style="font-size: 13px">
-                  <div style="opacity: 0.6">
-                    Tidligere pris: {{ prisDifferanse.original }} kr
-                  </div>
-                  <div style="opacity: 0.6">
-                    Ny pris: {{ prisDifferanse.ny }} kr
-                  </div>
-                  <div
-                    v-if="prisDifferanse.tillegg > 0"
-                    style="font-weight: bold; color: #d32f2f"
-                  >
-                    Tillegg å betale: {{ prisDifferanse.tillegg }} kr
-                  </div>
-                  <div v-else style="font-weight: bold; color: #388e3c">
-                    Refunderes: {{ -prisDifferanse.tillegg }} kr
-                  </div>
-                </div>
-              </el-popover>
             </div>
 
             <div
-              v-if="prisOppsummering"
+              v-if="priceSummary"
               style="
                 text-align: right;
                 font-size: 13px;
@@ -199,18 +167,15 @@
                 margin-top: 6px;
               "
             >
-              {{ prisOppsummering }}
+              {{ priceSummary }}
             </div>
           </el-form-item>
         </el-form>
+
         <el-form-item v-if="mode === 'edit'">
           <div style="display: flex; margin-left: 30px; gap: 20px">
-            <el-button type="success" @click="confirmUpdate">
-              <el-icon style="margin-right: 6px"><check /></el-icon>
-            </el-button>
-            <el-button type="danger" @click="confirmDelete">
-              <el-icon style=""><delete /></el-icon>
-            </el-button>
+            <el-button type="success" @click="handleSubmit">Update</el-button>
+            <el-button type="danger" @click="handleDelete">Delete</el-button>
           </div>
         </el-form-item>
 
@@ -219,9 +184,8 @@
             type="primary"
             @click="handleSubmit"
             style="margin-left: 30px"
+            >Add</el-button
           >
-            Legg til
-          </el-button>
         </el-form-item>
       </div>
     </div>
@@ -229,16 +193,15 @@
 </template>
 
 <script>
-import { countries } from "@/tools/countries";
-import { InfoFilled, Delete, Check } from "@element-plus/icons-vue";
 import { useStaysStore } from "@/stores/stays";
+import { countries } from "@/tools/countries";
 
-const GRUNNPRIS = 340;
-const FJORDTILLEGG = 120;
-const PRIS_VOKSEN = 40;
-const PRIS_BARN = 20;
-const PRIS_EL = 50;
-const FJORDPLASS_NUMMER = new Set([
+const BASE_PRICE = 340;
+const FJORD_EXTRA = 120;
+const ADULT_PRICE = 40;
+const CHILD_PRICE = 20;
+const ELECTRICITY_PRICE = 50;
+const FJORD_SPOTS = new Set([
   ...Array.from({ length: 19 }, (_, i) => i + 1),
   38,
   39,
@@ -249,188 +212,95 @@ const FJORDPLASS_NUMMER = new Set([
 
 export default {
   name: "GuestModal",
-  components: {
-    InfoFilled,
-    delete: Delete,
-    Check,
-  },
   props: {
     selectedDate: Date,
     visible: Boolean,
-    initialPlass: Number,
+    initialSpotId: Number,
     guest: Object,
-    mode: String, // 'add' eller 'edit'
+    mode: String, // 'add' or 'edit'
   },
   data() {
     return {
       store: useStaysStore(),
       form: {
-        navn: "",
-        bilnummer: "",
-        nasjonalitet: "",
-        pris: 0,
-        plass: this.initialPlass,
-        voksne: 0,
-        barn: 0,
-        elektrisitet: false,
-        innsjekk: new Date(),
-        utsjekk: null,
+        name: "",
+        license_plate: "",
+        nationality: "",
+        price: 0,
+        spotId: this.initialSpotId,
+        adults: 0,
+        children: 0,
+        electricity: false,
+        check_in: new Date(),
+        check_out: null,
       },
-      originalPris: 0,
     };
   },
   watch: {
-    visible(newVal) {
-      if (newVal && this.mode === "add") {
-        this.resetForm();
-      }
-    },
-    initialPlass(newVal) {
-      if (this.mode === "add") {
-        this.form.plass = newVal;
-      }
-    },
     guest: {
       immediate: true,
       handler(newGuest) {
         if (this.mode === "edit" && newGuest) {
           this.form = {
-            navn: newGuest.Navn,
-            bilnummer: newGuest.Bilnummer,
-            nasjonalitet: newGuest.Nasjonalitet,
-            pris: newGuest.Pris,
-            plass: newGuest.Plass || this.initialPlass,
-            innsjekk: newGuest.Innsjekk?.toDate
-              ? newGuest.Innsjekk.toDate()
-              : new Date(newGuest.Innsjekk || Date.now()),
-            utsjekk: newGuest.Utsjekk?.toDate
-              ? newGuest.Utsjekk.toDate()
-              : new Date(newGuest.Utsjekk || Date.now()),
-            voksne: newGuest.Voksne || 1,
-            barn: newGuest.Barn || 0,
-            elektrisitet: newGuest.Elektrisitet ?? false,
+            name: newGuest.name,
+            license_plate: newGuest.license_plate,
+            nationality: newGuest.nationality,
+            price: newGuest.price,
+            spotId: newGuest.spotId || this.initialSpotId,
+            check_in: new Date(newGuest.check_in),
+            check_out: new Date(newGuest.check_out),
+            adults: newGuest.adults || 1,
+            children: newGuest.children || 0,
+            electricity: newGuest.electricity ?? false,
           };
-          this.originalPris = newGuest.Pris || 0;
         }
       },
     },
     form: {
       handler() {
-        this.beregnPris();
+        this.calculatePrice();
       },
       deep: true,
     },
   },
   computed: {
-    antallNetter() {
-      const innsjekk = new Date(this.form.innsjekk);
-      const utsjekk = new Date(this.form.utsjekk);
-      innsjekk.setHours(0, 0, 0, 0);
-      utsjekk.setHours(0, 0, 0, 0);
-      const netter = Math.ceil((utsjekk - innsjekk) / (1000 * 60 * 60 * 24));
-      return netter > 0 ? netter : 0;
+    isFjordSpot() {
+      return FJORD_SPOTS.has(this.form.spotId);
     },
-    isFjordplass() {
-      return FJORDPLASS_NUMMER.has(this.form.plass);
-    },
-    prisOppsummering() {
-      if (!this.form.innsjekk || !this.form.utsjekk) return "";
-
-      const innsjekk = new Date(this.form.innsjekk);
-      const utsjekk = new Date(this.form.utsjekk);
-      innsjekk.setHours(0, 0, 0, 0);
-      utsjekk.setHours(0, 0, 0, 0);
-
-      const netter = Math.ceil((utsjekk - innsjekk) / (1000 * 60 * 60 * 24));
-      if (netter <= 0) return "";
-
-      const voksne = this.form.voksne || 0;
-      const barn = this.form.barn || 0;
-      const el = this.form.elektrisitet ? PRIS_EL : 0;
-      const fjordTillegg = FJORDPLASS_NUMMER.has(this.form.plass)
-        ? FJORDTILLEGG
-        : 0;
-
-      const prisPerNatt =
-        GRUNNPRIS + fjordTillegg + voksne * PRIS_VOKSEN + barn * PRIS_BARN + el;
-      const totalPris = netter * prisPerNatt;
-
-      return `${prisPerNatt} kr × ${netter} netter = ${totalPris} kr`;
-    },
-    prisDifferanse() {
-      if (this.mode !== "edit") return null;
-      const diff = this.form.pris - this.originalPris;
-      return {
-        original: this.originalPris,
-        ny: this.form.pris,
-        tillegg: diff,
-      };
+    priceSummary() {
+      const nights = this.calculateNights();
+      if (!nights) return "";
+      const nightlyRate =
+        BASE_PRICE +
+        (this.isFjordSpot ? FJORD_EXTRA : 0) +
+        this.form.adults * ADULT_PRICE +
+        this.form.children * CHILD_PRICE +
+        (this.form.electricity ? ELECTRICITY_PRICE : 0);
+      return `${nightlyRate} kr × ${nights} nights = ${
+        nightlyRate * nights
+      } kr`;
     },
   },
   methods: {
-    async confirmUpdate() {
-      try {
-        await this.$confirm(
-          `Oppdatere gjesten på plass nr ${this.form.plass}?`,
-          "Bekreft forandringer",
-          {
-            confirmButtonText: "Ja, oppdater",
-            cancelButtonText: "Avbryt",
-            type: "warning",
-          }
-        );
-        await this.handleSubmit(); // Fortsett hvis bruker bekrefter
-      } catch {
-        // Bruker avbrøt
-      }
+    calculateNights() {
+      const checkIn = new Date(this.form.check_in);
+      const checkOut = new Date(this.form.check_out);
+      checkIn.setHours(0, 0, 0, 0);
+      checkOut.setHours(0, 0, 0, 0);
+      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      return nights > 0 ? nights : 0;
     },
-    async confirmDelete() {
-      try {
-        const navn = this.form.navn || "gjest";
-        const plass = this.form.plass;
-        await this.$confirm(
-          `Slett ${navn} fra Plass nr ${plass}?`,
-          "Bekreft Sletting",
-          {
-            confirmButtonText: "Ja, slett",
-            cancelButtonText: "Avbryt",
-            type: "warning",
-          }
-        );
-
-        await this.handleDelete(); // Hvis bruker bekrefter
-      } catch {
-        // Avbrutt
-      }
-    },
-    async handleDelete() {
-      try {
-        await this.store.deleteGuest(
-          this.guest.gjestId,
-          this.guest.overnattingId
-        );
-        this.$message.success("Gjest slettet");
-        this.$emit("guestSaved");
-        this.closeModal();
-      } catch (err) {
-        console.error(err);
-        this.$message.error("Sletting feilet");
-      }
-    },
-    resetForm() {
-      this.form = {
-        navn: "",
-        bilnummer: "",
-        nasjonalitet: "",
-        pris: 0,
-        plass: this.initialPlass,
-        voksne: 0,
-        barn: 0,
-        elektrisitet: false,
-        innsjekk: new Date(),
-        utsjekk: null,
-      };
-      this.originalPris = 0;
+    calculatePrice() {
+      const nights = this.calculateNights();
+      if (!nights) return (this.form.price = 0);
+      const base = BASE_PRICE + (this.isFjordSpot ? FJORD_EXTRA : 0);
+      const total =
+        nights *
+        (base +
+          this.form.adults * ADULT_PRICE +
+          this.form.children * CHILD_PRICE +
+          (this.form.electricity ? ELECTRICITY_PRICE : 0));
+      this.form.price = total;
     },
     querySearch(queryString, cb) {
       const results = Object.entries(countries).filter(([code, { name }]) => {
@@ -446,72 +316,61 @@ export default {
     },
     validateNationality() {
       const valid = Object.values(countries).map((c) => c.name);
-      if (!valid.includes(this.form.nasjonalitet)) this.form.nasjonalitet = "";
-    },
-    beregnPris() {
-      const { innsjekk, utsjekk, voksne, barn, elektrisitet, plass } =
-        this.form;
-      if (!innsjekk || !utsjekk) return (this.form.pris = 0);
-      const i = new Date(innsjekk),
-        u = new Date(utsjekk);
-      i.setHours(0, 0, 0, 0);
-      u.setHours(0, 0, 0, 0);
-      const netter = Math.ceil((u - i) / (1000 * 60 * 60 * 24));
-      if (netter <= 0) return (this.form.pris = 0);
-      const fjord = FJORDPLASS_NUMMER.has(plass) ? FJORDTILLEGG : 0;
-      const pris =
-        netter *
-        (GRUNNPRIS +
-          fjord +
-          voksne * PRIS_VOKSEN +
-          barn * PRIS_BARN +
-          (elektrisitet ? PRIS_EL : 0));
-      this.form.pris = pris;
-    },
-    closeModal() {
-      this.$emit("close");
+      if (!valid.includes(this.form.nationality)) this.form.nationality = "";
     },
     async handleSubmit() {
-      const utsjekkDato = new Date(this.form.utsjekk);
-      utsjekkDato.setHours(12, 0, 0, 0);
+      const checkOutDate = new Date(this.form.check_out);
+      checkOutDate.setHours(12, 0, 0, 0);
 
       const guestPayload = {
-        navn: this.form.navn,
-        bilnummer: this.form.bilnummer,
-        nasjonalitet: this.form.nasjonalitet,
+        name: this.form.name,
+        license_plate: this.form.license_plate,
+        nationality: this.form.nationality,
       };
 
       const stayPayload = {
-        plassId: [this.form.plass],
-        innsjekk: this.form.innsjekk,
-        utsjekk: utsjekkDato,
-        pris: this.form.pris,
-        voksne: this.form.voksne,
-        barn: this.form.barn,
-        elektrisitet: this.form.elektrisitet,
+        spotId: [this.form.spotId],
+        check_in: this.form.check_in,
+        check_out: checkOutDate,
+        price: this.form.price,
+        adults: this.form.adults,
+        children: this.form.children,
+        electricity: this.form.electricity,
       };
 
       try {
         if (this.mode === "edit") {
           await this.store.updateGuest(
-            this.guest.gjestId,
+            this.guest.guestId,
             guestPayload,
-            this.guest.overnattingId,
+            this.guest.stayId,
             stayPayload
           );
         } else {
           await this.store.addGuest(guestPayload, stayPayload);
         }
 
-        this.$message.success(
-          this.mode === "edit" ? "Oppdatert!" : "Lagt til!"
-        );
+        this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
         this.$emit("guestSaved");
         this.closeModal();
       } catch (err) {
         console.error(err);
-        this.$message.error("Noe gikk galt.");
+        this.$message.error("Something went wrong.");
       }
+    },
+    async handleDelete() {
+      try {
+        await this.store.deleteGuest(this.guest.guestId, this.guest.stayId);
+        this.$message.success("Guest deleted");
+        this.$emit("guestSaved");
+        this.closeModal();
+      } catch (err) {
+        console.error(err);
+        this.$message.error("Deletion failed");
+      }
+    },
+    closeModal() {
+      this.$emit("close");
     },
   },
 };
