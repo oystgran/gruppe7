@@ -1,9 +1,11 @@
 <template>
   <el-card shadow="hover">
     <el-row :gutter="30">
-      <el-col :span="2">{{ plass }}</el-col>
+      <el-col :span="2">{{ spot }}</el-col>
       <el-col :span="6" style="font-weight: bold">
-        <slot name="bilnummer"></slot>
+        <slot name="car_number">
+          {{ car_number }}
+        </slot>
       </el-col>
       <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
         <el-tooltip
@@ -23,61 +25,34 @@
           />
         </el-tooltip>
       </el-col>
-      <!-- <el-col :span="2" style="display: flex; align-items: center; gap: 6px">
-        <img
-          v-if="countryFlag"
-          :src="countryFlag"
-          :alt="countryCode"
-          width="32"
-          height="21"
-          :title="nasjonalitet"
-        />
-      </el-col> -->
-      <!-- <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
-        <img
-          v-if="country"
-          :src="country.flag"
-          :alt="country.name"
-          width="20"
-          height="15"
-        />
-        <span>{{ country?.name || nasjonalitet }}</span>
-      </el-col> -->
-      <el-col :span="4">{{ innsjekk }} </el-col>
-      <el-col :span="4">{{ utsjekk }} </el-col>
-      <el-col :span="2">{{ pris }}</el-col>
+      <el-col :span="4">{{ checkIn }}</el-col>
+      <el-col :span="4">{{ checkOut }}</el-col>
+      <el-col :span="2">{{ price }}</el-col>
     </el-row>
   </el-card>
 </template>
+
 <script>
 import { countries } from "@/tools/countries";
-//import { ElTooltip } from "element-plus";
 
 export default {
   name: "GuestBookCard",
   props: {
-    plass: Number,
-    bilnummer: String,
-    nasjonalitet: String,
-    innsjekk: String,
-    pris: [Number, String], // Pris kan være et tall eller tom
-    utsjekk: String,
+    spot: Number,
+    car_number: String,
+    nationality: String,
+    checkIn: String,
+    price: [Number, String],
+    checkOut: String,
   },
   computed: {
     country() {
-      if (!this.nasjonalitet || typeof this.nasjonalitet !== "string")
+      if (!this.nationality || typeof this.nationality !== "string")
         return null;
-
-      // Sjekk om nasjonaliteten er en landkode som finnes i countries
-      if (countries[this.nasjonalitet]) {
-        return countries[this.nasjonalitet];
-      }
-
-      // Hvis nasjonaliteten er skrevet som navn ("Argentina") → prøv å finne koden
+      if (countries[this.nationality]) return countries[this.nationality];
       const entry = Object.entries(countries).find(
-        (
-          [, data] // tom plass for første element = ignoreres
-        ) => data?.name?.toLowerCase() === this.nasjonalitet.toLowerCase()
+        ([, data]) =>
+          data?.name?.toLowerCase() === this.nationality.toLowerCase()
       );
       return entry ? entry[1] : null;
     },
@@ -87,24 +62,15 @@ export default {
 
 <style scoped>
 .el-card {
-  height: auto; /* Sørger for at kortet har automatisk høyde basert på innholdet */
+  height: auto;
   min-height: 52px;
   --el-card-padding: 10px;
-  /* display: flex;
-  align-items: center;
-  justify-content: left; */
-}
-
-.el-card_body {
-}
-.el-card-is-hover-shadow {
-  background-color: green;
 }
 
 .el-row {
   display: flex;
   justify-content: left;
-  align-items: center; /* Sørger for at alle kolonner strekker seg over samme høyde */
+  align-items: center;
   min-height: 35.88px;
 }
 
@@ -113,13 +79,11 @@ export default {
   flex-direction: column;
   justify-content: center;
   min-height: 100px;
-  /* border-radius: 4px; */
 }
 
 .custom-tooltip {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   font-size: 14px;
-  color: #fff; /* optional */
+  color: #fff;
 }
-/* Spesifikk stil for innsjekk og utsjekk kolonne */
 </style>

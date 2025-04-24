@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16
+    container_name: campingboka-db
+    restart: always
+    environment:
+      POSTGRES_DB: campingboka
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432" # Gjør databasen tilgjengelig på localhost:5432
+
+volumes:
+  db_data:

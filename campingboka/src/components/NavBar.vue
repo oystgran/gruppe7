@@ -27,16 +27,21 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
 import { useRoute } from "vue-router";
 import { debounce } from "lodash";
+import { useDateStore } from "@/stores/dateStore";
 const store = useStaysStore();
+const dateStore = useDateStore();
+const selectedDate = computed({
+  get: () => dateStore.selectedDate,
+  set: (val) => dateStore.setDate(val),
+});
 const isVerktoyActive = computed(() => {
   return ["/control", "/boatRental", "/weather"].includes(useRoute.path);
 });
-const selectedDate = ref(new Date());
 console.log(store);
 watch(
   selectedDate,
