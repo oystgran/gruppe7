@@ -195,6 +195,7 @@
 <script>
 import { useStaysStore } from "@/stores/stays";
 import { countries } from "@/tools/countries";
+import dayjs from "dayjs";
 
 const BASE_PRICE = 340;
 const FJORD_EXTRA = 120;
@@ -219,9 +220,12 @@ export default {
     guest: Object,
     mode: String, // 'add' or 'edit'
   },
+  setup() {
+    const store = useStaysStore();
+    return { store };
+  },
   data() {
     return {
-      store: useStaysStore(),
       form: {
         name: "",
         car_number: "",
@@ -263,7 +267,7 @@ export default {
             name: newGuest.name,
             car_number: newGuest.car_number,
             nationality: newGuest.nationality,
-            price: newGuest.price,
+            price: Number(newGuest.price),
             spotId: newGuest.spotId || this.initialSpotId,
             check_in: new Date(newGuest.check_in),
             check_out: new Date(newGuest.check_out),
@@ -341,7 +345,7 @@ export default {
           this.form.adults * ADULT_PRICE +
           this.form.children * CHILD_PRICE +
           (this.form.electricity ? ELECTRICITY_PRICE : 0));
-      this.form.price = total;
+      this.form.price = Number(total);
     },
     querySearch(queryString, cb) {
       const results = Object.entries(countries).filter(([code, { name }]) => {
@@ -371,8 +375,8 @@ export default {
 
       const stayPayload = {
         spotId: this.form.spotId,
-        check_in: this.form.check_in,
-        check_out: checkOutDate,
+        check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
+        check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
         price: this.form.price,
         adults: this.form.adults,
         children: this.form.children,
@@ -381,6 +385,10 @@ export default {
 
       try {
         if (this.mode === "edit") {
+          console.log("Updating guest:", this.guest);
+          console.log("guestId:", this.guest?.guestId);
+          console.log("stayId:", this.guest?.stayId);
+
           await this.store.updateGuest(
             this.guest.guestId,
             guestPayload,
@@ -392,8 +400,8 @@ export default {
         }
 
         this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
-        this.$emit("guestSaved");
-        this.closeModal();
+        this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
+        this.closeModal(); // ✅ Bare én gang, etterpå
       } catch (err) {
         console.error(err);
         this.$message.error("Something went wrong.");

@@ -35,6 +35,7 @@ import MapComponent from "@/components/MapComponent.vue";
 import GuestModal from "@/components/GuestModal.vue";
 import { useStaysStore } from "@/stores/stays";
 import { useDateStore } from "@/stores/dateStore";
+import { isGuestActiveOnDate } from "@/utils/dateUtils";
 
 export default {
   name: "MapScreen",
@@ -51,22 +52,19 @@ export default {
       showAddGuestModal: false,
       showUpdateGuestModal: false,
       selectedSpot: null,
-      myDate: new Date(),
-      guests: {},
       updateGuestData: null,
     };
   },
   computed: {
     filteredGuests() {
       const result = {};
-      Object.keys(this.guests).forEach((spot) => {
-        const guest = this.guests[spot];
-        const checkIn = new Date(guest.check_in);
-        const checkOut = new Date(guest.check_out);
-        if (this.myDate >= checkIn && this.myDate <= checkOut) {
+      Object.keys(this.store.bookingsToday).forEach((spot) => {
+        const guest = this.store.bookingsToday[spot];
+        if (isGuestActiveOnDate(guest, this.dateStore.selectedDate)) {
           result[spot] = guest;
         }
       });
+
       return result;
     },
   },
@@ -78,7 +76,7 @@ export default {
   methods: {
     handleRectangleClicked(spot) {
       this.selectedSpot = Number(spot);
-      const guest = this.store.bookingsToday[this.selectedSpot];
+      const guest = this.store.bookingsToday[String(this.selectedSpot)];
 
       if (guest) {
         this.updateGuestData = {
@@ -109,6 +107,9 @@ export default {
       this.selectedSpot = null;
       this.updateGuestData = null;
     },
+  },
+  refreshGuestList() {
+    this.store.loadGuests(this.dateStore.selectedDate);
   },
 };
 </script>

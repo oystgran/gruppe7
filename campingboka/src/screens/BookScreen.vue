@@ -3,6 +3,7 @@
     <!-- GuestBook component -->
     <GuestBook
       ref="guestBook"
+      :selectedDate="dateStore.selectedDate"
       @showAddGuestModal="handleShowAddModal"
       @showUpdateGuestModal="handleShowUpdateModal"
     />
@@ -25,9 +26,11 @@
 import { ref } from "vue";
 import GuestBook from "@/components/GuestBook.vue";
 import GuestModal from "@/components/GuestModal.vue";
+import { useStaysStore } from "@/stores/stays";
 import { useDateStore } from "@/stores/dateStore";
 
 const dateStore = useDateStore();
+const staysStore = useStaysStore();
 
 const showAddGuestModal = ref(false);
 const showUpdateGuestModal = ref(false);
@@ -55,7 +58,7 @@ const closeModal = () => {
 };
 
 const refreshGuestList = () => {
-  guestBook.value?.store?.loadGuests();
+  staysStore.loadGuests(dateStore.selectedDate);
 };
 </script>
 

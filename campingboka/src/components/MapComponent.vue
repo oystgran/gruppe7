@@ -5,14 +5,13 @@
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 124.488 1580.0249687890137 741"
-      style="max-height: 500px"
       width="1580.0249687890137"
       height="741"
     >
       <g class="spots">
         <g class="spot1">
           <rect
-            @mouseover="showTooltip(1)"
+            @mouseover="showTooltip(1, $event)"
             @mouseleave="hideTooltip"
             @click="$emit('rectangleClicked', 1)"
             :class="{ occupied: guests[1] }"

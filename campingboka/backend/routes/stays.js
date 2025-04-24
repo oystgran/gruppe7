@@ -117,4 +117,39 @@ router.get("/archive", async (req, res) => {
   }
 });
 
+router.put("/:stayId", async (req, res) => {
+  const { stayId } = req.params;
+  const { guestId, guest, stay } = req.body;
+
+  try {
+    await pool.query(
+      `UPDATE guests
+       SET name = $1, car_number = $2, nationality = $3
+       WHERE id = $4`,
+      [guest.name, guest.car_number, guest.nationality, guestId]
+    );
+
+    await pool.query(
+      `UPDATE stays
+       SET spot_id = $1, check_in = $2, check_out = $3, adults = $4, children = $5, electricity = $6, price = $7
+       WHERE id = $8`,
+      [
+        stay.spotId,
+        stay.check_in,
+        stay.check_out,
+        stay.adults,
+        stay.children,
+        stay.electricity,
+        stay.price,
+        stayId,
+      ]
+    );
+
+    res.json({ message: "Guest and stay updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update guest and stay" });
+  }
+});
+
 module.exports = router;
