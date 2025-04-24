@@ -1,17 +1,18 @@
 <template>
-  <div
-    class="archive-table"
-    style="flex: 1 1 auto; width: 100%; height: calc(100vh - 140px)"
-  >
-    <ag-grid-vue
-      :rowData="rowData"
-      :columnDefs="colDefs"
-      class="ag-theme-alpine"
-      :quickFilterText="quickFilter"
-      :style="{ width, height }"
-      :pagination="true"
+  <div class="archive-table-wrapper">
+    <div
+      class="archive-table"
+      style="flex: 1 1 auto; width: 100%; height: calc(100vh - 140px)"
     >
-    </ag-grid-vue>
+      <ag-grid-vue
+        :rowData="rowData"
+        :columnDefs="colDefs"
+        class="ag-theme-alpine"
+        :quickFilterText="quickFilterText"
+        :pagination="true"
+        style="width: 100%; height: 100%"
+      />
+    </div>
   </div>
 </template>
 
@@ -25,13 +26,17 @@ import {
 } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule, DateFilterModule]);
-
+const quickFilter = ref("");
 export default {
   name: "ArchiveTable",
   props: {
     rowData: {
       type: Array,
       default: () => [],
+    },
+    quickFilterText: {
+      type: String,
+      default: "",
     },
   },
   components: {
@@ -64,6 +69,7 @@ export default {
 
     return {
       colDefs,
+      quickFilter,
     };
   },
 };
@@ -73,5 +79,17 @@ export default {
 .ag-theme-alpine {
   width: 100% !important;
   height: 100% !important;
+}
+.quick-search {
+  padding: 10px;
+  text-align: right;
+}
+.quick-search-input {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 300px;
 }
 </style>

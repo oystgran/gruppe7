@@ -10,18 +10,25 @@
       unlink-panels
       @change="fetchData"
     />
+    <input
+      class="quick-search"
+      v-model="searchText"
+      @input="emit('update:search', searchText)"
+      placeholder="Search..."
+    />
   </div>
 </template>
 
 <script setup>
-/** @type {import('vue').EmitFn} */
-// eslint-disable-next-line no-undef
-const emit = defineEmits(["update:rowData"]);
+/* eslint-disable no-undef */
 import { ref, onMounted } from "vue";
-import { useStaysStore } from "@/stores/stays";
 import dayjs from "dayjs";
+import { useStaysStore } from "@/stores/stays";
+
+const emit = defineEmits(["update:rowData", "update:search"]);
 
 const dateRange = ref([]);
+const searchText = ref("");
 const staysStore = useStaysStore();
 
 const fetchData = async () => {
@@ -30,31 +37,28 @@ const fetchData = async () => {
   const [start, end] = dateRange.value.map((d) =>
     dayjs(d).format("YYYY-MM-DD")
   );
+
   try {
     const stays = await staysStore.fetchStaysInRange(start, end);
+    const formatted = stays.map((data) => ({
+      ...data,
+      check_in: new Date(data.start_date),
+      check_out: new Date(data.end_date),
+      spot: data.spot_id ?? "Unknown",
+    }));
 
-    const formattedStays = stays.map((data) => {
-      return {
-        ...data,
-        check_in: new Date(data.start_date),
-        check_out: new Date(data.end_date),
-        spot: data.spot_id ?? "Unknown",
-      };
-    });
-    console.log("formattedstays: ");
-    console.table(formattedStays);
-    emit("update:rowData", formattedStays);
+    emit("update:rowData", formatted);
   } catch (err) {
-    console.error("Error fetching stays in archive:", err);
+    console.error("Failed to fetch stays for archive:", err);
   }
 };
 
 onMounted(() => {
   const today = new Date();
-  const weekAgo = new Date();
-  weekAgo.setDate(today.getDate() - 7);
+  const lastWeek = new Date();
+  lastWeek.setDate(today.getDate() - 7);
   dateRange.value = [
-    weekAgo.toISOString().split("T")[0],
+    lastWeek.toISOString().split("T")[0],
     today.toISOString().split("T")[0],
   ];
   fetchData();
@@ -64,7 +68,16 @@ onMounted(() => {
 <style scoped>
 .filter-container {
   display: flex;
-  justify-content: flex-start;
+  gap: 1rem;
   padding: 1rem;
+  align-items: center;
+}
+
+.quick-search {
+  flex: 1;
+  max-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 </style>
