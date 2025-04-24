@@ -28,6 +28,16 @@
           chartType="doughnut"
         />
       </div>
+      <el-button
+        type="success"
+        plain
+        size="small"
+        icon="Download"
+        class="export-btn"
+        @click="exportNationalityCSV"
+      >
+        Export CSV
+      </el-button>
     </div>
   </div>
 </template>
@@ -48,6 +58,30 @@ export default {
       filteredData: [],
       searchText: "",
     };
+  },
+  methods: {
+    exportNationalityCSV() {
+      const counts = {};
+      this.filteredData.forEach((row) => {
+        const country = row.nationality || "Unknown";
+        counts[country] = (counts[country] || 0) + 1;
+      });
+
+      const csvContent =
+        "data:text/csv;charset=utf-8," +
+        "Nationality,Count\n" +
+        Object.entries(counts)
+          .map(([country, count]) => `${country},${count}`)
+          .join("\n");
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "nationalities.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
   },
   computed: {
     nationalityData() {
