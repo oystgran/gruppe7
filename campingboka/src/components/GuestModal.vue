@@ -374,7 +374,7 @@ export default {
       };
 
       const stayPayload = {
-        spotId: this.form.spotId,
+        spot_Id: this.form.spotId,
         check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
         check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
         price: this.form.price,

@@ -43,7 +43,7 @@ router.post("/", async (req, res) => {
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
         guestId,
-        stay.spot_id,
+        stay.spot_Id,
         stay.check_in,
         stay.check_out,
         stay.adults,
@@ -134,7 +134,7 @@ router.put("/:stayId", async (req, res) => {
        SET spot_id = $1, check_in = $2, check_out = $3, adults = $4, children = $5, electricity = $6, price = $7
        WHERE id = $8`,
       [
-        stay.spotId,
+        stay.spot_Id,
         stay.check_in,
         stay.check_out,
         stay.adults,
