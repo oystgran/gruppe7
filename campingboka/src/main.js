@@ -5,8 +5,6 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
-import "firebase/compat/firestore";
-import "firebase/compat/storage";
 import { createPinia } from "pinia";
 import { auth } from "./tools/firebase.js";
 
@@ -22,7 +20,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-export const db = firebase.firestore();
 console.log(firebase);
 
 const app = createApp(App);
