@@ -8,6 +8,7 @@ import "firebase/compat/auth";
 import "firebase/compat/firestore";
 import "firebase/compat/storage";
 import { createPinia } from "pinia";
+import { auth } from "./tools/firebase.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -30,3 +31,9 @@ app.use(ElementPlus);
 app.use(router);
 app.use(pinia);
 app.mount("#app");
+
+import { useAuthStore } from "@/stores/auth.js";
+auth.onAuthStateChanged(user => {
+  const authStore = useAuthStore();
+  authStore.setUser(user);
+});
