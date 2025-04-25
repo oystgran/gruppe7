@@ -28,18 +28,18 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
   if (auth.loading) {
-    const unwatch = auth.$subscribe(() => {
-      if (!auth.loading) {
+    const unwatch = auth.$subscribe((mutation, state) => {
+      if (!state.loading) {
         unwatch();
-        check();
+        proceed();
       }
     });
   } else {
-    check();
+    proceed();
   }
-  function check() {
+  function proceed() {
     if (to.meta.requiresAuth && !auth.isLoggedIn) {
-      next({ name: "Login", query: { redirect: to.fullPath } });
+      return next({ name: "Login", query: { redirect: to.fullPath } });
     } else {
       next();
     }

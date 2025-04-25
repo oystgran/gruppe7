@@ -4,11 +4,10 @@ import { auth }        from '@/tools/firebase.js';
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
-    loading: false,
+    loading: true,
   }),
   actions: {
     async signIn(email, password) {
-      this.loading = true;
       try {
         const cred = await auth.signInWithEmailAndPassword(email, password);
         this.user    = cred.user;
