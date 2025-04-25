@@ -1,7 +1,7 @@
 <template>
   <div class="login-view" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
-    <el-card class="login-card" shadow="hover" style="width: 360px;">
-      <h2 style="text-align: center;">Logg inn</h2>
+    <el-card class="login-card" style="width: 360px;">
+      <h2 style="text-align: center;">Geirangerfjorden Feriesenter</h2>
       <el-form
         :model="form"
         :rules="rules"
@@ -76,6 +76,16 @@ export default {
 
 <style scoped>
 .login-card {
-  padding: 24px;
+  padding: 20px;
+}
+
+.login-view {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('@/assets/camping.png');
+  background-size: cover;
+  background-position: center;
 }
 </style>
