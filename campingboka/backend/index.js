@@ -14,7 +14,7 @@ const pool = new Pool({
 const guestsRouter = require("./routes/guests")(pool);
 app.use("/api/guests", guestsRouter);
 
-const staysRouter = require("./routes/stays");
+const staysRouter = require("./routes/stays")(pool);
 app.use("/api/stays", staysRouter);
 
 app.listen(3000, () => {
