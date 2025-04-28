@@ -1407,8 +1407,14 @@
       </g>
     </svg>
 
-    <div v-if="tooltipVisible" :style="tooltipStyle" class="guest-tooltip">
-      <div class="guest-name">{{ tooltipData.name }}</div>
+    <div
+      v-if="tooltipVisible"
+      :style="tooltipStyle"
+      class="guest-tooltip"
+    >
+      <div class="car-number">
+        {{ tooltipData.registrationNumber }}
+      </div>
       <div class="guest-nationality">
         <img
           v-if="countryFlag(tooltipData.nationality)"
@@ -1419,6 +1425,16 @@
           style="margin-right: 8px"
         />
         {{ tooltipData.nationality }}
+      </div>
+      <div class="guest-times">
+        <div>
+          <strong>Innsjekk:</strong>
+          {{ formatDateTime(tooltipData.checkIn) }}
+        </div>
+        <div>
+          <strong>Utsjekk:</strong>
+          {{ formatDateTime(tooltipData.checkOut) }}
+        </div>
       </div>
     </div>
   </div>
@@ -1431,46 +1447,69 @@ import { computed } from "vue";
 
 export default {
   name: "MapComponent",
+
   data() {
     return {
       tooltipVisible: false,
-      tooltipData: {},
+      tooltipData: {
+        registrationNumber: "",
+        nationality: "",
+        checkIn: "",
+        checkOut: ""
+      },
       tooltipStyle: {
         position: "absolute",
         left: "0px",
-        top: "0px",
+        top: "0px"
       },
     };
   },
+
   setup() {
-    const store = useStaysStore();
-
+    const store  = useStaysStore();
     const guests = computed(() => store.bookingsToday);
-
-    return {
-      store,
-      guests,
-    };
+    return { guests };
   },
+
   methods: {
     showTooltip(spot) {
-      const guest = this.guests[spot];
-      if (guest) {
-        this.tooltipData = guest;
-        this.tooltipVisible = true;
-      } else {
+      const booking = this.guests[spot];
+      if (!booking) {
         this.tooltipVisible = false;
+        return;
       }
+      this.tooltipData = {
+        registrationNumber:
+          booking.car_number ||
+          booking.registration_number ||
+          "(ingen registrering)",
+        nationality: booking.nationality,
+        checkIn:  booking.check_in,
+        checkOut: booking.check_out,
+      };
+      this.tooltipVisible = true;
     },
+
     hideTooltip() {
       this.tooltipVisible = false;
     },
-    countryFlag(nationality) {
-      if (!nationality) return "";
+
+    countryFlag(nat) {
+      if (!nat) return "";
       const entry = Object.entries(countries).find(
-        ([, data]) => data.name.toLowerCase() === nationality.toLowerCase()
+        ([, data]) => data.name.toLowerCase() === nat.toLowerCase()
       );
-      return entry ? entry[1].flag : "";
+      return entry?.[1]?.flag || "";
+    },
+
+    formatDateTime(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      return d.toLocaleString("no-NO", {
+        day:    "2-digit",
+        month:  "2-digit",
+        year:   "numeric",
+      });
     },
   },
 };

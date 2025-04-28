@@ -101,7 +101,7 @@ export default {
 ::v-deep .guest-tooltip {
   transform: rotate(-30deg) !important;
   transform-origin: center !important;
-  left: auto !important;
-  top: auto !important;
+  left: 50px !important;
+  top: 350px !important;
 }
 </style>
