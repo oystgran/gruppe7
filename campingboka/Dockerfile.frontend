@@ -8,4 +8,5 @@ RUN npm install
 COPY . .
 
 EXPOSE 8080
-CMD ["npm", "run", "serve"]
+
+CMD ["node", "--max-old-space-size=1024", "node_modules/@vue/cli-service/bin/vue-cli-service.js", "serve"]
