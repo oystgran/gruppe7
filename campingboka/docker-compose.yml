@@ -6,16 +6,13 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "8080:8080"
-    env_file:
-      - .env
+      - "80:80"
     depends_on:
       - backend
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     env_file:
