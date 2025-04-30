@@ -251,23 +251,31 @@
                 class="price-field"
               />
             </div>
-
-            <div
-              v-if="priceSummary"
-              style="
-                text-align: right;
-                font-size: 13px;
-                opacity: 0.7;
-                margin-top: 6px;
-              "
-            >
-              {{ priceSummary }}
-            </div>
           </el-form-item>
         </el-form>
 
+        <div
+          style="
+            text-align: right;
+            font-size: 13px;
+            opacity: 0.7;
+            min-height: 20px;
+            height: 20px;
+            margin-top: -14px; /* justér om nødvendig for spacing */
+            margin-bottom: 12px;
+            margin-left: 60px;
+            width: 100%;
+            max-width: 350px;
+            padding-right: 210px;
+          "
+        >
+          <span :style="{ visibility: priceSummary ? 'visible' : 'hidden' }">
+            {{ priceSummary }}
+          </span>
+        </div>
+
         <el-form-item v-if="mode === 'edit'">
-          <div style="display: flex; margin-left: 42px; gap: 20px">
+          <div style="display: flex; gap: 20px">
             <el-button type="success" @click="handleSubmit">Update</el-button>
             <el-button type="danger" @click="handleDelete">Delete</el-button>
           </div>
