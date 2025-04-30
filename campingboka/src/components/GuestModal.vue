@@ -9,7 +9,9 @@
         </h2>
 
         <el-form
+          ref="guestForm"
           :model="form"
+          :rules="formRules"
           label-width="90px"
           label-position="left"
           @submit.prevent="handleSubmit"
@@ -65,7 +67,7 @@
             />
           </el-form-item>
 
-          <el-form-item label="Check-out">
+          <el-form-item label="Check-out" prop="check_out">
             <el-date-picker
               v-model="form.check_out"
               type="date"
@@ -251,6 +253,24 @@ export default {
         children: 0,
         electricity: false,
         check_out: null,
+      },
+      formRules: {
+        check_out: [
+          {
+            validator: (rule, value, callback) => {
+              if (!value) {
+                return callback(new Error("Please select a check-out date"));
+              }
+              const checkIn = new Date(this.form.check_in);
+              const checkOut = new Date(value);
+              if (checkOut <= checkIn) {
+                return callback(new Error("Check-out must be after check-in"));
+              }
+              callback();
+            },
+            trigger: "change",
+          },
+        ],
       },
     };
   },
@@ -461,48 +481,54 @@ export default {
       if (!valid.includes(this.form.nationality)) this.form.nationality = "";
     },
     async handleSubmit() {
-      const checkOutDate = new Date(this.form.check_out);
-      checkOutDate.setHours(12, 0, 0, 0);
-
-      const guestPayload = {
-        name: this.form.name,
-        car_number: this.form.car_number,
-        nationality: this.form.nationality,
-      };
-
-      const stayPayload = {
-        spot_Id: this.form.spotId,
-        check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
-        check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
-        price: this.form.price,
-        adults: this.form.adults,
-        children: this.form.children,
-        electricity: this.form.electricity,
-      };
-
-      try {
-        if (this.mode === "edit") {
-          console.log("Updating guest:", this.guest);
-          console.log("guestId:", this.guest?.guestId);
-          console.log("stayId:", this.guest?.stayId);
-
-          await this.store.updateGuest(
-            this.guest.guestId,
-            guestPayload,
-            this.guest.stayId,
-            stayPayload
-          );
-        } else {
-          await this.store.addGuest(guestPayload, stayPayload);
+      this.$refs.guestForm.validate(async (valid) => {
+        if (!valid) {
+          this.$message.error("Please fix the errors before submitting.");
+          return;
         }
+        const checkOutDate = new Date(this.form.check_out);
+        checkOutDate.setHours(12, 0, 0, 0);
 
-        this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
-        this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
-        this.closeModal(); // ✅ Bare én gang, etterpå
-      } catch (err) {
-        console.error(err);
-        this.$message.error("Something went wrong.");
-      }
+        const guestPayload = {
+          name: this.form.name,
+          car_number: this.form.car_number,
+          nationality: this.form.nationality,
+        };
+
+        const stayPayload = {
+          spot_Id: this.form.spotId,
+          check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
+          check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
+          price: this.form.price,
+          adults: this.form.adults,
+          children: this.form.children,
+          electricity: this.form.electricity,
+        };
+
+        try {
+          if (this.mode === "edit") {
+            console.log("Updating guest:", this.guest);
+            console.log("guestId:", this.guest?.guestId);
+            console.log("stayId:", this.guest?.stayId);
+
+            await this.store.updateGuest(
+              this.guest.guestId,
+              guestPayload,
+              this.guest.stayId,
+              stayPayload
+            );
+          } else {
+            await this.store.addGuest(guestPayload, stayPayload);
+          }
+
+          this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
+          this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
+          this.closeModal(); // ✅ Bare én gang, etterpå
+        } catch (err) {
+          console.error(err);
+          this.$message.error("Something went wrong.");
+        }
+      });
     },
     async handleDelete() {
       try {
