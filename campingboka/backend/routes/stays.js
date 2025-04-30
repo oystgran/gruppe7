@@ -164,4 +164,15 @@ router.put("/:stayId", async (req, res) => {
   }
 });
 
+router.delete("/:stayId", async (req, res) => {
+  const { stayId } = req.params;
+  try {
+    await pool.query("DELETE FROM stays WHERE id = $1", [stayId]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Failed to delete stay:", err);
+    res.status(500).json({ error: "Delete stay failed" });
+  }
+});
+
 module.exports = router;

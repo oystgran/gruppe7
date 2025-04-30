@@ -27,14 +27,34 @@
                 Name
               </span>
             </template>
-            <el-autocomplete
-              v-model="form.name"
-              :fetch-suggestions="debouncedGuestSearch"
-              :trigger-on-focus="false"
-              placeholder="Enter guest name"
-              clearable
-              @select="onGuestSelected"
-            />
+
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 8px;
+              "
+            >
+              <el-autocomplete
+                v-model="form.name"
+                :fetch-suggestions="debouncedGuestSearch"
+                :trigger-on-focus="false"
+                placeholder="Enter guest name"
+                clearable
+                @select="onGuestSelected"
+                style="flex: 1; max-width: 240px"
+              />
+              <el-tag
+                v-if="isVip"
+                type="warning"
+                effect="dark"
+                size="small"
+                style="white-space: nowrap; margin-left: 8px"
+              >
+                VIP 🌟
+              </el-tag>
+            </div>
           </el-form-item>
 
           <el-form-item label="Car number" prop="car_number">
@@ -55,6 +75,7 @@
               clearable
               :trigger-on-focus="false"
               @select="onCarSelected"
+              style="max-width: 166px; width: 100%"
             />
           </el-form-item>
 
@@ -76,6 +97,7 @@
               required
               clearable
               @blur="validateNationality"
+              style="max-width: 166px; width: 100%"
             >
               <template v-slot="{ item }">
                 <img
@@ -329,6 +351,9 @@ export default {
   },
   data() {
     return {
+      isVip: false,
+      nameSelectedFromList: false,
+      carSelectedFromList: false,
       form: {
         name: "",
         car_number: "",
@@ -425,6 +450,20 @@ export default {
     }
   },
   watch: {
+    "form.name"(newVal) {
+      if (!newVal || !this.nameSelectedFromList) {
+        this.isVip = false;
+        this.checkVipStatus(newVal);
+      }
+      this.nameSelectedFromList = false;
+    },
+    "form.car_number"(newVal) {
+      if (!newVal || !this.carSelectedFromList) {
+        this.isVip = false;
+        this.checkVipStatus(newVal);
+      }
+      this.carSelectedFromList = false;
+    },
     guest: {
       immediate: true,
       handler(newGuest) {
@@ -489,6 +528,37 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
+    async checkVipStatus(nameOrCarNumber) {
+      if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
+        this.isVip = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`
+        );
+        const guests = await res.json();
+
+        const matched = guests.find(
+          (g) =>
+            g.name.toLowerCase() === this.form.name.toLowerCase() &&
+            g.car_number.toLowerCase() === this.form.car_number.toLowerCase()
+        );
+
+        if (matched?.last_checkout) {
+          const daysAgo =
+            (new Date() - new Date(matched.last_checkout)) /
+            (1000 * 60 * 60 * 24);
+          this.isVip = daysAgo >= 14;
+        } else {
+          this.isVip = false;
+        }
+      } catch (err) {
+        console.error("VIP lookup failed:", err);
+        this.isVip = false;
+      }
+    },
     hasValidationError(fieldName) {
       const field = this.$refs.guestForm?.fields?.find(
         (f) => f.prop === fieldName
@@ -535,6 +605,7 @@ export default {
       }
     },
     onGuestSelected(item) {
+      this.nameSelectedFromList = true;
       if (!item || !item.guest) return;
 
       const guest = item.guest;
@@ -542,6 +613,16 @@ export default {
 
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
+
+      const lastCheckout = item.guest.last_checkout;
+      if (lastCheckout) {
+        const daysAgo = Math.floor(
+          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
+        );
+        this.isVip = daysAgo >= 14;
+      } else {
+        this.isVip = false;
+      }
 
       const nationality = guest.nationality;
       console.log("Tidligere brukt nasjonalitet:", nationality);
@@ -558,12 +639,23 @@ export default {
     },
 
     onCarSelected(item) {
+      this.carSelectedFromList = true;
       if (!item || !item.guest) return;
 
       const guest = item.guest;
 
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
+
+      const lastCheckout = item.guest.last_checkout;
+      if (lastCheckout) {
+        const daysAgo = Math.floor(
+          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
+        );
+        this.isVip = daysAgo >= 14;
+      } else {
+        this.isVip = false;
+      }
 
       const nationality = guest.nationality;
       if (nationality) {
