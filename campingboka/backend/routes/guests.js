@@ -21,7 +21,7 @@ module.exports = (pool) => {
 
     try {
       const result = await pool.query(
-        `SELECT id, name, car_number
+        `SELECT id, name, car_number, nationality
          FROM guests
          WHERE name ILIKE $1 OR car_number ILIKE $1
          LIMIT 10`,

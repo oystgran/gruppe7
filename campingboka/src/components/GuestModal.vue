@@ -376,12 +376,45 @@ export default {
       }
     },
     onGuestSelected(item) {
-      this.form.name = item.guest.name;
-      this.form.car_number = item.guest.car_number;
+      if (!item || !item.guest) return;
+
+      const guest = item.guest;
+      console.log("Valgt gjest:", guest);
+
+      this.form.name = guest.name || "";
+      this.form.car_number = guest.car_number || "";
+
+      const nationality = guest.nationality;
+      console.log("Tidligere brukt nasjonalitet:", nationality);
+
+      if (nationality) {
+        const match = Object.values(countries).find(
+          (c) => c.name.toLowerCase() === nationality.toLowerCase()
+        );
+        this.form.nationality = match ? match.name : "";
+        console.log("Matchet nasjonalitet:", this.form.nationality);
+      } else {
+        this.form.nationality = "";
+      }
     },
+
     onCarSelected(item) {
-      this.form.name = item.guest.name;
-      this.form.car_number = item.guest.car_number;
+      if (!item || !item.guest) return;
+
+      const guest = item.guest;
+
+      this.form.name = guest.name || "";
+      this.form.car_number = guest.car_number || "";
+
+      const nationality = guest.nationality;
+      if (nationality) {
+        const match = Object.values(countries).find(
+          (c) => c.name.toLowerCase() === nationality.toLowerCase()
+        );
+        this.form.nationality = match ? match.name : "";
+      } else {
+        this.form.nationality = "";
+      }
     },
     isToday(date) {
       const today = new Date();
