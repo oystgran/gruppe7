@@ -42,36 +42,44 @@ router.get("/", async (req, res) => {
 
 // POST add guest and stay
 router.post("/", async (req, res) => {
-  const { guestId, guest, stay } = req.body;
+  const { guest, stay } = req.body;
 
   try {
-    let resolvedGuestId = guestId;
+    // Sjekk om gjest allerede finnes med car_number
+    const existingGuest = await pool.query(
+      `SELECT id FROM guests WHERE car_number = $1`,
+      [guest.car_number]
+    );
 
-    if (!resolvedGuestId) {
-      // Sjekk om gjest finnes allerede med samme navn og bilnummer
-      const search = await pool.query(
-        `SELECT id FROM guests WHERE LOWER(name) = LOWER($1) AND LOWER(car_number) = LOWER($2) LIMIT 1`,
-        [guest.name, guest.car_number]
+    let guestId;
+
+    if (existingGuest.rows.length > 0) {
+      // Hvis gjest finnes, bruk ID og oppdater navn/nasjonalitet
+      guestId = existingGuest.rows[0].id;
+
+      await pool.query(
+        `UPDATE guests
+         SET name = $1, nationality = $2
+         WHERE id = $3`,
+        [guest.name, guest.nationality, guestId]
       );
-
-      if (search.rows.length > 0) {
-        resolvedGuestId = search.rows[0].id;
-      } else {
-        const guestResult = await pool.query(
-          `INSERT INTO guests (name, car_number, nationality)
-           VALUES ($1, $2, $3) RETURNING id`,
-          [guest.name, guest.car_number, guest.nationality]
-        );
-        resolvedGuestId = guestResult.rows[0].id;
-      }
+    } else {
+      // Hvis ikke, legg til ny gjest
+      const newGuest = await pool.query(
+        `INSERT INTO guests (name, car_number, nationality)
+         VALUES ($1, $2, $3)
+         RETURNING id`,
+        [guest.name, guest.car_number, guest.nationality]
+      );
+      guestId = newGuest.rows[0].id;
     }
 
-    // Lagre selve oppholdet
+    // Uansett: lagre oppholdet
     await pool.query(
       `INSERT INTO stays (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
-        resolvedGuestId,
+        guestId,
         stay.spot_Id,
         stay.check_in,
         stay.check_out,
@@ -82,11 +90,9 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    res
-      .status(201)
-      .json({ message: "Guest and stay added", guestId: resolvedGuestId });
+    res.status(201).json({ message: "Guest and stay added", guestId });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in POST /api/stays:", err);
     res.status(500).json({ error: "Failed to add guest and stay" });
   }
 });
