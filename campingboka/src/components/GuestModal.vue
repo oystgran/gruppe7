@@ -12,11 +12,21 @@
           ref="guestForm"
           :model="form"
           :rules="formRules"
-          label-width="90px"
           label-position="left"
           @submit.prevent="handleSubmit"
+          label-width="110px"
         >
-          <el-form-item label="Name">
+          <el-form-item label="Name" prop="name">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('name')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Name
+              </span>
+            </template>
             <el-autocomplete
               v-model="form.name"
               :fetch-suggestions="debouncedGuestSearch"
@@ -27,7 +37,17 @@
             />
           </el-form-item>
 
-          <el-form-item label="Car number">
+          <el-form-item label="Car number" prop="car_number">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('car_number')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Car number
+              </span>
+            </template>
             <el-autocomplete
               v-model="form.car_number"
               :fetch-suggestions="debouncedCarSearch"
@@ -38,7 +58,17 @@
             />
           </el-form-item>
 
-          <el-form-item label="Nationality">
+          <el-form-item label="Nationality" prop="nationality">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('nationality')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Nationality
+              </span>
+            </template>
             <el-autocomplete
               v-model="form.nationality"
               :fetch-suggestions="querySearch"
@@ -58,7 +88,17 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="Check-in">
+          <el-form-item label="Check-in" prop="check_in">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('check_in')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Check-in
+              </span>
+            </template>
             <el-date-picker
               v-model="form.check_in"
               type="datetime"
@@ -67,7 +107,17 @@
             />
           </el-form-item>
 
-          <el-form-item label="Check-out" prop="check_out">
+          <el-form-item prop="check_out">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('check_out')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Check-out
+              </span>
+            </template>
             <el-date-picker
               v-model="form.check_out"
               type="date"
@@ -76,8 +126,16 @@
             />
           </el-form-item>
 
-          <el-form-item label="Spot">
-            <div style="display: flex; align-items: center">
+          <el-form-item label="Spot" prop="spotId">
+            <template #label>
+              <span>
+                <span v-if="!form.name" style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Spot
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input
                 :value="form.spotId"
                 disabled
@@ -101,8 +159,18 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="Adults">
-            <div style="display: flex; align-items: center">
+          <el-form-item prop="adults">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('adults')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Adults
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.adults"
                 :min="0"
@@ -122,8 +190,18 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="Children">
-            <div style="display: flex; align-items: center">
+          <el-form-item prop="children">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('adults')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Children
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.children"
                 :min="0"
@@ -155,7 +233,7 @@
                   opacity: 0.6;
                   font-size: 12px;
                   white-space: nowrap;
-                  margin-left: 12px;
+                  margin-left: 50px;
                 "
               >
                 {{ form.electricity ? `+ ${50}kr` : "+ 0kr" }}
@@ -164,7 +242,7 @@
           </el-form-item>
 
           <el-form-item label="Price">
-            <div style="display: flex; align-items: center">
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.price"
                 :controls="false"
@@ -189,7 +267,7 @@
         </el-form>
 
         <el-form-item v-if="mode === 'edit'">
-          <div style="display: flex; margin-left: 30px; gap: 20px">
+          <div style="display: flex; margin-left: 42px; gap: 20px">
             <el-button type="success" @click="handleSubmit">Update</el-button>
             <el-button type="danger" @click="handleDelete">Delete</el-button>
           </div>
@@ -199,7 +277,7 @@
           <el-button
             type="primary"
             @click="handleSubmit"
-            style="margin-left: 30px"
+            style="margin-left: 42px"
             >Add</el-button
           >
         </el-form-item>
@@ -255,16 +333,61 @@ export default {
         check_out: null,
       },
       formRules: {
+        name: [
+          { required: true, message: "Please enter a name", trigger: "blur" },
+        ],
+        car_number: [
+          {
+            required: true,
+            message: "Please enter a car number",
+            trigger: "blur",
+          },
+        ],
+        nationality: [
+          {
+            required: true,
+            message: "Please select a nationality",
+            trigger: "blur",
+          },
+        ],
+        check_in: [
+          {
+            required: true,
+            message: "Please choose a check-in date",
+            trigger: "change",
+          },
+        ],
         check_out: [
           {
+            required: true,
             validator: (rule, value, callback) => {
-              if (!value) {
+              if (!value)
                 return callback(new Error("Please select a check-out date"));
-              }
               const checkIn = new Date(this.form.check_in);
               const checkOut = new Date(value);
               if (checkOut <= checkIn) {
                 return callback(new Error("Check-out must be after check-in"));
+              }
+              callback();
+            },
+            trigger: "change",
+          },
+        ],
+        spotId: [
+          {
+            required: true,
+            message: "Spot number is required",
+            trigger: "change",
+          },
+        ],
+        adults: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              if (this.form.adults === 0 && this.form.children === 0) {
+                return callback(
+                  new Error("At least one adult or child is required")
+                );
               }
               callback();
             },
@@ -358,6 +481,14 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
+    hasValidationError(fieldName) {
+      const field = this.$refs.guestForm?.fields?.find(
+        (f) => f.prop === fieldName
+      );
+      const isInvalid = field?.validateState === "error";
+      const isEmpty = !this.form[fieldName];
+      return isInvalid || isEmpty;
+    },
     async fetchCarSuggestions(query, cb) {
       if (!query || query.trim().length < 1) return cb([]);
       try {
@@ -589,5 +720,27 @@ export default {
 }
 .close:hover {
   color: red;
+}
+/* ::v-deep(.el-form-item.is-required .el-form-item__label::before) {
+  content: "*";
+  color: red;
+  position: absolute;
+  left: -10px; 
+  font-size: 16px;
+} */
+
+::v-deep(.el-form-item__label) {
+  position: relative; /* 
+  padding-right: 10px; */
+}
+::v-deep(.el-form-item__label::before) {
+  display: none !important;
+}
+.modal-content .el-form {
+  width: 100%;
+  max-width: 350px; /* eller større hvis du ønsker mer plass */
+}
+.form-indent {
+  margin-left: 12px;
 }
 </style>
