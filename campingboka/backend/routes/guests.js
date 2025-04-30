@@ -35,5 +35,17 @@ module.exports = (pool) => {
     }
   });
 
+  app.put("/api/guests/:guestId", async (req, res) => {
+    const { guestId } = req.params;
+    const { name, car_number, nationality } = req.body;
+
+    await db.query(
+      `UPDATE guests SET name = $1, car_number = $2, nationality = $3 WHERE id = $4`,
+      [name, car_number, nationality, guestId]
+    );
+
+    res.sendStatus(200);
+  });
+
   return router;
 };

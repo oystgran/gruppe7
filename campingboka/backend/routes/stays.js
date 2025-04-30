@@ -42,20 +42,36 @@ router.get("/", async (req, res) => {
 
 // POST add guest and stay
 router.post("/", async (req, res) => {
-  const { guest, stay } = req.body;
-  try {
-    const guestResult = await pool.query(
-      `INSERT INTO guests (name, car_number, nationality)
-       VALUES ($1, $2, $3) RETURNING id`,
-      [guest.name, guest.car_number, guest.nationality]
-    );
-    const guestId = guestResult.rows[0].id;
+  const { guestId, guest, stay } = req.body;
 
+  try {
+    let resolvedGuestId = guestId;
+
+    if (!resolvedGuestId) {
+      // Sjekk om gjest finnes allerede med samme navn og bilnummer
+      const search = await pool.query(
+        `SELECT id FROM guests WHERE LOWER(name) = LOWER($1) AND LOWER(car_number) = LOWER($2) LIMIT 1`,
+        [guest.name, guest.car_number]
+      );
+
+      if (search.rows.length > 0) {
+        resolvedGuestId = search.rows[0].id;
+      } else {
+        const guestResult = await pool.query(
+          `INSERT INTO guests (name, car_number, nationality)
+           VALUES ($1, $2, $3) RETURNING id`,
+          [guest.name, guest.car_number, guest.nationality]
+        );
+        resolvedGuestId = guestResult.rows[0].id;
+      }
+    }
+
+    // Lagre selve oppholdet
     await pool.query(
       `INSERT INTO stays (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
       [
-        guestId,
+        resolvedGuestId,
         stay.spot_Id,
         stay.check_in,
         stay.check_out,
@@ -66,35 +82,12 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    res.status(201).json({ message: "Guest and stay added" });
+    res
+      .status(201)
+      .json({ message: "Guest and stay added", guestId: resolvedGuestId });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to add guest and stay" });
-  }
-});
-
-// DELETE stay and possibly guest
-router.delete("/:stayId", async (req, res) => {
-  const { stayId } = req.params;
-  const { guestId } = req.query;
-
-  try {
-    await pool.query(`DELETE FROM stays WHERE id = $1`, [stayId]);
-
-    const checkResult = await pool.query(
-      `SELECT 1 FROM stays WHERE guest_id = $1 LIMIT 1`,
-      [guestId]
-    );
-
-    if (checkResult.rowCount === 0) {
-      await pool.query(`DELETE FROM guests WHERE id = $1`, [guestId]);
-      res.json({ message: "Stay and guest deleted" });
-    } else {
-      res.json({ message: "Stay deleted; guest has other stays" });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete stay and/or guest" });
   }
 });
 
