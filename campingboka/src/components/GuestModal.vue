@@ -15,11 +15,25 @@
           @submit.prevent="handleSubmit"
         >
           <el-form-item label="Name">
-            <el-input v-model="form.name" required clearable />
+            <el-autocomplete
+              v-model="form.name"
+              :fetch-suggestions="debouncedGuestSearch"
+              :trigger-on-focus="false"
+              placeholder="Enter guest name"
+              clearable
+              @select="onGuestSelected"
+            />
           </el-form-item>
 
           <el-form-item label="Car number">
-            <el-input v-model="form.car_number" required clearable />
+            <el-autocomplete
+              v-model="form.car_number"
+              :fetch-suggestions="debouncedCarSearch"
+              placeholder="Enter car number"
+              clearable
+              :trigger-on-focus="false"
+              @select="onCarSelected"
+            />
           </el-form-item>
 
           <el-form-item label="Nationality">
@@ -196,6 +210,7 @@
 import { useStaysStore } from "@/stores/stays";
 import { countries } from "@/tools/countries";
 import dayjs from "dayjs";
+import debounce from "lodash/debounce";
 
 const BASE_PRICE = 340;
 const FJORD_EXTRA = 120;
@@ -318,7 +333,56 @@ export default {
       } kr`;
     },
   },
+  created() {
+    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 300);
+    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
+  },
   methods: {
+    async fetchCarSuggestions(query, cb) {
+      if (!query || query.trim().length < 1) return cb([]);
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(query)}`
+        );
+        const suggestions = await res.json();
+        cb(
+          suggestions.map((g) => ({
+            value: `${g.car_number} (${g.name})`,
+            guest: g,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching car number suggestions:", err);
+        cb([]);
+      }
+    },
+    async fetchGuestSuggestions(query, cb) {
+      if (!query || query.trim().length < 1) return cb([]);
+
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(query)}`
+        );
+        const suggestions = await res.json();
+        cb(
+          suggestions.map((g) => ({
+            value: `${g.name} (${g.car_number})`,
+            guest: g,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching suggestions:", err);
+        cb([]);
+      }
+    },
+    onGuestSelected(item) {
+      this.form.name = item.guest.name;
+      this.form.car_number = item.guest.car_number;
+    },
+    onCarSelected(item) {
+      this.form.name = item.guest.name;
+      this.form.car_number = item.guest.car_number;
+    },
     isToday(date) {
       const today = new Date();
       return (

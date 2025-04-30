@@ -6,6 +6,17 @@ const pool = require("../db");
 // GET stays for selected date (with guest info)
 router.get("/", async (req, res) => {
   const { date } = req.query;
+  console.log("🔍 Request received with date:", date); // Debug
+
+  if (!date) {
+    return res.status(400).json({ error: "Missing 'date' query parameter" });
+  }
+
+  const dayjs = require("dayjs");
+  if (!dayjs(date).isValid()) {
+    return res.status(400).json({ error: "Invalid date format" });
+  }
+  console.log("🔎 Kall til /api/stays med dato:", date);
   try {
     const result = await pool.query(
       `SELECT s.*, g.name, g.car_number, g.nationality
@@ -22,7 +33,9 @@ router.get("/", async (req, res) => {
     });
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error("🔥 FULL FEIL I /api/stays:");
+    console.error("Melding:", err.message);
+    console.error("Stack trace:", err.stack);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
