@@ -20,6 +20,16 @@
           chartType="pie"
         />
       </div>
+
+      <div class="panel-middle">
+     <h3>Average persons per visit</h3>
+     <ArchiveChart
+       :chartData="avgPartyData"
+       :chartOptions="avgPartyOptions"
+       chartType="bar"
+     />
+   </div>
+
       <div class="panel-lower">
         <h3>Electricity usage</h3>
         <ArchiveChart
@@ -154,6 +164,48 @@ export default {
         },
       };
     },
+    avgPartyData() {
+     const total = this.filteredData.length;
+     const sumAdults = this.filteredData.reduce(
+       (sum, row) => sum + (row.adults || 0),
+       0
+     );
+     const sumChildren = this.filteredData.reduce(
+       (sum, row) => sum + (row.children || 0),
+       0
+     );
+     const avgAdults = total ? +(sumAdults / total).toFixed(2) : 0;
+     const avgChildren = total ? +(sumChildren / total).toFixed(2) : 0;
+
+     return {
+       labels: ["Adults", "Children"],
+       datasets: [
+         {
+           label: "Average per stay",
+           data: [avgAdults, avgChildren],
+           backgroundColor: ["#36A2EB", "#FF6384"],
+         },
+       ],
+     };
+   },
+
+   avgPartyOptions() {
+     return {
+       responsive: true,
+       plugins: {
+         legend: { display: false },
+       },
+       scales: {
+         y: {
+           beginAtZero: true,
+           title: {
+             display: true,
+             text: "Average count",
+           },
+         },
+       },
+     };
+   },
   },
 };
 </script>
@@ -186,6 +238,7 @@ export default {
 }
 
 .panel-upper,
+.panel-middle,
 .panel-lower {
   flex: 1 1 50%;
   overflow: auto;
@@ -193,6 +246,10 @@ export default {
 }
 
 .panel-upper {
+  border-bottom: 1px solid #ccc;
+}
+
+.panel-middle {
   border-bottom: 1px solid #ccc;
 }
 
