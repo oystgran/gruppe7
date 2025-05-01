@@ -75,30 +75,65 @@ export default {
     return {
       filteredData: [],
       searchText: "",
+      dateRange: {
+        start: null,
+        end: null,
+      },
     };
   },
   methods: {
     exportNationalityCSV() {
-      const counts = {};
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
+      const guestDaysByCountry = {};
+      const dates = [];
+
       this.filteredData.forEach((row) => {
         const country = row.nationality || "Unknown";
-        counts[country] = (counts[country] || 0) + 1;
+        const ci = new Date(row.check_in);
+        ci.setHours(0, 0, 0, 0);
+        const co = new Date(row.check_out);
+        co.setHours(0, 0, 0, 0);
+        dates.push(ci, co);
+        const nights = (co - ci) / MS_PER_DAY;
+        const persons = (row.adults || 0) + (row.children || 0);
+        const guestDays = nights * persons;
+        guestDaysByCountry[country] = (guestDaysByCountry[country] || 0) + guestDays;
+
       });
 
-      const csvContent =
-        "data:text/csv;charset=utf-8," +
-        "Nationality,Count\n" +
-        Object.entries(counts)
-          .map(([country, count]) => `${country},${count}`)
-          .join("\n");
+      const sortedCountries = Object.keys(guestDaysByCountry).sort();
+      const csvRows = [];
+      csvRows.push(["COUNTRIES", "GUEST DAYS"]);
+      sortedCountries.forEach((country) => {
+        csvRows.push([country, guestDaysByCountry[country]]);
+      });
 
-      const encodedUri = encodeURI(csvContent);
+      const bom = "\uFEFF";
+      const csvContent = bom + csvRows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+
+      let from = "start", to = "end";
+      if (dates.length) {
+        dates.sort((a, b) => a - b);
+        const formatLocal = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+        from = formatLocal(dates[0]);
+        to = formatLocal(dates[dates.length - 1]);
+      }
+      const filename = `guestdays_${from}_to_${to}.csv`;
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "nationalities.csv");
+      link.href = url;
+      link.setAttribute("download", filename);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
     },
   },
   computed: {
@@ -206,10 +241,7 @@ export default {
        scales: {
          y: {
            beginAtZero: true,
-           title: {
-             display: true,
-             text: "Average count",
-           },
+           title: { display: true, text: "Average count" },
          },
        },
      };
@@ -248,10 +280,7 @@ export default {
         scales: {
           y: {
             beginAtZero: true,
-            title: {
-              display: true,
-              text: "Days",
-            },
+            title: { display: true, text: "Days" },
           },
         },
       };
