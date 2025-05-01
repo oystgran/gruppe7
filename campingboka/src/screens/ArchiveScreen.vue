@@ -30,12 +30,20 @@
      />
    </div>
 
-      <div class="panel-lower">
+      <!--div class="panel-lower">
         <h3>Electricity usage</h3>
         <ArchiveChart
           :chartData="electricityData"
           :chartOptions="electricityOptions"
           chartType="doughnut"
+        />
+      </div-->
+      <div class="panel-lower">
+        <h3>Average length of stay</h3>
+        <ArchiveChart
+          :chartData="lengthData"
+          :chartOptions="lengthOptions"
+          chartType="bar"
         />
       </div>
       <el-button
@@ -206,9 +214,50 @@ export default {
        },
      };
    },
+   lengthData() {
+      const total = this.filteredData.length;
+      const sumDays = this.filteredData.reduce((sum, row) => {
+        const checkIn = new Date(row.check_in);
+        const checkOut = new Date(row.check_out);
+        const diffMs = checkOut - checkIn;
+        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        return sum + diffDays;
+      }, 0);
+      const avgDays = total ? +(sumDays / total).toFixed(2) : 0;
+
+      return {
+        labels: ["Average stay (days)"],
+        datasets: [
+          {
+            label: "Average length",
+            data: [avgDays],
+            backgroundColor: ["#FFCE56"],
+          },
+        ],
+      };
+    },
+
+    lengthOptions() {
+      return {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Days",
+            },
+          },
+        },
+      };
+    },
   },
 };
 </script>
+
 
 <style scoped>
 .archive-screen {
