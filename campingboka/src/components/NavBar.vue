@@ -20,6 +20,14 @@
       <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
       <el-menu-item index="/weather">Været</el-menu-item>
     </el-sub-menu>
+
+    <el-menu-item
+      v-if="auth.isLoggedIn"
+      @click="logout"
+      class="logout-menu-item"
+    >
+      Log out
+    </el-menu-item>
     <div class="date-navigator-wrapper">
       <DateNavigator v-model="selectedDate" />
     </div>
@@ -30,17 +38,22 @@
 import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { debounce } from "lodash";
 import { useDateStore } from "@/stores/dateStore";
+import { useAuthStore } from "@/stores/auth";
+
 const store = useStaysStore();
 const dateStore = useDateStore();
+const auth = useAuthStore();
+const router = useRouter();
+const route = useRoute();
 const selectedDate = computed({
   get: () => dateStore.selectedDate,
   set: (val) => dateStore.setDate(val),
 });
 const isVerktoyActive = computed(() => {
-  return ["/control", "/boatRental", "/weather"].includes(useRoute.path);
+  return ["/control", "/boatRental", "/weather"].includes(route.path);
 });
 console.log(store);
 watch(
@@ -52,6 +65,11 @@ watch(
   }, 300)
 );
 store.loadGuests(selectedDate);
+
+function logout() {
+  auth.signOut();
+  router.push({ name: "Login" });
+}
 </script>
 
 <style scoped>
@@ -113,5 +131,9 @@ store.loadGuests(selectedDate);
   margin-right: 10px;
   display: flex;
   align-items: center;
+}
+
+.logout-menu-item{
+  color: rgb(255, 73, 73) !important;
 }
 </style>

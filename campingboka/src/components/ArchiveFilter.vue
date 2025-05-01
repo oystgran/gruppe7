@@ -42,8 +42,8 @@ const fetchData = async () => {
     const stays = await staysStore.fetchStaysInRange(start, end);
     const formatted = stays.map((data) => ({
       ...data,
-      check_in: new Date(data.start_date),
-      check_out: new Date(data.end_date),
+      check_in: new Date(data.check_in),
+      check_out: new Date(data.check_out),
       spot: data.spot_id ?? "Unknown",
     }));
 

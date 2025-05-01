@@ -634,12 +634,12 @@
             19
           </text>
         </g>
-        <g class="spot20">
+        <g class="spot31">
           <rect
-            @mouseover="showTooltip(20, $event)"
+            @mouseover="showTooltip(31, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 20)"
-            :class="{ occupied: guests[20] }"
+            @click="$emit('rectangleClicked', 31)"
+            :class="{ occupied: guests[31] }"
             fill="#394856"
             stroke="#394856"
             x="1455.82916"
@@ -664,15 +664,15 @@
             font-weight="normal"
             transform="rotate(-20 1476.34 606.002)"
           >
-            20
+            31
           </text>
         </g>
-        <g class="spot21">
+        <g class="spot30">
           <rect
-            @mouseover="showTooltip(21, $event)"
+            @mouseover="showTooltip(30, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 21)"
-            :class="{ occupied: guests[21] }"
+            @click="$emit('rectangleClicked', 30)"
+            :class="{ occupied: guests[30] }"
             fill="#394856"
             stroke="#394856"
             x="1406.77653"
@@ -697,15 +697,15 @@
             font-weight="normal"
             transform="rotate(-15 1428.66 619.371)"
           >
-            21
+            30
           </text>
         </g>
-        <g class="spot22">
+        <g class="spot29">
           <rect
-            @mouseover="showTooltip(22, $event)"
+            @mouseover="showTooltip(29, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 22)"
-            :class="{ occupied: guests[22] }"
+            @click="$emit('rectangleClicked', 29)"
+            :class="{ occupied: guests[29] }"
             fill="#394856"
             stroke="#394856"
             x="1353.34796"
@@ -730,15 +730,15 @@
             font-weight="normal"
             transform="rotate(-15 1374.74 635.529)"
           >
-            22
+            29
           </text>
         </g>
-        <g class="spot23">
+        <g class="spot28">
           <rect
-            @mouseover="showTooltip(23, $event)"
+            @mouseover="showTooltip(28, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 23)"
-            :class="{ occupied: guests[23] }"
+            @click="$emit('rectangleClicked', 28)"
+            :class="{ occupied: guests[28] }"
             fill="#394856"
             stroke="#394856"
             x="1294.30034"
@@ -763,15 +763,15 @@
             font-weight="normal"
             transform="rotate(-20 1315.45 652.472)"
           >
-            23
+            28
           </text>
         </g>
-        <g class="spot24">
+        <g class="spot27">
           <rect
-            @mouseover="showTooltip(24, $event)"
+            @mouseover="showTooltip(27, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 24)"
-            :class="{ occupied: guests[24] }"
+            @click="$emit('rectangleClicked', 27)"
+            :class="{ occupied: guests[27] }"
             fill="#394856"
             stroke="#394856"
             x="1243.53844"
@@ -796,15 +796,15 @@
             font-weight="normal"
             transform="rotate(-25 1264.77 674.558)"
           >
-            24
+            27
           </text>
         </g>
-        <g class="spot25">
+        <g class="spot26">
           <rect
-            @mouseover="showTooltip(25, $event)"
+            @mouseover="showTooltip(26, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 25)"
-            :class="{ occupied: guests[25] }"
+            @click="$emit('rectangleClicked', 26)"
+            :class="{ occupied: guests[26] }"
             fill="#394856"
             stroke="#394856"
             x="1193.61002"
@@ -829,15 +829,15 @@
             font-weight="normal"
             transform="rotate(-21 1214.53 694.965)"
           >
-            25
+            26
           </text>
         </g>
-        <g class="spot26">
+        <g class="spot25">
           <rect
-            @mouseover="showTooltip(26, $event)"
+            @mouseover="showTooltip(25, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 26)"
-            :class="{ occupied: guests[26] }"
+            @click="$emit('rectangleClicked', 25)"
+            :class="{ occupied: guests[25] }"
             fill="#394856"
             stroke="#394856"
             x="1140.67541"
@@ -862,15 +862,15 @@
             font-weight="normal"
             transform="rotate(-13 1160.73 709.137)"
           >
-            26
+            25
           </text>
         </g>
-        <g class="spot27">
+        <g class="spot24">
           <rect
-            @mouseover="showTooltip(27, $event)"
+            @mouseover="showTooltip(24, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 27)"
-            :class="{ occupied: guests[27] }"
+            @click="$emit('rectangleClicked', 24)"
+            :class="{ occupied: guests[24] }"
             fill="#394856"
             stroke="#394856"
             x="1088.01462"
@@ -895,15 +895,15 @@
             font-weight="normal"
             transform="rotate(-5 1108.42 714.062)"
           >
-            27
+            24
           </text>
         </g>
-        <g class="spot28">
+        <g class="spot23">
           <rect
-            @mouseover="showTooltip(28, $event)"
+            @mouseover="showTooltip(23, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 28)"
-            :class="{ occupied: guests[28] }"
+            @click="$emit('rectangleClicked', 23)"
+            :class="{ occupied: guests[23] }"
             fill="#394856"
             stroke="#394856"
             x="1035.91939"
@@ -926,15 +926,15 @@
             xml:space="preserve"
             font-weight="normal"
           >
-            28
+            23
           </text>
         </g>
-        <g class="spot29">
+        <g class="spot22">
           <rect
-            @mouseover="showTooltip(29, $event)"
+            @mouseover="showTooltip(22, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 29)"
-            :class="{ occupied: guests[29] }"
+            @click="$emit('rectangleClicked', 22)"
+            :class="{ occupied: guests[22] }"
             fill="#394856"
             stroke="#394856"
             x="983.25272"
@@ -959,15 +959,15 @@
             font-weight="normal"
             transform="rotate(7 1003.17 704.145)"
           >
-            29
+            22
           </text>
         </g>
-        <g class="spot30">
+        <g class="spot21">
           <rect
-            @mouseover="showTooltip(30, $event)"
+            @mouseover="showTooltip(21, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 30)"
-            :class="{ occupied: guests[30] }"
+            @click="$emit('rectangleClicked', 21)"
+            :class="{ occupied: guests[21] }"
             fill="#394856"
             stroke="#394856"
             x="931.15747"
@@ -992,15 +992,15 @@
             font-weight="normal"
             transform="rotate(14 951.658 691.067)"
           >
-            30
+            21
           </text>
         </g>
-        <g class="spot31">
+        <g class="spot20">
           <rect
-            @mouseover="showTooltip(31, $event)"
+            @mouseover="showTooltip(20, $event)"
             @mouseleave="hideTooltip"
-            @click="$emit('rectangleClicked', 31)"
-            :class="{ occupied: guests[31] }"
+            @click="$emit('rectangleClicked', 20)"
+            :class="{ occupied: guests[20] }"
             fill="#394856"
             stroke="#394856"
             x="880.30033"
@@ -1025,7 +1025,7 @@
             font-weight="normal"
             transform="rotate(20 900.76 674.566)"
           >
-            31
+            20
           </text>
         </g>
         <g class="spot32">
@@ -1407,8 +1407,14 @@
       </g>
     </svg>
 
-    <div v-if="tooltipVisible" :style="tooltipStyle" class="guest-tooltip">
-      <div class="guest-name">{{ tooltipData.name }}</div>
+    <div
+      v-if="tooltipVisible"
+      :style="tooltipStyle"
+      class="guest-tooltip"
+    >
+      <div class="car-number">
+        {{ tooltipData.registrationNumber }}
+      </div>
       <div class="guest-nationality">
         <img
           v-if="countryFlag(tooltipData.nationality)"
@@ -1419,6 +1425,16 @@
           style="margin-right: 8px"
         />
         {{ tooltipData.nationality }}
+      </div>
+      <div class="guest-times">
+        <div>
+          <strong>Innsjekk:</strong>
+          {{ formatDateTime(tooltipData.checkIn) }}
+        </div>
+        <div>
+          <strong>Utsjekk:</strong>
+          {{ formatDateTime(tooltipData.checkOut) }}
+        </div>
       </div>
     </div>
   </div>
@@ -1431,46 +1447,69 @@ import { computed } from "vue";
 
 export default {
   name: "MapComponent",
+
   data() {
     return {
       tooltipVisible: false,
-      tooltipData: {},
+      tooltipData: {
+        registrationNumber: "",
+        nationality: "",
+        checkIn: "",
+        checkOut: ""
+      },
       tooltipStyle: {
         position: "absolute",
         left: "0px",
-        top: "0px",
+        top: "0px"
       },
     };
   },
+
   setup() {
-    const store = useStaysStore();
-
+    const store  = useStaysStore();
     const guests = computed(() => store.bookingsToday);
-
-    return {
-      store,
-      guests,
-    };
+    return { guests };
   },
+
   methods: {
     showTooltip(spot) {
-      const guest = this.guests[spot];
-      if (guest) {
-        this.tooltipData = guest;
-        this.tooltipVisible = true;
-      } else {
+      const booking = this.guests[spot];
+      if (!booking) {
         this.tooltipVisible = false;
+        return;
       }
+      this.tooltipData = {
+        registrationNumber:
+          booking.car_number ||
+          booking.registration_number ||
+          "(ingen registrering)",
+        nationality: booking.nationality,
+        checkIn:  booking.check_in,
+        checkOut: booking.check_out,
+      };
+      this.tooltipVisible = true;
     },
+
     hideTooltip() {
       this.tooltipVisible = false;
     },
-    countryFlag(nationality) {
-      if (!nationality) return "";
+
+    countryFlag(nat) {
+      if (!nat) return "";
       const entry = Object.entries(countries).find(
-        ([, data]) => data.name.toLowerCase() === nationality.toLowerCase()
+        ([, data]) => data.name.toLowerCase() === nat.toLowerCase()
       );
-      return entry ? entry[1].flag : "";
+      return entry?.[1]?.flag || "";
+    },
+
+    formatDateTime(dateStr) {
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      return d.toLocaleString("no-NO", {
+        day:    "2-digit",
+        month:  "2-digit",
+        year:   "numeric",
+      });
     },
   },
 };

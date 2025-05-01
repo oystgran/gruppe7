@@ -1,21 +1,19 @@
 <template>
   <div id="app">
-  <NavBar />
-  <router-view />
-</div>
-
+    <NavBar v-if="isLoggedIn" />
+    <router-view />
+  </div>
 </template>
 
-<script>
-import NavBar from './components/NavBar.vue';
+<script setup>
+import NavBar from '@/components/NavBar.vue';
+import { useAuthStore } from '@/stores/auth';
+import { storeToRefs } from 'pinia';
 
-export default {
-  name: 'App',
-  components: {
-    NavBar
-  }
-}
+const authStore = useAuthStore();
+const { isLoggedIn } = storeToRefs(authStore);
 </script>
+
 <style>
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

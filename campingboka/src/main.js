@@ -5,9 +5,8 @@ import ElementPlus from "element-plus";
 import "element-plus/dist/index.css";
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
-import "firebase/compat/firestore";
-import "firebase/compat/storage";
 import { createPinia } from "pinia";
+import { auth } from "./tools/firebase.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -21,7 +20,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
-export const db = firebase.firestore();
 console.log(firebase);
 
 const app = createApp(App);
@@ -30,3 +28,9 @@ app.use(ElementPlus);
 app.use(router);
 app.use(pinia);
 app.mount("#app");
+
+import { useAuthStore } from "@/stores/auth.js";
+auth.onAuthStateChanged(user => {
+  const authStore = useAuthStore();
+  authStore.setUser(user);
+});
