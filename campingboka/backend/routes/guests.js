@@ -21,12 +21,9 @@ module.exports = (pool) => {
 
     try {
       const result = await pool.query(
-        `SELECT g.id, g.name, g.car_number, g.nationality,
-                MAX(s.check_out) as last_checkout
-         FROM guests g
-         LEFT JOIN stays s ON s.guest_id = g.id
-         WHERE g.name ILIKE $1 OR g.car_number ILIKE $1
-         GROUP BY g.id, g.name, g.car_number, g.nationality
+        `SELECT id, name, car_number, nationality, vip
+         FROM guests
+         WHERE name ILIKE $1 OR car_number ILIKE $1
          LIMIT 10`,
         [`%${query}%`]
       );

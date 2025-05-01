@@ -19,6 +19,7 @@
               : ''
           "
           :price="store.bookingsToday[spotId]?.price"
+          :vip="store.bookingsToday[spotId]?.vip"
           @click="openModalWithGuest(spotId)"
         >
           <template v-slot:car_number>
@@ -99,6 +100,7 @@ export default {
           electricity: guest.electricity,
           stayId: guest.id,
           guestId: guest.guest_id,
+          vip: guest.vip,
         });
       }
     },

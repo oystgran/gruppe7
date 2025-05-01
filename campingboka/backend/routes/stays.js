@@ -19,12 +19,17 @@ router.get("/", async (req, res) => {
   console.log("🔎 Kall til /api/stays med dato:", date);
   try {
     const result = await pool.query(
-      `SELECT s.*, g.name, g.car_number, g.nationality
-       FROM stays s
-       JOIN guests g ON s.guest_id = g.id
-       WHERE s.check_in < $1::date + interval '1 day'
-         AND s.check_out >= $1::date
-       ORDER BY s.check_in`,
+      `SELECT 
+  s.*, 
+  g.name, 
+  g.car_number, 
+  g.nationality, 
+  g.vip
+FROM stays s
+JOIN guests g ON s.guest_id = g.id
+WHERE s.check_in < $1::date + interval '1 day'
+  AND s.check_out >= $1::date
+ORDER BY s.check_in`,
       [date]
     );
     result.rows.forEach((row) => {
@@ -47,29 +52,22 @@ router.post("/", async (req, res) => {
   try {
     // Sjekk om gjest allerede finnes med car_number
     const existingGuest = await pool.query(
-      `SELECT id FROM guests WHERE car_number = $1`,
+      `SELECT id FROM guests WHERE TRIM(LOWER(car_number)) = TRIM(LOWER($1))`,
       [guest.car_number]
     );
 
     let guestId;
 
     if (existingGuest.rows.length > 0) {
-      // Hvis gjest finnes, bruk ID og oppdater navn/nasjonalitet
+      // ✅ Gjest finnes – IKKE oppdater noe, bare bruk ID
       guestId = existingGuest.rows[0].id;
-
-      await pool.query(
-        `UPDATE guests
-         SET name = $1, nationality = $2
-         WHERE id = $3`,
-        [guest.name, guest.nationality, guestId]
-      );
     } else {
-      // Hvis ikke, legg til ny gjest
+      // 🆕 Opprett ny gjest
       const newGuest = await pool.query(
         `INSERT INTO guests (name, car_number, nationality)
          VALUES ($1, $2, $3)
          RETURNING id`,
-        [guest.name, guest.car_number, guest.nationality]
+        [guest.name.trim(), guest.car_number.trim(), guest.nationality.trim()]
       );
       guestId = newGuest.rows[0].id;
     }

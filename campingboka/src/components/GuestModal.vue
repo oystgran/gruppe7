@@ -18,24 +18,16 @@
         >
           <el-form-item label="Name" prop="name">
             <template #label>
-              <span>
-                <span
-                  v-if="hasValidationError('name')"
-                  style="color: red; margin-right: 4px"
+              <span style="display: flex; align-items: center; gap: 8px">
+                <span v-if="hasValidationError('name')" style="color: red"
                   >*</span
                 >
                 Name
               </span>
             </template>
 
-            <div
-              style="
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 8px;
-              "
-            >
+            <!-- Wrapp input og tag sammen -->
+            <div style="position: relative; width: 100%">
               <el-autocomplete
                 v-model="form.name"
                 :fetch-suggestions="debouncedGuestSearch"
@@ -43,16 +35,21 @@
                 placeholder="Enter guest name"
                 clearable
                 @select="onGuestSelected"
-                style="flex: 1; max-width: 240px"
+                style="width: 100%"
               />
               <el-tag
-                v-if="isVip"
+                v-if="form.vip"
                 type="warning"
                 effect="dark"
                 size="small"
-                style="white-space: nowrap; margin-left: 8px"
+                style="
+                  position: absolute;
+                  right: 8px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                "
               >
-                VIP 🌟
+                🌟 VIP
               </el-tag>
             </div>
           </el-form-item>
@@ -364,6 +361,7 @@ export default {
         children: 0,
         electricity: false,
         check_out: null,
+        vip: false,
       },
       formRules: {
         name: [
@@ -467,6 +465,7 @@ export default {
     guest: {
       immediate: true,
       handler(newGuest) {
+        console.log("🔍 guest inn i GuestModal:", newGuest); // <-- LEGG TIL DENNE
         if (this.mode === "edit" && newGuest) {
           this.form = {
             name: newGuest.name,
@@ -479,6 +478,7 @@ export default {
             adults: newGuest.adults || 1,
             children: newGuest.children || 0,
             electricity: newGuest.electricity ?? false,
+            vip: "vip" in newGuest ? newGuest.vip : false,
           };
         }
       },
@@ -613,6 +613,7 @@ export default {
 
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
+      this.form.vip = item.guest.vip || false;
 
       const lastCheckout = item.guest.last_checkout;
       if (lastCheckout) {
@@ -646,6 +647,7 @@ export default {
 
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
+      this.form.vip = item.guest.vip || false;
 
       const lastCheckout = item.guest.last_checkout;
       if (lastCheckout) {
