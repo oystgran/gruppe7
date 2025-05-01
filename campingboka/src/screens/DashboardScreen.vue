@@ -3,9 +3,18 @@
     <div class="dashboard-content">
       <div class="left-panel">
         <DateNavigator v-model="myDate" />
-        <h1>Dashboard</h1>
-        <p>Campingboka</p>
-        <el-button>I am ElButton</el-button>
+        <h1>Geirangerfjorden Feriesenter</h1>
+        <div class="weather-card-container">
+            <iframe 
+                src="https://www.yr.no/en/content/1-177457/card.html" 
+                title="Yr Weather Card"
+                class="weather-card"
+                frameborder="0"
+                loading="eager"
+                >
+            </iframe>
+        </div>
+
       </div>
       <div class="right-panel">
         <MapComponent 
@@ -97,6 +106,11 @@ export default {
   height: 100%;
   overflow: hidden;
 }
+
+.weather-card-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;}
 
 ::v-deep .guest-tooltip {
   transform: rotate(-30deg) !important;
