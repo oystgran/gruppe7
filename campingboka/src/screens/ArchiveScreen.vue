@@ -54,7 +54,7 @@
         class="export-btn"
         @click="exportNationalityCSV"
       >
-        Export CSV
+        Download CSV
       </el-button>
     </div>
   </div>
