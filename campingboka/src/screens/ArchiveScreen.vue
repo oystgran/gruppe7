@@ -216,11 +216,13 @@ export default {
    },
    lengthData() {
       const total = this.filteredData.length;
+      const MS_PER_DAY = 1000 * 60 * 60 * 24;
       const sumDays = this.filteredData.reduce((sum, row) => {
-        const checkIn = new Date(row.check_in);
-        const checkOut = new Date(row.check_out);
-        const diffMs = checkOut - checkIn;
-        const diffDays = diffMs / (1000 * 60 * 60 * 24);
+        const ci = new Date(row.check_in);
+        ci.setHours(0, 0, 0, 0);
+        const co = new Date(row.check_out);
+        co.setHours(0, 0, 0, 0);
+        const diffDays = (co - ci) / MS_PER_DAY;
         return sum + diffDays;
       }, 0);
       const avgDays = total ? +(sumDays / total).toFixed(2) : 0;
