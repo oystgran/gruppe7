@@ -31,11 +31,31 @@ export const useStaysStore = defineStore("stays", () => {
     console.log("bookingstoday:", bookingsToday.value);
   }
   async function addGuest(guestData, stayData) {
+    // Sjekk om gjest finnes først
+    const searchRes = await fetch(`/api/guests/search?query=${guestData.name}`);
+    const matches = await searchRes.json();
+
+    const existing = matches.find(
+      (g) =>
+        g.name.toLowerCase() === guestData.name.toLowerCase() &&
+        g.car_number.toLowerCase() === guestData.car_number.toLowerCase()
+    );
+
+    const payload = {
+      guest: guestData,
+      stay: stayData,
+    };
+
+    if (existing) {
+      payload.guestId = existing.id; // legg til guestId hvis den finnes
+    }
+
     const res = await fetch("/api/stays", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ guest: guestData, stay: stayData }),
+      body: JSON.stringify(payload),
     });
+
     if (!res.ok) throw new Error("Failed to add guest and stay");
   }
 

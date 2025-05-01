@@ -9,20 +9,84 @@
         </h2>
 
         <el-form
+          ref="guestForm"
           :model="form"
-          label-width="90px"
+          :rules="formRules"
           label-position="left"
           @submit.prevent="handleSubmit"
+          label-width="110px"
         >
-          <el-form-item label="Name">
-            <el-input v-model="form.name" required clearable />
+          <el-form-item label="Name" prop="name">
+            <template #label>
+              <span style="display: flex; align-items: center; gap: 8px">
+                <span v-if="hasValidationError('name')" style="color: red"
+                  >*</span
+                >
+                Name
+              </span>
+            </template>
+
+            <!-- Wrapp input og tag sammen -->
+            <div style="position: relative; width: 100%">
+              <el-autocomplete
+                v-model="form.name"
+                :fetch-suggestions="debouncedGuestSearch"
+                :trigger-on-focus="false"
+                placeholder="Enter guest name"
+                clearable
+                @select="onGuestSelected"
+                style="width: 100%"
+              />
+              <el-tag
+                v-if="form.vip"
+                type="warning"
+                effect="dark"
+                size="small"
+                style="
+                  position: absolute;
+                  right: 8px;
+                  top: 50%;
+                  transform: translateY(-50%);
+                "
+              >
+                🌟 VIP
+              </el-tag>
+            </div>
           </el-form-item>
 
-          <el-form-item label="Car number">
-            <el-input v-model="form.car_number" required clearable />
+          <el-form-item label="Car number" prop="car_number">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('car_number')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Car number
+              </span>
+            </template>
+            <el-autocomplete
+              v-model="form.car_number"
+              :fetch-suggestions="debouncedCarSearch"
+              placeholder="Enter car number"
+              clearable
+              :trigger-on-focus="false"
+              @select="onCarSelected"
+              style="max-width: 166px; width: 100%"
+            />
           </el-form-item>
 
-          <el-form-item label="Nationality">
+          <el-form-item label="Nationality" prop="nationality">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('nationality')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Nationality
+              </span>
+            </template>
             <el-autocomplete
               v-model="form.nationality"
               :fetch-suggestions="querySearch"
@@ -30,6 +94,7 @@
               required
               clearable
               @blur="validateNationality"
+              style="max-width: 166px; width: 100%"
             >
               <template v-slot="{ item }">
                 <img
@@ -42,7 +107,17 @@
             </el-autocomplete>
           </el-form-item>
 
-          <el-form-item label="Check-in">
+          <el-form-item label="Check-in" prop="check_in">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('check_in')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Check-in
+              </span>
+            </template>
             <el-date-picker
               v-model="form.check_in"
               type="datetime"
@@ -51,7 +126,17 @@
             />
           </el-form-item>
 
-          <el-form-item label="Check-out">
+          <el-form-item prop="check_out">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('check_out')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Check-out
+              </span>
+            </template>
             <el-date-picker
               v-model="form.check_out"
               type="date"
@@ -60,8 +145,16 @@
             />
           </el-form-item>
 
-          <el-form-item label="Spot">
-            <div style="display: flex; align-items: center">
+          <el-form-item label="Spot" prop="spotId">
+            <template #label>
+              <span>
+                <span v-if="!form.name" style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Spot
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input
                 :value="form.spotId"
                 disabled
@@ -85,8 +178,18 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="Adults">
-            <div style="display: flex; align-items: center">
+          <el-form-item prop="adults">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('adults')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Adults
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.adults"
                 :min="0"
@@ -106,8 +209,18 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="Children">
-            <div style="display: flex; align-items: center">
+          <el-form-item prop="children">
+            <template #label>
+              <span>
+                <span
+                  v-if="hasValidationError('adults')"
+                  style="color: red; margin-right: 4px"
+                  >*</span
+                >
+                Children
+              </span>
+            </template>
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.children"
                 :min="0"
@@ -139,7 +252,7 @@
                   opacity: 0.6;
                   font-size: 12px;
                   white-space: nowrap;
-                  margin-left: 12px;
+                  margin-left: 50px;
                 "
               >
                 {{ form.electricity ? `+ ${50}kr` : "+ 0kr" }}
@@ -148,7 +261,7 @@
           </el-form-item>
 
           <el-form-item label="Price">
-            <div style="display: flex; align-items: center">
+            <div style="display: flex; align-items: center; margin-left: 12px">
               <el-input-number
                 v-model="form.price"
                 :controls="false"
@@ -157,23 +270,31 @@
                 class="price-field"
               />
             </div>
-
-            <div
-              v-if="priceSummary"
-              style="
-                text-align: right;
-                font-size: 13px;
-                opacity: 0.7;
-                margin-top: 6px;
-              "
-            >
-              {{ priceSummary }}
-            </div>
           </el-form-item>
         </el-form>
 
+        <div
+          style="
+            text-align: right;
+            font-size: 13px;
+            opacity: 0.7;
+            min-height: 20px;
+            height: 20px;
+            margin-top: -14px; /* justér om nødvendig for spacing */
+            margin-bottom: 12px;
+            margin-left: 60px;
+            width: 100%;
+            max-width: 350px;
+            padding-right: 210px;
+          "
+        >
+          <span :style="{ visibility: priceSummary ? 'visible' : 'hidden' }">
+            {{ priceSummary }}
+          </span>
+        </div>
+
         <el-form-item v-if="mode === 'edit'">
-          <div style="display: flex; margin-left: 30px; gap: 20px">
+          <div style="display: flex; gap: 20px">
             <el-button type="success" @click="handleSubmit">Update</el-button>
             <el-button type="danger" @click="handleDelete">Delete</el-button>
           </div>
@@ -183,7 +304,7 @@
           <el-button
             type="primary"
             @click="handleSubmit"
-            style="margin-left: 30px"
+            style="margin-left: 42px"
             >Add</el-button
           >
         </el-form-item>
@@ -196,6 +317,7 @@
 import { useStaysStore } from "@/stores/stays";
 import { countries } from "@/tools/countries";
 import dayjs from "dayjs";
+import debounce from "lodash/debounce";
 
 const BASE_PRICE = 340;
 const FJORD_EXTRA = 120;
@@ -226,6 +348,9 @@ export default {
   },
   data() {
     return {
+      isVip: false,
+      nameSelectedFromList: false,
+      carSelectedFromList: false,
       form: {
         name: "",
         car_number: "",
@@ -236,6 +361,70 @@ export default {
         children: 0,
         electricity: false,
         check_out: null,
+        vip: false,
+      },
+      formRules: {
+        name: [
+          { required: true, message: "Please enter a name", trigger: "blur" },
+        ],
+        car_number: [
+          {
+            required: true,
+            message: "Please enter a car number",
+            trigger: "blur",
+          },
+        ],
+        nationality: [
+          {
+            required: true,
+            message: "Please select a nationality",
+            trigger: "blur",
+          },
+        ],
+        check_in: [
+          {
+            required: true,
+            message: "Please choose a check-in date",
+            trigger: "change",
+          },
+        ],
+        check_out: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              if (!value)
+                return callback(new Error("Please select a check-out date"));
+              const checkIn = new Date(this.form.check_in);
+              const checkOut = new Date(value);
+              if (checkOut <= checkIn) {
+                return callback(new Error("Check-out must be after check-in"));
+              }
+              callback();
+            },
+            trigger: "change",
+          },
+        ],
+        spotId: [
+          {
+            required: true,
+            message: "Spot number is required",
+            trigger: "change",
+          },
+        ],
+        adults: [
+          {
+            required: true,
+            validator: (rule, value, callback) => {
+              if (this.form.adults === 0 && this.form.children === 0) {
+                return callback(
+                  new Error("At least one adult or child is required")
+                );
+              }
+              callback();
+            },
+            trigger: "change",
+          },
+        ],
       },
     };
   },
@@ -259,9 +448,24 @@ export default {
     }
   },
   watch: {
+    "form.name"(newVal) {
+      if (!newVal || !this.nameSelectedFromList) {
+        this.isVip = false;
+        this.checkVipStatus(newVal);
+      }
+      this.nameSelectedFromList = false;
+    },
+    "form.car_number"(newVal) {
+      if (!newVal || !this.carSelectedFromList) {
+        this.isVip = false;
+        this.checkVipStatus(newVal);
+      }
+      this.carSelectedFromList = false;
+    },
     guest: {
       immediate: true,
       handler(newGuest) {
+        console.log("🔍 guest inn i GuestModal:", newGuest); // <-- LEGG TIL DENNE
         if (this.mode === "edit" && newGuest) {
           this.form = {
             name: newGuest.name,
@@ -274,6 +478,7 @@ export default {
             adults: newGuest.adults || 1,
             children: newGuest.children || 0,
             electricity: newGuest.electricity ?? false,
+            vip: "vip" in newGuest ? newGuest.vip : false,
           };
         }
       },
@@ -318,7 +523,152 @@ export default {
       } kr`;
     },
   },
+  created() {
+    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 300);
+    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
+  },
   methods: {
+    async checkVipStatus(nameOrCarNumber) {
+      if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
+        this.isVip = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`
+        );
+        const guests = await res.json();
+
+        const matched = guests.find(
+          (g) =>
+            g.name.toLowerCase() === this.form.name.toLowerCase() &&
+            g.car_number.toLowerCase() === this.form.car_number.toLowerCase()
+        );
+
+        if (matched?.last_checkout) {
+          const daysAgo =
+            (new Date() - new Date(matched.last_checkout)) /
+            (1000 * 60 * 60 * 24);
+          this.isVip = daysAgo >= 14;
+        } else {
+          this.isVip = false;
+        }
+      } catch (err) {
+        console.error("VIP lookup failed:", err);
+        this.isVip = false;
+      }
+    },
+    hasValidationError(fieldName) {
+      const field = this.$refs.guestForm?.fields?.find(
+        (f) => f.prop === fieldName
+      );
+      const isInvalid = field?.validateState === "error";
+      const isEmpty = !this.form[fieldName];
+      return isInvalid || isEmpty;
+    },
+    async fetchCarSuggestions(query, cb) {
+      if (!query || query.trim().length < 1) return cb([]);
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(query)}`
+        );
+        const suggestions = await res.json();
+        cb(
+          suggestions.map((g) => ({
+            value: `${g.car_number} (${g.name})`,
+            guest: g,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching car number suggestions:", err);
+        cb([]);
+      }
+    },
+    async fetchGuestSuggestions(query, cb) {
+      if (!query || query.trim().length < 1) return cb([]);
+
+      try {
+        const res = await fetch(
+          `/api/guests/search?query=${encodeURIComponent(query)}`
+        );
+        const suggestions = await res.json();
+        cb(
+          suggestions.map((g) => ({
+            value: `${g.name} (${g.car_number})`,
+            guest: g,
+          }))
+        );
+      } catch (err) {
+        console.error("Error fetching suggestions:", err);
+        cb([]);
+      }
+    },
+    onGuestSelected(item) {
+      this.nameSelectedFromList = true;
+      if (!item || !item.guest) return;
+
+      const guest = item.guest;
+      console.log("Valgt gjest:", guest);
+
+      this.form.name = guest.name || "";
+      this.form.car_number = guest.car_number || "";
+      this.form.vip = item.guest.vip || false;
+
+      const lastCheckout = item.guest.last_checkout;
+      if (lastCheckout) {
+        const daysAgo = Math.floor(
+          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
+        );
+        this.isVip = daysAgo >= 14;
+      } else {
+        this.isVip = false;
+      }
+
+      const nationality = guest.nationality;
+      console.log("Tidligere brukt nasjonalitet:", nationality);
+
+      if (nationality) {
+        const match = Object.values(countries).find(
+          (c) => c.name.toLowerCase() === nationality.toLowerCase()
+        );
+        this.form.nationality = match ? match.name : "";
+        console.log("Matchet nasjonalitet:", this.form.nationality);
+      } else {
+        this.form.nationality = "";
+      }
+    },
+
+    onCarSelected(item) {
+      this.carSelectedFromList = true;
+      if (!item || !item.guest) return;
+
+      const guest = item.guest;
+
+      this.form.name = guest.name || "";
+      this.form.car_number = guest.car_number || "";
+      this.form.vip = item.guest.vip || false;
+
+      const lastCheckout = item.guest.last_checkout;
+      if (lastCheckout) {
+        const daysAgo = Math.floor(
+          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
+        );
+        this.isVip = daysAgo >= 14;
+      } else {
+        this.isVip = false;
+      }
+
+      const nationality = guest.nationality;
+      if (nationality) {
+        const match = Object.values(countries).find(
+          (c) => c.name.toLowerCase() === nationality.toLowerCase()
+        );
+        this.form.nationality = match ? match.name : "";
+      } else {
+        this.form.nationality = "";
+      }
+    },
     isToday(date) {
       const today = new Date();
       return (
@@ -364,48 +714,54 @@ export default {
       if (!valid.includes(this.form.nationality)) this.form.nationality = "";
     },
     async handleSubmit() {
-      const checkOutDate = new Date(this.form.check_out);
-      checkOutDate.setHours(12, 0, 0, 0);
-
-      const guestPayload = {
-        name: this.form.name,
-        car_number: this.form.car_number,
-        nationality: this.form.nationality,
-      };
-
-      const stayPayload = {
-        spot_Id: this.form.spotId,
-        check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
-        check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
-        price: this.form.price,
-        adults: this.form.adults,
-        children: this.form.children,
-        electricity: this.form.electricity,
-      };
-
-      try {
-        if (this.mode === "edit") {
-          console.log("Updating guest:", this.guest);
-          console.log("guestId:", this.guest?.guestId);
-          console.log("stayId:", this.guest?.stayId);
-
-          await this.store.updateGuest(
-            this.guest.guestId,
-            guestPayload,
-            this.guest.stayId,
-            stayPayload
-          );
-        } else {
-          await this.store.addGuest(guestPayload, stayPayload);
+      this.$refs.guestForm.validate(async (valid) => {
+        if (!valid) {
+          this.$message.error("Please fix the errors before submitting.");
+          return;
         }
+        const checkOutDate = new Date(this.form.check_out);
+        checkOutDate.setHours(12, 0, 0, 0);
 
-        this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
-        this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
-        this.closeModal(); // ✅ Bare én gang, etterpå
-      } catch (err) {
-        console.error(err);
-        this.$message.error("Something went wrong.");
-      }
+        const guestPayload = {
+          name: this.form.name,
+          car_number: this.form.car_number,
+          nationality: this.form.nationality,
+        };
+
+        const stayPayload = {
+          spot_Id: this.form.spotId,
+          check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
+          check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
+          price: this.form.price,
+          adults: this.form.adults,
+          children: this.form.children,
+          electricity: this.form.electricity,
+        };
+
+        try {
+          if (this.mode === "edit") {
+            console.log("Updating guest:", this.guest);
+            console.log("guestId:", this.guest?.guestId);
+            console.log("stayId:", this.guest?.stayId);
+
+            await this.store.updateGuest(
+              this.guest.guestId,
+              guestPayload,
+              this.guest.stayId,
+              stayPayload
+            );
+          } else {
+            await this.store.addGuest(guestPayload, stayPayload);
+          }
+
+          this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
+          this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
+          this.closeModal(); // ✅ Bare én gang, etterpå
+        } catch (err) {
+          console.error(err);
+          this.$message.error("Something went wrong.");
+        }
+      });
     },
     async handleDelete() {
       try {
@@ -466,5 +822,27 @@ export default {
 }
 .close:hover {
   color: red;
+}
+/* ::v-deep(.el-form-item.is-required .el-form-item__label::before) {
+  content: "*";
+  color: red;
+  position: absolute;
+  left: -10px; 
+  font-size: 16px;
+} */
+
+::v-deep(.el-form-item__label) {
+  position: relative; /* 
+  padding-right: 10px; */
+}
+::v-deep(.el-form-item__label::before) {
+  display: none !important;
+}
+.modal-content .el-form {
+  width: 100%;
+  max-width: 350px; /* eller større hvis du ønsker mer plass */
+}
+.form-indent {
+  margin-left: 12px;
 }
 </style>

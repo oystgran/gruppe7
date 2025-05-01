@@ -6,14 +6,30 @@ const pool = require("../db");
 // GET stays for selected date (with guest info)
 router.get("/", async (req, res) => {
   const { date } = req.query;
+  console.log("🔍 Request received with date:", date); // Debug
+
+  if (!date) {
+    return res.status(400).json({ error: "Missing 'date' query parameter" });
+  }
+
+  const dayjs = require("dayjs");
+  if (!dayjs(date).isValid()) {
+    return res.status(400).json({ error: "Invalid date format" });
+  }
+  console.log("🔎 Kall til /api/stays med dato:", date);
   try {
     const result = await pool.query(
-      `SELECT s.*, g.name, g.car_number, g.nationality
-       FROM stays s
-       JOIN guests g ON s.guest_id = g.id
-       WHERE s.check_in < $1::date + interval '1 day'
-         AND s.check_out >= $1::date
-       ORDER BY s.check_in`,
+      `SELECT 
+  s.*, 
+  g.name, 
+  g.car_number, 
+  g.nationality, 
+  g.vip
+FROM stays s
+JOIN guests g ON s.guest_id = g.id
+WHERE s.check_in < $1::date + interval '1 day'
+  AND s.check_out >= $1::date
+ORDER BY s.check_in`,
       [date]
     );
     result.rows.forEach((row) => {
@@ -22,7 +38,9 @@ router.get("/", async (req, res) => {
     });
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
+    console.error("🔥 FULL FEIL I /api/stays:");
+    console.error("Melding:", err.message);
+    console.error("Stack trace:", err.stack);
     res.status(500).json({ error: "Something went wrong" });
   }
 });
@@ -30,14 +48,31 @@ router.get("/", async (req, res) => {
 // POST add guest and stay
 router.post("/", async (req, res) => {
   const { guest, stay } = req.body;
-  try {
-    const guestResult = await pool.query(
-      `INSERT INTO guests (name, car_number, nationality)
-       VALUES ($1, $2, $3) RETURNING id`,
-      [guest.name, guest.car_number, guest.nationality]
-    );
-    const guestId = guestResult.rows[0].id;
 
+  try {
+    // Sjekk om gjest allerede finnes med car_number
+    const existingGuest = await pool.query(
+      `SELECT id FROM guests WHERE TRIM(LOWER(car_number)) = TRIM(LOWER($1))`,
+      [guest.car_number]
+    );
+
+    let guestId;
+
+    if (existingGuest.rows.length > 0) {
+      // ✅ Gjest finnes – IKKE oppdater noe, bare bruk ID
+      guestId = existingGuest.rows[0].id;
+    } else {
+      // 🆕 Opprett ny gjest
+      const newGuest = await pool.query(
+        `INSERT INTO guests (name, car_number, nationality)
+         VALUES ($1, $2, $3)
+         RETURNING id`,
+        [guest.name.trim(), guest.car_number.trim(), guest.nationality.trim()]
+      );
+      guestId = newGuest.rows[0].id;
+    }
+
+    // Uansett: lagre oppholdet
     await pool.query(
       `INSERT INTO stays (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
@@ -53,35 +88,10 @@ router.post("/", async (req, res) => {
       ]
     );
 
-    res.status(201).json({ message: "Guest and stay added" });
+    res.status(201).json({ message: "Guest and stay added", guestId });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in POST /api/stays:", err);
     res.status(500).json({ error: "Failed to add guest and stay" });
-  }
-});
-
-// DELETE stay and possibly guest
-router.delete("/:stayId", async (req, res) => {
-  const { stayId } = req.params;
-  const { guestId } = req.query;
-
-  try {
-    await pool.query(`DELETE FROM stays WHERE id = $1`, [stayId]);
-
-    const checkResult = await pool.query(
-      `SELECT 1 FROM stays WHERE guest_id = $1 LIMIT 1`,
-      [guestId]
-    );
-
-    if (checkResult.rowCount === 0) {
-      await pool.query(`DELETE FROM guests WHERE id = $1`, [guestId]);
-      res.json({ message: "Stay and guest deleted" });
-    } else {
-      res.json({ message: "Stay deleted; guest has other stays" });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete stay and/or guest" });
   }
 });
 
@@ -149,6 +159,17 @@ router.put("/:stayId", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update guest and stay" });
+  }
+});
+
+router.delete("/:stayId", async (req, res) => {
+  const { stayId } = req.params;
+  try {
+    await pool.query("DELETE FROM stays WHERE id = $1", [stayId]);
+    res.sendStatus(200);
+  } catch (err) {
+    console.error("Failed to delete stay:", err);
+    res.status(500).json({ error: "Delete stay failed" });
   }
 });
 
