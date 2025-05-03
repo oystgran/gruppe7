@@ -8,6 +8,8 @@ export const useStaysStore = defineStore("stays", () => {
   const bookingsToday = ref({});
   const doubleCount = computed(() => count.value * 2);
 
+  const allSpots = computed(() => Array.from({ length: 42 }, (_, i) => i + 1));
+
   function increment() {
     count.value++;
   }
@@ -110,5 +112,6 @@ export const useStaysStore = defineStore("stays", () => {
     deleteGuest,
     bookingsToday,
     fetchStaysInRange,
+    allSpots,
   };
 });

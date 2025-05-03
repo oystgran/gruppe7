@@ -155,12 +155,21 @@
               </span>
             </template>
             <div style="display: flex; align-items: center; margin-left: 12px">
-              <el-input
-                :value="form.spotId"
-                disabled
-                style="width: 100px; margin-left: 25px"
-                input-style="text-align: center"
-              />
+              <el-form-item label="" prop="spotId">
+                <el-select
+                  v-model="form.spotId"
+                  placeholder="Select spot"
+                  style="width: 120px"
+                >
+                  <el-option
+                    v-for="id in availableSpots"
+                    :key="id"
+                    :label="getSpotLabel(id)"
+                    :value="id"
+                    :disabled="isSpotOccupied(id) && id !== form.spotId"
+                  />
+                </el-select>
+              </el-form-item>
               <span
                 style="
                   opacity: 0.6;
@@ -448,6 +457,50 @@ export default {
     }
   },
   watch: {
+    "form.spotId"(newVal, oldVal) {
+      if (
+        this.isSpotOccupied(newVal) &&
+        this.mode === "edit" &&
+        newVal !== oldVal &&
+        newVal !== this.guest.spotId
+      ) {
+        this.$confirm(
+          "This spot is already taken. Would you like to propose a swap from a specific date?",
+          "Occupied Spot",
+          {
+            confirmButtonText: "Yes",
+            cancelButtonText: "Cancel",
+            type: "warning",
+          }
+        )
+          .then(() => {
+            return this.$prompt("Choose swap date (yyyy-mm-dd):", "Swap date", {
+              confirmButtonText: "OK",
+              cancelButtonText: "Cancel",
+              inputPattern: /^\d{4}-\d{2}-\d{2}$/,
+              inputErrorMessage: "Invalid date format",
+            });
+          })
+          .then(({ value: swapDate }) => {
+            const stay1Id = this.guest?.stayId;
+            const stay2 = this.store.bookingsToday[newVal];
+
+            if (!stay1Id || !stay2?.id) {
+              this.$message.error("Could not find one of the stays to swap.");
+              this.form.spotId = oldVal;
+              return;
+            }
+
+            const stay2Id = stay2.id;
+
+            this.handleSwapProposal(stay1Id, stay2Id, swapDate);
+          })
+          .catch(() => {
+            this.$message.info("Swap cancelled.");
+            this.form.spotId = oldVal;
+          });
+      }
+    },
     "form.name"(newVal) {
       if (!newVal || !this.nameSelectedFromList) {
         this.isVip = false;
@@ -506,6 +559,15 @@ export default {
     },
   },
   computed: {
+    allSpots() {
+      return Array.from({ length: 42 }, (_, i) => i + 1);
+    },
+    availableSpots() {
+      const all = this.allSpots;
+      const current = this.form.spotId;
+      const withCurrent = new Set([...all, current]);
+      return Array.from(withCurrent);
+    },
     isFjordSpot() {
       return FJORD_SPOTS.has(this.form.spotId);
     },
@@ -528,6 +590,51 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
+    async handleSwapProposal(stayId1, stayId2, swapDate) {
+      try {
+        const stay2 = this.store.bookingsToday[this.form.spotId];
+
+        const res = await fetch("/api/stays/swap", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stay1: {
+              id: stayId1,
+              newEnd: swapDate,
+            },
+            stay2: {
+              id: stayId2,
+              // Send gjeldende utsjekksdato for stay2 for å tvinge oppdatering
+              newEnd: dayjs(stay2.check_out).format("YYYY-MM-DDTHH:mm:ss"),
+            },
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Swap failed");
+        }
+
+        this.store.loadGuests(this.selectedDate);
+        this.$message.success("Swap successful!");
+        this.$emit("guestSaved");
+        this.closeModal();
+      } catch (err) {
+        console.error("Swap error:", err);
+        this.$message.error("Could not complete swap.");
+      }
+    },
+    isSpotOccupied(id) {
+      return (
+        this.store.bookingsToday &&
+        this.store.bookingsToday[id] &&
+        this.mode !== "edit"
+      );
+    },
+    getSpotLabel(id) {
+      const isOccupied = this.isSpotOccupied(id);
+      return isOccupied ? `Spot ${id} 🔒 Occupied` : `Spot ${id}`;
+    },
     async checkVipStatus(nameOrCarNumber) {
       if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
         this.isVip = false;
