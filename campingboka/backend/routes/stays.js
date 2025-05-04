@@ -292,7 +292,8 @@ ORDER BY s.check_in`,
       // Forkort begge opphold til dagen før byttedato
       const cutoff = new Date(fromDate);
       cutoff.setDate(cutoff.getDate() - 1);
-      const cutoffStr = cutoff.toISOString().split("T")[0];
+      cutoff.setHours(12, 0, 0, 0); // Setter typisk utsjekkstid
+      const cutoffStr = cutoff.toISOString(); // behold tid
 
       await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
         cutoffStr,
