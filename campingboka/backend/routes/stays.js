@@ -174,14 +174,17 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.post("/swap", async (req, res) => {
+  /* router.post("/swap", async (req, res) => {
     const { stay1, stay2 } = req.body;
+
+    console.log("🔁 Swap request received");
+    console.log("📦 stay1 from client:", stay1);
+    console.log("📦 stay2 from client:", stay2);
 
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
 
-      // Hent eksisterende stays
       const { rows: rows1 } = await client.query(
         "SELECT * FROM stays WHERE id = $1",
         [stay1.id]
@@ -190,6 +193,95 @@ ORDER BY s.check_in`,
         "SELECT * FROM stays WHERE id = $1",
         [stay2.id]
       );
+
+      const s1 = rows1[0];
+      const s2 = rows2[0];
+
+      console.log("📡 Fetched stay1 from DB:", s1);
+      console.log("📡 Fetched stay2 from DB:", s2);
+
+      if (!s1 || !s2) {
+        console.error("❌ One or both stays not found in DB");
+        throw new Error("One or both stays not found");
+      }
+
+      // Første oppdatering
+      const update1 = await client.query(
+        `UPDATE stays
+         SET spot_id = $1, check_in = $2, check_out = $3,
+             adults = $4, children = $5, electricity = $6, price = $7
+         WHERE id = $8 RETURNING *`,
+        [
+          s2.spot_id,
+          s2.check_in,
+          s2.check_out,
+          s2.adults,
+          s2.children,
+          s2.electricity,
+          s2.price,
+          s1.id,
+        ]
+      );
+
+      console.log("✅ Update 1 (stay1) result:", update1.rows[0]);
+
+      // Andre oppdatering
+      const update2 = await client.query(
+        `UPDATE stays
+         SET spot_id = $1, check_in = $2, check_out = $3,
+             adults = $4, children = $5, electricity = $6, price = $7
+         WHERE id = $8 RETURNING *`,
+        [
+          s1.spot_id,
+          s1.check_in,
+          s1.check_out,
+          s1.adults,
+          s1.children,
+          s1.electricity,
+          s1.price,
+          s2.id,
+        ]
+      );
+
+      console.log("✅ Update 2 (stay2) result:", update2.rows[0]);
+
+      await client.query("COMMIT");
+      res.json({
+        message: "Swap complete",
+        swapped: {
+          stay1: update1.rows[0],
+          stay2: update2.rows[0],
+        },
+      });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("🔥 Error during swap:", err);
+      res.status(500).json({ error: "Failed to swap stays" });
+    } finally {
+      client.release();
+    }
+  }); */
+
+  router.post("/partial-swap", async (req, res) => {
+    const { stay1, stay2, fromDate } = req.body;
+
+    console.log("🔁 Partial swap request:", { stay1, stay2, fromDate });
+
+    const client = await pool.connect();
+
+    try {
+      await client.query("BEGIN");
+
+      // Hent eksisterende opphold
+      const { rows: rows1 } = await client.query(
+        "SELECT * FROM stays WHERE id = $1",
+        [stay1.id]
+      );
+      const { rows: rows2 } = await client.query(
+        "SELECT * FROM stays WHERE id = $1",
+        [stay2.id]
+      );
+
       const s1 = rows1[0];
       const s2 = rows2[0];
 
@@ -197,22 +289,60 @@ ORDER BY s.check_in`,
         throw new Error("One or both stays not found");
       }
 
+      // Forkort begge opphold til dagen før byttedato
+      const cutoff = new Date(fromDate);
+      cutoff.setDate(cutoff.getDate() - 1);
+      const cutoffStr = cutoff.toISOString().split("T")[0];
+
+      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
+        cutoffStr,
+        s1.id,
+      ]);
+      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
+        cutoffStr,
+        s2.id,
+      ]);
+
+      // Opprett nytt opphold for s1 på s2 sin plass
       await client.query(
-        `UPDATE stays SET spot_id = $1, check_in = $2, check_out = $3 WHERE id = $4`,
-        [s2.spot_id, s2.check_in, stay1.newEnd || s1.check_out, s1.id]
+        `INSERT INTO stays 
+          (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          s1.guest_id,
+          s2.spot_id,
+          fromDate,
+          s1.check_out, // behold opprinnelig utsjekk
+          s1.adults,
+          s1.children,
+          s1.electricity,
+          s1.price,
+        ]
       );
 
+      // Og motsatt for s2
       await client.query(
-        `UPDATE stays SET spot_id = $1, check_in = $2, check_out = $3 WHERE id = $4`,
-        [s1.spot_id, s1.check_in, stay2.newEnd || s2.check_out, s2.id]
+        `INSERT INTO stays 
+          (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          s2.guest_id,
+          s1.spot_id,
+          fromDate,
+          s2.check_out,
+          s2.adults,
+          s2.children,
+          s2.electricity,
+          s2.price,
+        ]
       );
 
       await client.query("COMMIT");
-      res.json({ message: "Swap complete" });
+      res.json({ message: "Partial swap completed successfully" });
     } catch (err) {
       await client.query("ROLLBACK");
-      console.error(err);
-      res.status(500).json({ error: "Failed to swap stays" });
+      console.error("❌ Partial swap error:", err);
+      res.status(500).json({ error: "Partial swap failed" });
     } finally {
       client.release();
     }

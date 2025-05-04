@@ -166,7 +166,6 @@
                     :key="id"
                     :label="getSpotLabel(id)"
                     :value="id"
-                    :disabled="isSpotOccupied(id) && id !== form.spotId"
                   />
                 </el-select>
               </el-form-item>
@@ -458,42 +457,51 @@ export default {
   },
   watch: {
     "form.spotId"(newVal, oldVal) {
+      console.log("🌀 spotId changed", {
+        oldVal,
+        newVal,
+        mode: this.mode,
+        guest: this.guest,
+      });
+
       if (
         this.isSpotOccupied(newVal) &&
         this.mode === "edit" &&
-        newVal !== oldVal &&
-        newVal !== this.guest.spotId
+        newVal !== oldVal
       ) {
+        const stay1Id = this.guest?.stayId;
+        const stay2 = this.store.bookingsToday[newVal];
+
+        if (!stay1Id || !stay2?.id) {
+          this.$message.error("Could not find one of the stays to swap.");
+          this.form.spotId = oldVal;
+          return;
+        }
+
+        const car1 = this.guest?.car_number || "unknown";
+        const car2 = stay2.car_number || "unknown";
+
         this.$confirm(
-          "This spot is already taken. Would you like to propose a swap from a specific date?",
-          "Occupied Spot",
+          `Are you sure you want to swap:\n\n` +
+            `• ${car1} on spot ${oldVal}\n` +
+            `• with ${car2} on spot ${newVal}\n\n` +
+            `This will take effect from ${dayjs(this.selectedDate).format(
+              "YYYY-MM-DD"
+            )}.`,
+          "Confirm Swap",
           {
-            confirmButtonText: "Yes",
+            confirmButtonText: "Yes, swap",
             cancelButtonText: "Cancel",
             type: "warning",
           }
         )
           .then(() => {
-            return this.$prompt("Choose swap date (yyyy-mm-dd):", "Swap date", {
-              confirmButtonText: "OK",
-              cancelButtonText: "Cancel",
-              inputPattern: /^\d{4}-\d{2}-\d{2}$/,
-              inputErrorMessage: "Invalid date format",
-            });
-          })
-          .then(({ value: swapDate }) => {
-            const stay1Id = this.guest?.stayId;
-            const stay2 = this.store.bookingsToday[newVal];
-
-            if (!stay1Id || !stay2?.id) {
-              this.$message.error("Could not find one of the stays to swap.");
-              this.form.spotId = oldVal;
-              return;
-            }
-
             const stay2Id = stay2.id;
-
-            this.handleSwapProposal(stay1Id, stay2Id, swapDate);
+            this.handleSwapProposal(
+              stay1Id,
+              stay2Id,
+              dayjs(this.selectedDate).format("YYYY-MM-DD")
+            );
           })
           .catch(() => {
             this.$message.info("Swap cancelled.");
@@ -590,45 +598,65 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
-    async handleSwapProposal(stayId1, stayId2, swapDate) {
+    async handleSwapProposal(stayId1, stayId2, fromDate) {
       try {
+        const stay1 = this.guest;
         const stay2 = this.store.bookingsToday[this.form.spotId];
 
-        const res = await fetch("/api/stays/swap", {
+        if (!stay1 || !stay2) {
+          this.$message.error("Could not find stays to swap.");
+          return;
+        }
+
+        const msg =
+          `Are you sure you want to swap places:\n\n` +
+          `• ${stay1.car_number} (spot ${stay1.spotId})\n` +
+          `⇄\n` +
+          `• ${stay2.car_number} (spot ${stay2.spotId})\n\n` +
+          `From: ${fromDate}`;
+
+        const confirmed = await this.$confirm(msg, "Confirm swap", {
+          confirmButtonText: "Yes, swap",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }).catch(() => false);
+
+        if (!confirmed) {
+          this.$message.info("Swap cancelled.");
+          return;
+        }
+
+        // Utfør swap
+        const res = await fetch("/api/stays/partial-swap", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            stay1: {
-              id: stayId1,
-              newEnd: swapDate,
-            },
-            stay2: {
-              id: stayId2,
-              // Send gjeldende utsjekksdato for stay2 for å tvinge oppdatering
-              newEnd: dayjs(stay2.check_out).format("YYYY-MM-DDTHH:mm:ss"),
-            },
+            stay1: { id: stayId1 },
+            stay2: { id: stay2.id },
+            fromDate,
           }),
         });
 
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.error || "Swap failed");
+          throw new Error(err.error || "Partial swap failed");
         }
 
         this.store.loadGuests(this.selectedDate);
-        this.$message.success("Swap successful!");
+        this.$message.success("Partial swap completed!");
         this.$emit("guestSaved");
         this.closeModal();
       } catch (err) {
         console.error("Swap error:", err);
-        this.$message.error("Could not complete swap.");
+        this.$message.error("Could not complete partial swap.");
       }
     },
     isSpotOccupied(id) {
+      const currentStay = this.guest?.stayId;
+      const stayOnSpot = this.store.bookingsToday?.[id];
+
       return (
-        this.store.bookingsToday &&
-        this.store.bookingsToday[id] &&
-        this.mode !== "edit"
+        stayOnSpot && (!currentStay || stayOnSpot.id !== currentStay) // Ikke den samme
       );
     },
     getSpotLabel(id) {
@@ -826,6 +854,15 @@ export default {
           this.$message.error("Please fix the errors before submitting.");
           return;
         }
+
+        // 🔐 Ekstra sjekk for å hindre overskriving av annen gjest sin plass
+        if (this.mode === "edit" && this.isSpotOccupied(this.form.spotId)) {
+          this.$message.warning(
+            "This spot is already taken. Propose a swap instead."
+          );
+          return;
+        }
+
         const checkOutDate = new Date(this.form.check_out);
         checkOutDate.setHours(12, 0, 0, 0);
 
