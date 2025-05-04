@@ -352,5 +352,77 @@ ORDER BY s.check_in`,
     }
   });
 
+  router.post("/move", async (req, res) => {
+    const { stayId, newSpotId, fromDate } = req.body;
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const { rows } = await client.query("SELECT * FROM stays WHERE id = $1", [
+        stayId,
+      ]);
+      const stay = rows[0];
+      if (!stay) throw new Error("Stay not found");
+
+      const from = new Date(fromDate);
+      const checkIn = new Date(stay.check_in);
+      const checkOut = new Date(stay.check_out);
+
+      // Sjekk om oppholdet starter og slutter på samme dag (edge case)
+      const sameDay = from.toDateString() === checkIn.toDateString();
+
+      if (from >= checkOut) {
+        throw new Error("fromDate must be before check_out");
+      }
+
+      if (sameDay) {
+        // 🟢 Bare flytt hele oppholdet til ny plass
+        await client.query("UPDATE stays SET spot_id = $1 WHERE id = $2", [
+          newSpotId,
+          stayId,
+        ]);
+      } else {
+        // 🟠 Splitte oppholdet
+        const cutoff = new Date(from);
+        cutoff.setHours(12, 0, 0, 0); // utsjekk
+        const cutoffStr = cutoff.toISOString();
+
+        await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
+          cutoffStr,
+          stayId,
+        ]);
+
+        const newCheckIn = new Date(from);
+        newCheckIn.setHours(14, 0, 0, 0); // innsjekk
+        const newCheckInStr = newCheckIn.toISOString();
+
+        await client.query(
+          `INSERT INTO stays 
+      (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [
+            stay.guest_id,
+            newSpotId,
+            newCheckInStr,
+            stay.check_out,
+            stay.adults,
+            stay.children,
+            stay.electricity,
+            stay.price,
+          ]
+        );
+      }
+      await client.query("COMMIT");
+      res.json({ message: "Guest moved to new spot from selected date" });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("❌ Move error:", err);
+      res.status(500).json({ error: err.message || "Failed to move guest" });
+    } finally {
+      client.release();
+    }
+  });
+
   return router;
 };

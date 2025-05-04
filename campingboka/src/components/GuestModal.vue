@@ -457,37 +457,26 @@ export default {
   },
   watch: {
     "form.spotId"(newVal, oldVal) {
-      console.log("🌀 spotId changed", {
-        oldVal,
-        newVal,
-        mode: this.mode,
-        guest: this.guest,
-      });
+      if (this.mode !== "edit" || newVal === oldVal) return;
 
-      if (
-        this.isSpotOccupied(newVal) &&
-        this.mode === "edit" &&
-        newVal !== oldVal
-      ) {
+      if (this.isSpotOccupied(newVal)) {
+        // 🔁 SWAP
         const stay1Id = this.guest?.stayId;
         const stay2 = this.store.bookingsToday[newVal];
-
         if (!stay1Id || !stay2?.id) {
-          this.$message.error("Could not find one of the stays to swap.");
+          this.$message.error("Could not find stays to swap.");
           this.form.spotId = oldVal;
           return;
         }
 
-        const car1 = this.guest?.car_number || "unknown";
-        const car2 = stay2.car_number || "unknown";
-
         this.$confirm(
-          `Are you sure you want to swap:\n\n` +
-            `• ${car1} on spot ${oldVal}\n` +
-            `• with ${car2} on spot ${newVal}\n\n` +
-            `This will take effect from ${dayjs(this.selectedDate).format(
-              "YYYY-MM-DD"
-            )}.`,
+          `Are you sure you want to swap:\n\n• ${
+            this.guest.car_number
+          } (spot ${oldVal})\n• with ${
+            stay2.car_number
+          } (spot ${newVal})\n\nFrom ${dayjs(this.selectedDate).format(
+            "YYYY-MM-DD"
+          )}`,
           "Confirm Swap",
           {
             confirmButtonText: "Yes, swap",
@@ -496,16 +485,41 @@ export default {
           }
         )
           .then(() => {
-            const stay2Id = stay2.id;
             this.handleSwapProposal(
               stay1Id,
-              stay2Id,
+              stay2.id,
               dayjs(this.selectedDate).format("YYYY-MM-DD")
             );
           })
           .catch(() => {
             this.$message.info("Swap cancelled.");
             this.form.spotId = oldVal;
+          });
+      } else {
+        // 🛏️ MOVE to free spot
+        this.$confirm(
+          `Move ${
+            this.guest.car_number
+          } from spot ${oldVal} to ${newVal} starting ${dayjs(
+            this.selectedDate
+          ).format("YYYY-MM-DD")}?`,
+          "Confirm Move",
+          {
+            confirmButtonText: "Yes, move",
+            cancelButtonText: "Cancel",
+            type: "warning",
+          }
+        )
+          .then(() => {
+            this.handleMoveProposal(
+              this.guest.stayId,
+              newVal,
+              dayjs(this.selectedDate).format("YYYY-MM-DD")
+            );
+          })
+          .catch(() => {
+            this.form.spotId = oldVal;
+            this.$message.info("Move cancelled.");
           });
       }
     },
@@ -598,6 +612,28 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
+    async handleMoveProposal(stayId, newSpotId, fromDate) {
+      try {
+        const res = await fetch("/api/stays/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stayId, newSpotId, fromDate }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Move failed");
+        }
+
+        this.$message.success("Guest moved successfully!");
+        this.store.loadGuests(this.selectedDate); // reload UI
+        this.$emit("guestSaved");
+        this.closeModal();
+      } catch (err) {
+        console.error("Move error:", err);
+        this.$message.error("Could not move guest.");
+      }
+    },
     async handleSwapProposal(stayId1, stayId2, fromDate) {
       try {
         const stay1 = this.guest;
