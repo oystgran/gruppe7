@@ -352,5 +352,73 @@ ORDER BY s.check_in`,
     }
   });
 
+  router.post("/move", async (req, res) => {
+    const { stayId, newSpotId, fromDate } = req.body;
+
+    const client = await pool.connect();
+    try {
+      await client.query("BEGIN");
+
+      const { rows } = await client.query("SELECT * FROM stays WHERE id = $1", [
+        stayId,
+      ]);
+      const stay = rows[0];
+
+      if (!stay) throw new Error("Stay not found");
+
+      // Forkort det gamle oppholdet
+      const cutoff = new Date(fromDate);
+      cutoff.setHours(12, 0, 0, 0);
+      const cutoffStr = cutoff.toISOString();
+
+      // 🚫 Ikke trekk fra én dag hvis fromDate og check_in er samme dag
+      const sameDay =
+        new Date(stay.check_in).toDateString() ===
+        new Date(fromDate).toDateString();
+
+      if (sameDay) {
+        // Bare slett stayen istedenfor å splitte
+        await client.query("DELETE FROM stays WHERE id = $1", [stay.id]);
+      } else {
+        // Forkort stay som vanlig
+        await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
+          cutoffStr,
+          stay.id,
+        ]);
+      }
+
+      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
+        cutoffStr,
+        stay.id,
+      ]);
+
+      // Lag nytt opphold på ny plass fra fromDate til original check_out
+      await client.query(
+        `INSERT INTO stays 
+          (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          stay.guest_id,
+          newSpotId,
+          fromDate,
+          stay.check_out, // behold opprinnelig utsjekk
+          stay.adults,
+          stay.children,
+          stay.electricity,
+          stay.price,
+        ]
+      );
+
+      await client.query("COMMIT");
+      res.json({ message: "Guest moved successfully" });
+    } catch (err) {
+      await client.query("ROLLBACK");
+      console.error("❌ Move error:", err);
+      res.status(500).json({ error: "Failed to move guest" });
+    } finally {
+      client.release();
+    }
+  });
+
   return router;
 };

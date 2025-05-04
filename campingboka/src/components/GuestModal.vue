@@ -457,54 +457,55 @@ export default {
   },
   watch: {
     "form.spotId"(newVal, oldVal) {
-      console.log("🌀 spotId changed", {
-        oldVal,
-        newVal,
-        mode: this.mode,
-        guest: this.guest,
-      });
+      if (this.mode !== "edit" || newVal === oldVal) return;
 
-      if (
-        this.isSpotOccupied(newVal) &&
-        this.mode === "edit" &&
-        newVal !== oldVal
-      ) {
-        const stay1Id = this.guest?.stayId;
-        const stay2 = this.store.bookingsToday[newVal];
+      const stayId = this.guest?.stayId;
+      const stay2 = this.store.bookingsToday[newVal];
 
-        if (!stay1Id || !stay2?.id) {
-          this.$message.error("Could not find one of the stays to swap.");
-          this.form.spotId = oldVal;
-          return;
-        }
-
-        const car1 = this.guest?.car_number || "unknown";
-        const car2 = stay2.car_number || "unknown";
+      if (this.isSpotOccupied(newVal)) {
+        // SWAP som før
+        // ... (din eksisterende swap-kode her)
+      } else {
+        // MOVE til ledig plass
+        const car = this.guest?.car_number || "unknown";
 
         this.$confirm(
-          `Are you sure you want to swap:\n\n` +
-            `• ${car1} on spot ${oldVal}\n` +
-            `• with ${car2} on spot ${newVal}\n\n` +
-            `This will take effect from ${dayjs(this.selectedDate).format(
-              "YYYY-MM-DD"
-            )}.`,
-          "Confirm Swap",
+          `Do you want to move ${car} from spot ${oldVal} to empty spot ${newVal} starting ${dayjs(
+            this.selectedDate
+          ).format("YYYY-MM-DD")}?`,
+          "Confirm Move",
           {
-            confirmButtonText: "Yes, swap",
+            confirmButtonText: "Yes, move",
             cancelButtonText: "Cancel",
-            type: "warning",
+            type: "info",
           }
         )
-          .then(() => {
-            const stay2Id = stay2.id;
-            this.handleSwapProposal(
-              stay1Id,
-              stay2Id,
-              dayjs(this.selectedDate).format("YYYY-MM-DD")
-            );
+          .then(async () => {
+            try {
+              const res = await fetch("/api/stays/move", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  stayId,
+                  newSpotId: newVal,
+                  fromDate: dayjs(this.selectedDate).format("YYYY-MM-DD"),
+                }),
+              });
+
+              if (!res.ok) throw new Error("Move failed");
+
+              this.store.loadGuests(this.selectedDate);
+              this.$message.success("Guest moved successfully!");
+              this.$emit("guestSaved");
+              this.closeModal();
+            } catch (err) {
+              console.error("Move error:", err);
+              this.$message.error("Move failed.");
+              this.form.spotId = oldVal;
+            }
           })
           .catch(() => {
-            this.$message.info("Swap cancelled.");
+            this.$message.info("Move cancelled.");
             this.form.spotId = oldVal;
           });
       }
