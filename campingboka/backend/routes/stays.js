@@ -291,7 +291,6 @@ ORDER BY s.check_in`,
 
       // Forkort begge opphold til dagen før byttedato
       const cutoff = new Date(fromDate);
-      cutoff.setDate(cutoff.getDate() - 1);
       cutoff.setHours(12, 0, 0, 0); // Setter typisk utsjekkstid
       const cutoffStr = cutoff.toISOString(); // behold tid
 
@@ -305,6 +304,10 @@ ORDER BY s.check_in`,
       ]);
 
       // Opprett nytt opphold for s1 på s2 sin plass
+      const checkInDate = new Date(fromDate);
+      checkInDate.setHours(14, 0, 0, 0); // Sett innsjekk kl. 14
+      const checkInStr = checkInDate.toISOString();
+
       await client.query(
         `INSERT INTO stays 
           (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
@@ -312,7 +315,7 @@ ORDER BY s.check_in`,
         [
           s1.guest_id,
           s2.spot_id,
-          fromDate,
+          checkInStr,
           s1.check_out, // behold opprinnelig utsjekk
           s1.adults,
           s1.children,
@@ -329,7 +332,7 @@ ORDER BY s.check_in`,
         [
           s2.guest_id,
           s1.spot_id,
-          fromDate,
+          checkInStr,
           s2.check_out,
           s2.adults,
           s2.children,
