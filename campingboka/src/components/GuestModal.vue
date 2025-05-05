@@ -703,8 +703,11 @@ export default {
       );
     },
     getSpotLabel(id) {
-      const isOccupied = this.isSpotOccupied(id);
-      return isOccupied ? `Spot ${id} 🔒 Occupied` : `Spot ${id}`;
+      const stay = this.store.bookingsToday?.[id];
+      if (stay && (!this.guest || stay.id !== this.guest.stayId)) {
+        return `Spot ${id} – ${stay.car_number || "Occupied"}`;
+      }
+      return `Spot ${id}`;
     },
     async checkVipStatus(nameOrCarNumber) {
       if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
