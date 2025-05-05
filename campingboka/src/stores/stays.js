@@ -33,7 +33,6 @@ export const useStaysStore = defineStore("stays", () => {
     console.log("bookingstoday:", bookingsToday.value);
   }
   async function addGuest(guestData, stayData) {
-    // Sjekk om gjest finnes først
     const searchRes = await fetch(`/api/guests/search?query=${guestData.name}`);
     const matches = await searchRes.json();
 
@@ -49,7 +48,7 @@ export const useStaysStore = defineStore("stays", () => {
     };
 
     if (existing) {
-      payload.guestId = existing.id; // legg til guestId hvis den finnes
+      payload.guestId = existing.id;
     }
 
     const res = await fetch("/api/stays", {
@@ -58,7 +57,12 @@ export const useStaysStore = defineStore("stays", () => {
       body: JSON.stringify(payload),
     });
 
-    if (!res.ok) throw new Error("Failed to add guest and stay");
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      console.warn("Feil fra backend:", errorData);
+      const message = errorData.error || "Failed to add guest and stay";
+      throw new Error(message);
+    }
   }
 
   async function updateGuest(gjestId, guestData, stayId, stayData) {

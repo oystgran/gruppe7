@@ -886,7 +886,7 @@ export default {
         // 🔐 Ekstra sjekk for å hindre overskriving av annen gjest sin plass
         if (this.mode === "edit" && this.isSpotOccupied(this.form.spotId)) {
           this.$message.warning(
-            "This spot is already taken. Propose a swap instead."
+            `Spot ${this.form.spotId} is already occupied. Please propose a swap or select another spot.`
           );
           return;
         }
@@ -930,8 +930,12 @@ export default {
           this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
           this.closeModal(); // ✅ Bare én gang, etterpå
         } catch (err) {
-          console.error(err);
-          this.$message.error("Something went wrong.");
+          console.error("❌ Guest save failed:", err);
+          const message =
+            err?.message && err.message !== "Failed to fetch"
+              ? err.message
+              : "Could not communicate with the server.";
+          this.$message.error(message);
         }
       });
     },
