@@ -359,6 +359,7 @@ export default {
       isVip: false,
       nameSelectedFromList: false,
       carSelectedFromList: false,
+      skipNextSpotWatcher: false,
       form: {
         name: "",
         car_number: "",
@@ -457,6 +458,10 @@ export default {
   },
   watch: {
     "form.spotId"(newVal, oldVal) {
+      if (this.skipNextSpotWatcher) {
+        this.skipNextSpotWatcher = false;
+        return;
+      }
       if (this.mode !== "edit" || newVal === oldVal) return;
 
       if (this.isSpotOccupied(newVal)) {
@@ -493,6 +498,7 @@ export default {
           })
           .catch(() => {
             this.$message.info("Swap cancelled.");
+            this.skipNextSpotWatcher = true;
             this.form.spotId = oldVal;
           });
       } else {
@@ -518,6 +524,7 @@ export default {
             );
           })
           .catch(() => {
+            this.skipNextSpotWatcher = true;
             this.form.spotId = oldVal;
             this.$message.info("Move cancelled.");
           });
