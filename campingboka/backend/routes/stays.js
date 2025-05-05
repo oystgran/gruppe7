@@ -29,7 +29,7 @@ module.exports = function (pool) {
 FROM stays s
 JOIN guests g ON s.guest_id = g.id
 WHERE s.check_in < $1::date + interval '1 day'
-  AND s.check_out >= $1::date
+  AND DATE(s.check_out) > $1::date
 ORDER BY s.check_in`,
         [date]
       );
