@@ -651,24 +651,6 @@ export default {
           return;
         }
 
-        const msg =
-          `Are you sure you want to swap places:\n\n` +
-          `• ${stay1.car_number} (spot ${stay1.spotId})\n` +
-          `⇄\n` +
-          `• ${stay2.car_number} (spot ${stay2.spotId})\n\n` +
-          `From: ${fromDate}`;
-
-        const confirmed = await this.$confirm(msg, "Confirm swap", {
-          confirmButtonText: "Yes, swap",
-          cancelButtonText: "Cancel",
-          type: "warning",
-        }).catch(() => false);
-
-        if (!confirmed) {
-          this.$message.info("Swap cancelled.");
-          return;
-        }
-
         // Utfør swap
         const res = await fetch("/api/stays/partial-swap", {
           method: "POST",
@@ -682,11 +664,11 @@ export default {
 
         if (!res.ok) {
           const err = await res.json();
-          throw new Error(err.error || "Partial swap failed");
+          throw new Error(err.error || "Swap failed");
         }
 
         this.store.loadGuests(this.selectedDate);
-        this.$message.success("Partial swap completed!");
+        this.$message.success("Swap completed!");
         this.$emit("guestSaved");
         this.closeModal();
       } catch (err) {
