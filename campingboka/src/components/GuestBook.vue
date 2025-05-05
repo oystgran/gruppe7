@@ -21,6 +21,10 @@
           :price="store.bookingsToday[spotId]?.price"
           :vip="store.bookingsToday[spotId]?.vip"
           @click="openModalWithGuest(spotId)"
+          draggable="true"
+          @dragstart="onDragStart(spotId)"
+          @dragover.prevent
+          @drop="onDrop(spotId)"
         >
           <template v-slot:car_number>
             <span v-if="store.bookingsToday[spotId]?.car_number">
@@ -64,6 +68,7 @@ export default {
   data() {
     return {
       windowWidth: window.innerWidth,
+      dragSourceSpotId: null,
     };
   },
   mounted() {
@@ -73,6 +78,88 @@ export default {
     window.removeEventListener("resize", this.updateWindowWidth);
   },
   methods: {
+    onDragStart(spotId) {
+      this.dragSourceSpotId = spotId;
+    },
+    async onDrop(targetSpotId) {
+      const sourceSpotId = this.dragSourceSpotId;
+      if (sourceSpotId === null || sourceSpotId === targetSpotId) return;
+
+      const stay1 = this.store.bookingsToday[sourceSpotId];
+      const stay2 = this.store.bookingsToday[targetSpotId];
+
+      const fromDate = this.selectedDate.toISOString().split("T")[0];
+
+      // 1. 🔁 SWAP hvis begge har opphold
+      if (stay1 && stay2) {
+        const confirmed = await this.$confirm(
+          `Swap ${stay1.car_number} (spot ${sourceSpotId}) with ${stay2.car_number} (spot ${targetSpotId}) from ${fromDate}?`,
+          "Confirm Swap",
+          {
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            type: "warning",
+          }
+        ).catch(() => false);
+
+        if (!confirmed) return;
+
+        try {
+          await fetch("/api/stays/partial-swap", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              stay1: { id: stay1.id },
+              stay2: { id: stay2.id },
+              fromDate,
+            }),
+          });
+
+          this.$message.success("Guests swapped!");
+          this.store.loadGuests(this.selectedDate);
+        } catch (err) {
+          console.error("Swap failed:", err);
+          this.$message.error("Swap failed.");
+        }
+
+        // 2. 🛏 MOVE hvis kun én har opphold
+      } else if (stay1 && !stay2) {
+        const confirmed = await this.$confirm(
+          `Move ${stay1.car_number} from spot ${sourceSpotId} to ${targetSpotId} from ${fromDate}?`,
+          "Confirm Move",
+          {
+            confirmButtonText: "Yes",
+            cancelButtonText: "No",
+            type: "warning",
+          }
+        ).catch(() => false);
+
+        if (!confirmed) return;
+
+        try {
+          await fetch("/api/stays/move", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              stayId: stay1.id,
+              newSpotId: targetSpotId,
+              fromDate,
+            }),
+          });
+
+          this.$message.success("Guest moved!");
+          this.store.loadGuests(this.selectedDate);
+        } catch (err) {
+          console.error("Move failed:", err);
+          this.$message.error("Move failed.");
+        }
+      } else {
+        // 3. ❌ Begge tomme
+        this.$message.info("Nothing to move or swap.");
+      }
+
+      this.dragSourceSpotId = null;
+    },
     updateWindowWidth() {
       this.windowWidth = window.innerWidth;
     },
@@ -164,5 +251,8 @@ export default {
   display: flex;
   align-items: left;
   justify-content: left;
+}
+.guestcard.drag-over {
+  border: 2px dashed #409eff;
 }
 </style>
