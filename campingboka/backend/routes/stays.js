@@ -244,18 +244,43 @@ ORDER BY s.check_in`,
       cutoff.setHours(12, 0, 0, 0); // utsjekk
       const cutoffStr = cutoff.toISOString();
 
-      const checkInDate = new Date(fromDate);
-      checkInDate.setHours(14, 0, 0, 0); // innsjekk
-      const checkInStr = checkInDate.toISOString();
+      const checkIn1 = new Date(s1.check_in);
+      const checkOut1 = new Date(s1.check_out);
+      const checkIn2 = new Date(s2.check_in);
+      const checkOut2 = new Date(s2.check_out);
 
-      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
-        cutoffStr,
-        s1.id,
-      ]);
-      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
-        cutoffStr,
-        s2.id,
-      ]);
+      const msPerNight = 1000 * 60 * 60 * 24;
+
+      // Beregn netter for s1
+      const totalNights1 = Math.round((checkOut1 - checkIn1) / msPerNight);
+      const firstPartNights1 = Math.round((cutoff - checkIn1) / msPerNight);
+      const secondPartNights1 = totalNights1 - firstPartNights1;
+
+      const pricePerNight1 = s1.price / totalNights1;
+      const firstPartPrice1 = Math.round(pricePerNight1 * firstPartNights1);
+      const secondPartPrice1 = s1.price - firstPartPrice1;
+
+      // Beregn netter for s2
+      const totalNights2 = Math.round((checkOut2 - checkIn2) / msPerNight);
+      const firstPartNights2 = Math.round((cutoff - checkIn2) / msPerNight);
+      const secondPartNights2 = totalNights2 - firstPartNights2;
+
+      const pricePerNight2 = s2.price / totalNights2;
+      const firstPartPrice2 = Math.round(pricePerNight2 * firstPartNights2);
+      const secondPartPrice2 = s2.price - firstPartPrice2;
+
+      const checkInStr = new Date(fromDate);
+      checkInStr.setHours(14, 0, 0, 0); // innsjekk
+      const checkInISO = checkInStr.toISOString();
+
+      await client.query(
+        "UPDATE stays SET check_out = $1, price = $2 WHERE id = $3",
+        [cutoffStr, firstPartPrice1, s1.id]
+      );
+      await client.query(
+        "UPDATE stays SET check_out = $1, price = $2 WHERE id = $3",
+        [cutoffStr, firstPartPrice2, s2.id]
+      );
 
       await client.query(
         `INSERT INTO stays 
@@ -269,7 +294,7 @@ ORDER BY s.check_in`,
           s1.adults,
           s1.children,
           s1.electricity,
-          s1.price,
+          secondPartPrice1,
         ]
       );
 
@@ -286,7 +311,7 @@ ORDER BY s.check_in`,
           s2.adults,
           s2.children,
           s2.electricity,
-          s2.price,
+          secondPartPrice2,
         ]
       );
 
@@ -366,10 +391,21 @@ ORDER BY s.check_in`,
         cutoff.setHours(12, 0, 0, 0); // utsjekk
         const cutoffStr = cutoff.toISOString();
 
-        await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
-          cutoffStr,
-          stayId,
-        ]);
+        // Beregn antall netter i første og andre del
+        const msPerNight = 1000 * 60 * 60 * 24;
+        const totalNights = Math.round((checkOut - checkIn) / msPerNight);
+        const firstPartNights = Math.round((cutoff - checkIn) / msPerNight);
+        const secondPartNights = totalNights - firstPartNights;
+
+        // Fordel pris proporsjonalt
+        const pricePerNight = stay.price / totalNights;
+        const firstPartPrice = Math.round(pricePerNight * firstPartNights);
+        const secondPartPrice = stay.price - firstPartPrice;
+
+        await client.query(
+          "UPDATE stays SET check_out = $1, price = $2 WHERE id = $3",
+          [cutoffStr, firstPartPrice, stayId]
+        );
 
         // 2. Lag nytt opphold fra ny dato på ny plass
         const newCheckIn = new Date(from);
@@ -388,7 +424,7 @@ ORDER BY s.check_in`,
             stay.adults,
             stay.children,
             stay.electricity,
-            stay.price,
+            secondPartPrice,
           ]
         );
       }
