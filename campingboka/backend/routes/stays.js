@@ -4,6 +4,22 @@ const express = require("express");
 module.exports = function (pool) {
   const router = express.Router();
 
+  async function hasOverlap(pool, spotId, start, end, excludeStayId = null) {
+    const query = `
+      SELECT 1 FROM stays
+      WHERE spot_id = $1
+        AND NOT (check_out <= $2 OR check_in >= $3)
+        ${excludeStayId ? "AND id != $4" : ""}
+      LIMIT 1
+    `;
+
+    const params = [spotId, start, end];
+    if (excludeStayId) params.push(excludeStayId);
+
+    const result = await pool.query(query, params);
+    return result.rowCount > 0;
+  }
+
   // GET stays for selected date (with guest info)
   router.get("/", async (req, res) => {
     const { date } = req.query;
@@ -34,8 +50,8 @@ ORDER BY s.check_in`,
         [date]
       );
       result.rows.forEach((row) => {
-        row.check_in = row.check_in.toISOString().split("T")[0];
-        row.check_out = row.check_out.toISOString().split("T")[0];
+        row.check_in = row.check_in.toISOString(); // behold tid og UTC
+        row.check_out = row.check_out.toISOString();
       });
       res.json(result.rows);
     } catch (err) {
@@ -73,15 +89,7 @@ ORDER BY s.check_in`,
         guestId = newGuest.rows[0].id;
       }
 
-      const overlapping = await pool.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND NOT (check_out <= $2 OR check_in >= $3)
-         LIMIT 1`,
-        [stay.spot_Id, stay.check_in, stay.check_out]
-      );
-
-      if (overlapping.rowCount > 0) {
+      if (await hasOverlap(pool, stay.spot_Id, stay.check_in, stay.check_out)) {
         return res.status(400).json({
           error: "The selected spot is already booked during that period.",
         });
@@ -147,16 +155,15 @@ ORDER BY s.check_in`,
 
     try {
       // Riktig overlapp-sjekk (tillater utsjekk og innsjekk samme dag)
-      const overlapCheck = await pool.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND NOT (check_out <= $2 OR check_in >= $3)
-           AND id != $4
-         LIMIT 1`,
-        [stay.spot_Id, stay.check_in, stay.check_out, stayId]
-      );
-
-      if (overlapCheck.rowCount > 0) {
+      if (
+        await hasOverlap(
+          pool,
+          stay.spot_Id,
+          stay.check_in,
+          stay.check_out,
+          stayId
+        )
+      ) {
         return res.status(400).json({
           error: "The selected spot is already booked during that period.",
         });
@@ -241,37 +248,6 @@ ORDER BY s.check_in`,
       checkInDate.setHours(14, 0, 0, 0); // innsjekk
       const checkInStr = checkInDate.toISOString();
 
-      // Overlapp-sjekk for nytt s1-opphold på s2 sin plass
-      const overlapS1 = await client.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND NOT (check_out <= $2 OR check_in >= $3)
-           AND id != $4
-         LIMIT 1`,
-        [s2.spot_id, checkInStr, s1.check_out.toISOString(), s1.id]
-      );
-
-      if (overlapS1.rowCount > 0) {
-        throw new Error(
-          "Cannot swap: guest 1 would overlap with another stay at the target spot."
-        );
-      }
-
-      // 🔍 Overlapp-sjekk for nytt s2-opphold på s1 sin plass
-      const overlapS2 = await client.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND NOT (check_out <= $2 OR check_in >= $3)
-           AND id != $4
-         LIMIT 1`,
-        [s1.spot_id, checkInStr, s2.check_out.toISOString(), s2.id]
-      );
-
-      if (overlapS2.rowCount > 0) {
-        throw new Error(
-          "Cannot swap: guest 2 would overlap with another stay at the target spot."
-        );
-      }
       await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
         cutoffStr,
         s1.id,
@@ -339,6 +315,9 @@ ORDER BY s.check_in`,
       if (!stay) throw new Error("Stay not found");
 
       const from = new Date(fromDate);
+      const fromCheckIn = new Date(from);
+      fromCheckIn.setHours(14, 0, 0, 0); // innsjekk
+
       const checkIn = new Date(stay.check_in);
       const checkOut = new Date(stay.check_out);
 
@@ -349,19 +328,31 @@ ORDER BY s.check_in`,
       const sameDay = from.toDateString() === checkIn.toDateString();
 
       //Sjekk om det finnes et overlappende opphold på den nye plassen i perioden fra -> stay.check_out
-      const overlapCheck = await client.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND NOT (check_out <= $2 OR check_in >= $3)
-           AND id != $4
-         LIMIT 1`,
-        [newSpotId, from.toISOString(), stay.check_out.toISOString(), stayId]
-      );
-
-      if (overlapCheck.rowCount > 0) {
-        throw new Error(
-          "Cannot move: There is already a booking on the target spot during the selected period."
+      if (
+        await hasOverlap(
+          pool,
+          newSpotId,
+          fromCheckIn.toISOString(),
+          stay.check_out.toISOString(),
+          stayId
+        )
+      ) {
+        const conflict = await pool.query(
+          `SELECT check_in, check_out, guest_id FROM stays
+           WHERE spot_id = $1
+             AND NOT (check_out <= $2 OR check_in >= $3)
+             AND id != $4
+           LIMIT 1`,
+          [newSpotId, from.toISOString(), stay.check_out.toISOString(), stayId]
         );
+
+        const conflictStay = conflict.rows[0];
+        if (conflictStay) {
+          throw new Error(
+            `Cannot move: Target spot ${newSpotId} has a conflicting stay from ` +
+              `${conflictStay.check_in} to ${conflictStay.check_out}.`
+          );
+        }
       }
 
       if (sameDay) {

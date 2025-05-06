@@ -520,7 +520,11 @@ export default {
             this.handleMoveProposal(
               this.guest.stayId,
               newVal,
-              dayjs(this.selectedDate).format("YYYY-MM-DD")
+              dayjs(this.selectedDate)
+                .hour(14)
+                .minute(0)
+                .second(0)
+                .format("YYYY-MM-DDTHH:mm:ss")
             );
           })
           .catch(() => {

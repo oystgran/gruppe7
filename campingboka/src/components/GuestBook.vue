@@ -88,12 +88,18 @@ export default {
       const stay1 = this.store.bookingsToday[sourceSpotId];
       const stay2 = this.store.bookingsToday[targetSpotId];
 
-      const fromDate = this.selectedDate.toISOString().split("T")[0];
+      const fromDate = new Date(this.selectedDate);
+      fromDate.setHours(14, 0, 0, 0); // innsjekkstid
+      const fromDateISO = fromDate.toISOString();
 
       // 1. 🔁 SWAP hvis begge har opphold
       if (stay1 && stay2) {
         const confirmed = await this.$confirm(
-          `Swap ${stay1.car_number} (spot ${sourceSpotId}) with ${stay2.car_number} (spot ${targetSpotId}) from ${fromDate}?`,
+          `Swap ${stay1.car_number} (spot ${sourceSpotId}) with ${
+            stay2.car_number
+          } (spot ${targetSpotId}) from ${fromDate.toLocaleDateString(
+            "no-NO"
+          )}?`,
           "Confirm Swap",
           {
             confirmButtonText: "Yes",
@@ -130,7 +136,11 @@ export default {
         // 2. 🛏 MOVE hvis kun én har opphold
       } else if (stay1 && !stay2) {
         const confirmed = await this.$confirm(
-          `Move ${stay1.car_number} from spot ${sourceSpotId} to ${targetSpotId} from ${fromDate}?`,
+          `Move ${
+            stay1.car_number
+          } from spot ${sourceSpotId} to ${targetSpotId} from ${fromDate.toLocaleDateString(
+            "no-NO"
+          )}?`,
           "Confirm Move",
           {
             confirmButtonText: "Yes",
