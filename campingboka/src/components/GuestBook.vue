@@ -105,7 +105,7 @@ export default {
         if (!confirmed) return;
 
         try {
-          await fetch("/api/stays/partial-swap", {
+          const response = await fetch("/api/stays/partial-swap", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -115,11 +115,16 @@ export default {
             }),
           });
 
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Swap failed.");
+          }
+
           this.$message.success("Guests swapped!");
           this.store.loadGuests(this.selectedDate);
         } catch (err) {
           console.error("Swap failed:", err);
-          this.$message.error("Swap failed.");
+          this.$message.error(err.message || "Swap failed.");
         }
 
         // 2. 🛏 MOVE hvis kun én har opphold
@@ -137,7 +142,7 @@ export default {
         if (!confirmed) return;
 
         try {
-          await fetch("/api/stays/move", {
+          const response = await fetch("/api/stays/move", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -147,11 +152,16 @@ export default {
             }),
           });
 
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Move failed.");
+          }
+
           this.$message.success("Guest moved!");
           this.store.loadGuests(this.selectedDate);
         } catch (err) {
           console.error("Move failed:", err);
-          this.$message.error("Move failed.");
+          this.$message.error(err.message || "Move failed.");
         }
       } else {
         // 3. ❌ Begge tomme

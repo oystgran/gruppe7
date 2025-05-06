@@ -60,10 +60,10 @@ ORDER BY s.check_in`,
       let guestId;
 
       if (existingGuest.rows.length > 0) {
-        // ✅ Gjest finnes – IKKE oppdater noe, bare bruk ID
+        // Gjest finnes – IKKE oppdater noe, bare bruk ID
         guestId = existingGuest.rows[0].id;
       } else {
-        // 🆕 Opprett ny gjest
+        // Opprett ny gjest
         const newGuest = await pool.query(
           `INSERT INTO guests (name, car_number, nationality)
          VALUES ($1, $2, $3)
@@ -76,8 +76,7 @@ ORDER BY s.check_in`,
       const overlapping = await pool.query(
         `SELECT 1 FROM stays
          WHERE spot_id = $1
-           AND check_in < $3
-           AND check_out > $2
+           AND NOT (check_out <= $2 OR check_in >= $3)
          LIMIT 1`,
         [stay.spot_Id, stay.check_in, stay.check_out]
       );
@@ -85,21 +84,6 @@ ORDER BY s.check_in`,
       if (overlapping.rowCount > 0) {
         return res.status(400).json({
           error: "The selected spot is already booked during that period.",
-        });
-      }
-
-      const futureOverlap = await pool.query(
-        `SELECT 1 FROM stays
-         WHERE spot_id = $1
-           AND check_in >= $2::timestamp
-           AND check_in < ($2::timestamp + interval '1 day')`,
-        [stay.spot_Id, stay.check_out]
-      );
-
-      if (futureOverlap.rowCount > 0) {
-        return res.status(400).json({
-          error:
-            "Det finnes allerede en bestilling på denne plassen rett etter valgt periode.",
         });
       }
 
@@ -120,7 +104,7 @@ ORDER BY s.check_in`,
 
       res.status(201).json({ message: "Guest and stay added", guestId });
     } catch (err) {
-      console.error("❌ Error in POST /api/stays:", err);
+      console.error("Error in POST /api/stays:", err);
       res.status(500).json({ error: "Failed to add guest and stay" });
     }
   });
@@ -161,35 +145,37 @@ ORDER BY s.check_in`,
     const { stayId } = req.params;
     const { guestId, guest, stay } = req.body;
 
-    const futureOverlap = await pool.query(
-      `SELECT 1 FROM stays
-       WHERE spot_id = $1
-         AND check_in >= $2::timestamp
-         AND check_in < ($2::timestamp + interval '1 day')
-         AND id != $3
-       LIMIT 1`,
-      [stay.spot_Id, stay.check_out, stayId]
-    );
-
-    if (futureOverlap.rowCount > 0) {
-      return res.status(400).json({
-        error:
-          "Det finnes allerede en bestilling på denne plassen rett etter valgt periode.",
-      });
-    }
-
     try {
+      // Riktig overlapp-sjekk (tillater utsjekk og innsjekk samme dag)
+      const overlapCheck = await pool.query(
+        `SELECT 1 FROM stays
+         WHERE spot_id = $1
+           AND NOT (check_out <= $2 OR check_in >= $3)
+           AND id != $4
+         LIMIT 1`,
+        [stay.spot_Id, stay.check_in, stay.check_out, stayId]
+      );
+
+      if (overlapCheck.rowCount > 0) {
+        return res.status(400).json({
+          error: "The selected spot is already booked during that period.",
+        });
+      }
+
+      // Oppdater gjest
       await pool.query(
         `UPDATE guests
-       SET name = $1, car_number = $2, nationality = $3
-       WHERE id = $4`,
+         SET name = $1, car_number = $2, nationality = $3
+         WHERE id = $4`,
         [guest.name, guest.car_number, guest.nationality, guestId]
       );
 
+      // Oppdater opphold
       await pool.query(
         `UPDATE stays
-       SET spot_id = $1, check_in = $2, check_out = $3, adults = $4, children = $5, electricity = $6, price = $7
-       WHERE id = $8`,
+         SET spot_id = $1, check_in = $2, check_out = $3,
+             adults = $4, children = $5, electricity = $6, price = $7
+         WHERE id = $8`,
         [
           stay.spot_Id,
           stay.check_in,
@@ -204,7 +190,7 @@ ORDER BY s.check_in`,
 
       res.json({ message: "Guest and stay updated" });
     } catch (err) {
-      console.error(err);
+      console.error(" PUT error:", err);
       res.status(500).json({ error: "Failed to update guest and stay" });
     }
   });
@@ -247,11 +233,45 @@ ORDER BY s.check_in`,
         throw new Error("One or both stays not found");
       }
 
-      // Forkort begge opphold til dagen før byttedato
       const cutoff = new Date(fromDate);
-      cutoff.setHours(12, 0, 0, 0); // Setter typisk utsjekkstid
-      const cutoffStr = cutoff.toISOString(); // behold tid
+      cutoff.setHours(12, 0, 0, 0); // utsjekk
+      const cutoffStr = cutoff.toISOString();
 
+      const checkInDate = new Date(fromDate);
+      checkInDate.setHours(14, 0, 0, 0); // innsjekk
+      const checkInStr = checkInDate.toISOString();
+
+      // Overlapp-sjekk for nytt s1-opphold på s2 sin plass
+      const overlapS1 = await client.query(
+        `SELECT 1 FROM stays
+         WHERE spot_id = $1
+           AND NOT (check_out <= $2 OR check_in >= $3)
+           AND id != $4
+         LIMIT 1`,
+        [s2.spot_id, checkInStr, s1.check_out.toISOString(), s1.id]
+      );
+
+      if (overlapS1.rowCount > 0) {
+        throw new Error(
+          "Cannot swap: guest 1 would overlap with another stay at the target spot."
+        );
+      }
+
+      // 🔍 Overlapp-sjekk for nytt s2-opphold på s1 sin plass
+      const overlapS2 = await client.query(
+        `SELECT 1 FROM stays
+         WHERE spot_id = $1
+           AND NOT (check_out <= $2 OR check_in >= $3)
+           AND id != $4
+         LIMIT 1`,
+        [s1.spot_id, checkInStr, s2.check_out.toISOString(), s2.id]
+      );
+
+      if (overlapS2.rowCount > 0) {
+        throw new Error(
+          "Cannot swap: guest 2 would overlap with another stay at the target spot."
+        );
+      }
       await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
         cutoffStr,
         s1.id,
@@ -261,11 +281,6 @@ ORDER BY s.check_in`,
         s2.id,
       ]);
 
-      // Opprett nytt opphold for s1 på s2 sin plass
-      const checkInDate = new Date(fromDate);
-      checkInDate.setHours(14, 0, 0, 0); // Sett innsjekk kl. 14
-      const checkInStr = checkInDate.toISOString();
-
       await client.query(
         `INSERT INTO stays 
           (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
@@ -274,7 +289,7 @@ ORDER BY s.check_in`,
           s1.guest_id,
           s2.spot_id,
           checkInStr,
-          s1.check_out, // behold opprinnelig utsjekk
+          s1.check_out,
           s1.adults,
           s1.children,
           s1.electricity,
@@ -282,7 +297,7 @@ ORDER BY s.check_in`,
         ]
       );
 
-      // Og motsatt for s2
+      // ➕ Nytt opphold for s2 på s1 sin plass
       await client.query(
         `INSERT INTO stays 
           (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
@@ -303,8 +318,8 @@ ORDER BY s.check_in`,
       res.json({ message: "Partial swap completed successfully" });
     } catch (err) {
       await client.query("ROLLBACK");
-      console.error("❌ Partial swap error:", err);
-      res.status(500).json({ error: "Partial swap failed" });
+      console.error("Partial swap error:", err);
+      res.status(500).json({ error: err.message || "Partial swap failed" });
     } finally {
       client.release();
     }
@@ -327,21 +342,35 @@ ORDER BY s.check_in`,
       const checkIn = new Date(stay.check_in);
       const checkOut = new Date(stay.check_out);
 
-      // Sjekk om oppholdet starter og slutter på samme dag (edge case)
+      if (from >= checkOut) {
+        throw new Error("fromDate must be before original check_out");
+      }
+
       const sameDay = from.toDateString() === checkIn.toDateString();
 
-      if (from >= checkOut) {
-        throw new Error("fromDate must be before check_out");
+      //Sjekk om det finnes et overlappende opphold på den nye plassen i perioden fra -> stay.check_out
+      const overlapCheck = await client.query(
+        `SELECT 1 FROM stays
+         WHERE spot_id = $1
+           AND NOT (check_out <= $2 OR check_in >= $3)
+           AND id != $4
+         LIMIT 1`,
+        [newSpotId, from.toISOString(), stay.check_out.toISOString(), stayId]
+      );
+
+      if (overlapCheck.rowCount > 0) {
+        throw new Error(
+          "Cannot move: There is already a booking on the target spot during the selected period."
+        );
       }
 
       if (sameDay) {
-        // 🟢 Bare flytt hele oppholdet til ny plass
         await client.query("UPDATE stays SET spot_id = $1 WHERE id = $2", [
           newSpotId,
           stayId,
         ]);
       } else {
-        // 🟠 Splitte oppholdet
+        // 1. Forkort originalt opphold
         const cutoff = new Date(from);
         cutoff.setHours(12, 0, 0, 0); // utsjekk
         const cutoffStr = cutoff.toISOString();
@@ -351,34 +380,20 @@ ORDER BY s.check_in`,
           stayId,
         ]);
 
+        // 2. Lag nytt opphold fra ny dato på ny plass
         const newCheckIn = new Date(from);
         newCheckIn.setHours(14, 0, 0, 0); // innsjekk
         const newCheckInStr = newCheckIn.toISOString();
 
-        const overlapCheck = await client.query(
-          `SELECT 1 FROM stays
-           WHERE spot_id = $1
-             AND check_in >= $2::timestamp
-             AND check_in < ($2::timestamp + interval '1 day')
-           LIMIT 1`,
-          [newSpotId, stay.check_out]
-        );
-
-        if (overlapCheck.rowCount > 0) {
-          throw new Error(
-            "Det finnes allerede en bestilling på denne plassen rett etter valgt periode."
-          );
-        }
-
         await client.query(
           `INSERT INTO stays 
-      (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+           (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
           [
             stay.guest_id,
             newSpotId,
             newCheckInStr,
-            stay.check_out,
+            stay.check_out.toISOString(),
             stay.adults,
             stay.children,
             stay.electricity,
@@ -386,11 +401,12 @@ ORDER BY s.check_in`,
           ]
         );
       }
+
       await client.query("COMMIT");
       res.json({ message: "Guest moved to new spot from selected date" });
     } catch (err) {
       await client.query("ROLLBACK");
-      console.error("❌ Move error:", err);
+      console.error(" Move error:", err);
       res.status(500).json({ error: err.message || "Failed to move guest" });
     } finally {
       client.release();
