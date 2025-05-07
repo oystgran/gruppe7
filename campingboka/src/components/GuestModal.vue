@@ -484,9 +484,9 @@ export default {
           )}`,
           "Confirm Swap",
           {
-            confirmButtonText: "Yes, swap",
+            confirmButtonText: "Yes, move",
             cancelButtonText: "Cancel",
-            type: "warning",
+            type: "info",
           }
         )
           .then(() => {
