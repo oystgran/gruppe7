@@ -14,7 +14,7 @@ export const useStaysStore = defineStore("stays", () => {
     count.value++;
   }
 
-  async function loadGuests(selectedDate) {
+  async function loadGuests(selectedDate, forceReload = false) {
     if (!selectedDate) return;
 
     const dateObj =
@@ -25,12 +25,24 @@ export const useStaysStore = defineStore("stays", () => {
     }
 
     const date = dayjs(dateObj).format("YYYY-MM-DD");
+    if (
+      !forceReload &&
+      bookingsToday.value.__date === date &&
+      Object.keys(bookingsToday.value).length > 1 // minst én booking (pluss __date)
+    ) {
+      console.log("✅ Bruker cache for", date);
+      return;
+    }
 
     const res = await fetch(`/api/stays?date=${date}`);
     const stays = await res.json();
 
-    bookingsToday.value = { ...keyBy(stays, (stay) => stay.spot_id) };
-    console.log("bookingstoday:", bookingsToday.value);
+    bookingsToday.value = {
+      ...keyBy(stays, (stay) => stay.spot_id),
+      __date: date, // merk datoen dataen gjelder for
+    };
+
+    console.log("📡 Hentet nye bookinger:", bookingsToday.value);
   }
   async function addGuest(guestData, stayData) {
     const searchRes = await fetch(`/api/guests/search?query=${guestData.name}`);

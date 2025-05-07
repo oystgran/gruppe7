@@ -2,10 +2,7 @@
   <div class="archive-screen">
     <div class="archive-panel">
       <div class="search">
-        <ArchiveFilter
-          @update:rowData="filteredData = $event"
-          @update:search="searchText = $event"
-        />
+        <ArchiveFilter />
       </div>
       <div class="table">
         <ArchiveTable :rowData="filteredData" :quickFilterText="searchText" />
@@ -22,13 +19,13 @@
       </div>
 
       <div class="panel-middle">
-     <h3>Average persons per visit</h3>
-     <ArchiveChart
-       :chartData="avgPartyData"
-       :chartOptions="avgPartyOptions"
-       chartType="bar"
-     />
-   </div>
+        <h3>Average persons per visit</h3>
+        <ArchiveChart
+          :chartData="avgPartyData"
+          :chartOptions="avgPartyOptions"
+          chartType="bar"
+        />
+      </div>
 
       <!--div class="panel-lower">
         <h3>Electricity usage</h3>
@@ -64,6 +61,7 @@
 import ArchiveFilter from "@/components/ArchiveFilter.vue";
 import ArchiveTable from "@/components/ArchiveTable.vue";
 import ArchiveChart from "@/components/ArchiveChart.vue";
+import { useArchiveStore } from "@/stores/archive";
 
 export default {
   components: {
@@ -73,12 +71,7 @@ export default {
   },
   data() {
     return {
-      filteredData: [],
-      searchText: "",
-      dateRange: {
-        start: null,
-        end: null,
-      },
+      archiveStore: useArchiveStore(),
     };
   },
   methods: {
@@ -97,8 +90,8 @@ export default {
         const nights = (co - ci) / MS_PER_DAY;
         const persons = (row.adults || 0) + (row.children || 0);
         const guestDays = nights * persons;
-        guestDaysByCountry[country] = (guestDaysByCountry[country] || 0) + guestDays;
-
+        guestDaysByCountry[country] =
+          (guestDaysByCountry[country] || 0) + guestDays;
       });
 
       const sortedCountries = Object.keys(guestDaysByCountry).sort();
@@ -109,15 +102,22 @@ export default {
       });
 
       const bom = "\uFEFF";
-      const csvContent = bom + csvRows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(";")).join("\r\n");
+      const csvContent =
+        bom +
+        csvRows
+          .map((r) =>
+            r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(";")
+          )
+          .join("\r\n");
 
-      let from = "start", to = "end";
+      let from = "start",
+        to = "end";
       if (dates.length) {
         dates.sort((a, b) => a - b);
         const formatLocal = (d) => {
           const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
+          const m = String(d.getMonth() + 1).padStart(2, "0");
+          const day = String(d.getDate()).padStart(2, "0");
           return `${y}-${m}-${day}`;
         };
         from = formatLocal(dates[0]);
@@ -133,13 +133,21 @@ export default {
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-
     },
   },
   computed: {
+    filteredData() {
+      return this.archiveStore.filteredStays || [];
+    },
+    searchText() {
+      return this.archiveStore.searchText;
+    },
+
     nationalityData() {
       const counts = {};
-      this.filteredData.forEach((row) => {
+      const rows = this.filteredData || [];
+
+      rows.forEach((row) => {
         const country = row.nationality || "Unknown";
         counts[country] = (counts[country] || 0) + 1;
       });
@@ -208,45 +216,45 @@ export default {
       };
     },
     avgPartyData() {
-     const total = this.filteredData.length;
-     const sumAdults = this.filteredData.reduce(
-       (sum, row) => sum + (row.adults || 0),
-       0
-     );
-     const sumChildren = this.filteredData.reduce(
-       (sum, row) => sum + (row.children || 0),
-       0
-     );
-     const avgAdults = total ? +(sumAdults / total).toFixed(2) : 0;
-     const avgChildren = total ? +(sumChildren / total).toFixed(2) : 0;
+      const total = this.filteredData.length;
+      const sumAdults = this.filteredData.reduce(
+        (sum, row) => sum + (row.adults || 0),
+        0
+      );
+      const sumChildren = this.filteredData.reduce(
+        (sum, row) => sum + (row.children || 0),
+        0
+      );
+      const avgAdults = total ? +(sumAdults / total).toFixed(2) : 0;
+      const avgChildren = total ? +(sumChildren / total).toFixed(2) : 0;
 
-     return {
-       labels: ["Adults", "Children"],
-       datasets: [
-         {
-           label: "Average per stay",
-           data: [avgAdults, avgChildren],
-           backgroundColor: ["#36A2EB", "#FF6384"],
-         },
-       ],
-     };
-   },
+      return {
+        labels: ["Adults", "Children"],
+        datasets: [
+          {
+            label: "Average per stay",
+            data: [avgAdults, avgChildren],
+            backgroundColor: ["#36A2EB", "#FF6384"],
+          },
+        ],
+      };
+    },
 
-   avgPartyOptions() {
-     return {
-       responsive: true,
-       plugins: {
-         legend: { display: false },
-       },
-       scales: {
-         y: {
-           beginAtZero: true,
-           title: { display: true, text: "Average count" },
-         },
-       },
-     };
-   },
-   lengthData() {
+    avgPartyOptions() {
+      return {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: { display: true, text: "Average count" },
+          },
+        },
+      };
+    },
+    lengthData() {
       const total = this.filteredData.length;
       const MS_PER_DAY = 1000 * 60 * 60 * 24;
       const sumDays = this.filteredData.reduce((sum, row) => {
@@ -288,7 +296,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 .archive-screen {
