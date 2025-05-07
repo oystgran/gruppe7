@@ -65,7 +65,7 @@ function logout() {
 <style scoped>
 .nav-bar {
   background-color: #394856;
-  padding: 0 clamp(10px, 2vw, 20px);
+  padding: 0 clamp(10px, 2vw, 20px) 0 0;
   height: clamp(40px, 8vh, 60px);
   line-height: clamp(40px, 8vh, 60px);
   width: 100%;
