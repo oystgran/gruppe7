@@ -90,7 +90,6 @@ export default {
 
       const fromDate = new Date(this.selectedDate);
       fromDate.setHours(14, 0, 0, 0); // innsjekkstid
-      const fromDateISO = fromDate.toISOString();
 
       // 1. 🔁 SWAP hvis begge har opphold
       if (stay1 && stay2) {
