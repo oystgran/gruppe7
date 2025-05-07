@@ -31,5 +31,7 @@ html, body {
   margin: 0;
   padding: 0;
   background-color: #394856;
+  width: 100%;
+  overflow-x: hidden;
 }
 </style>

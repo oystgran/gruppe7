@@ -14,13 +14,6 @@
     <el-menu-item index="/map">Kart</el-menu-item>
     <el-menu-item index="/archive">Arkiv</el-menu-item>
 
-    <el-sub-menu index="/tools" :class="{ 'is-active': isVerktoyActive }">
-      <template #title>Verktøy</template>
-      <el-menu-item index="/control">Kontroll</el-menu-item>
-      <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
-      <el-menu-item index="/weather">Været</el-menu-item>
-    </el-sub-menu>
-
     <el-menu-item
       v-if="auth.isLoggedIn"
       @click="logout"
@@ -38,7 +31,7 @@
 import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
-import { useRoute, useRouter } from "vue-router";
+import {  useRouter } from "vue-router";
 import { debounce } from "lodash";
 import { useDateStore } from "@/stores/dateStore";
 import { useAuthStore } from "@/stores/auth";
@@ -47,14 +40,11 @@ const store = useStaysStore();
 const dateStore = useDateStore();
 const auth = useAuthStore();
 const router = useRouter();
-const route = useRoute();
 const selectedDate = computed({
   get: () => dateStore.selectedDate,
   set: (val) => dateStore.setDate(val),
 });
-const isVerktoyActive = computed(() => {
-  return ["/control", "/boatRental", "/weather"].includes(route.path);
-});
+
 console.log(store);
 watch(
   selectedDate,
@@ -75,18 +65,16 @@ function logout() {
 <style scoped>
 .nav-bar {
   background-color: #394856;
-  padding: 0 20px;
-  height: 50px;
-  line-height: 50px;
-  border: none;
-  width: auto;
-  z-index: 1000;
+  padding: 0 clamp(10px, 2vw, 20px) 0 0;
+  height: clamp(40px, 8vh, 60px);
+  line-height: clamp(40px, 8vh, 60px);
+  width: 100%;
 }
 
-/* Menu Items */
 .nav-bar .el-menu-item,
 .nav-bar .el-sub-menu__title {
-  padding: 0 15px;
+  padding: 0 clamp(8px, 1.5vw, 15px);
+  font-size: clamp(14px, 1.5vw, 18px);
 }
 
 /* Hover */
@@ -100,13 +88,6 @@ function logout() {
 .nav-bar .el-sub-menu.is-active .el-sub-menu__title {
   background-color: white !important;
   color: #333 !important;
-}
-
-/* Dropdown menu */
-.el-menu--horizontal .el-menu--popup {
-  background-color: #394856;
-  border-radius: 0 0 6px 6px;
-  overflow: hidden;
 }
 
 .el-menu--popup .el-menu-item.is-active {
@@ -133,7 +114,8 @@ function logout() {
   align-items: center;
 }
 
-.logout-menu-item{
+.logout-menu-item {
   color: rgb(255, 73, 73) !important;
+  font-size: clamp(14px, 1.5vw, 18px);
 }
 </style>

@@ -346,4 +346,27 @@ export default {
 .table {
   width: 100%;
 }
+@media (max-width: 600px) {
+  .archive-screen {
+    flex-direction: column;
+  }
+
+  .stat-panel {
+    display: none;
+  }
+
+  .archive-panel {
+    width: 100%;
+  }
+
+  .table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .search {
+    padding: 0 10px;
+  }
+  
+}
 </style>
