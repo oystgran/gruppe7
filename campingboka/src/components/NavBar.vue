@@ -14,13 +14,6 @@
     <el-menu-item index="/map">Kart</el-menu-item>
     <el-menu-item index="/archive">Arkiv</el-menu-item>
 
-    <el-sub-menu index="/tools" :class="{ 'is-active': isVerktoyActive }">
-      <template #title>Verktøy</template>
-      <el-menu-item index="/control">Kontroll</el-menu-item>
-      <el-menu-item index="/boatRental">Båtutleie</el-menu-item>
-      <el-menu-item index="/weather">Været</el-menu-item>
-    </el-sub-menu>
-
     <el-menu-item
       v-if="auth.isLoggedIn"
       @click="logout"
@@ -38,7 +31,7 @@
 import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
-import { useRoute, useRouter } from "vue-router";
+import {  useRouter } from "vue-router";
 import { debounce } from "lodash";
 import { useDateStore } from "@/stores/dateStore";
 import { useAuthStore } from "@/stores/auth";
@@ -47,14 +40,11 @@ const store = useStaysStore();
 const dateStore = useDateStore();
 const auth = useAuthStore();
 const router = useRouter();
-const route = useRoute();
 const selectedDate = computed({
   get: () => dateStore.selectedDate,
   set: (val) => dateStore.setDate(val),
 });
-const isVerktoyActive = computed(() => {
-  return ["/control", "/boatRental", "/weather"].includes(route.path);
-});
+
 console.log(store);
 watch(
   selectedDate,
