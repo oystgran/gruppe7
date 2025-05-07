@@ -1,12 +1,34 @@
 <template>
   <div class="date-navigator">
+    <label class="calendar-button" aria-label="Select date">
+      <input
+        id="date-input"
+        type="date"
+        :value="dateString"
+        @change="onDateChange"
+        class="mobile-date-input"
+      />
+
+      <svg
+        class="calendar-icon"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M7 11H9V13H7V11ZM11 11H13V13H11V11ZM15 11H17V13H15V11ZM19 4H18V2H16V4H8V2H6V4H5C3.9 
+             4 3 4.9 3 6V20C3 21.1 3.9 22 5 22H19C20.1 22 21 21.1 21 20V6C21 4.9 20.1 4 
+             19 4ZM19 20H5V9H19V20Z"
+          fill="currentColor"
+        />
+      </svg>
+    </label>
+
     <button @click="goBack" class="nav-button">&#9204;</button>
 
     <div class="date-display">
       <span class="weekday">{{ weekdayString }}</span>
       <div class="date-input-container">
         <input
-          id="date-input"
           type="date"
           :value="dateString"
           @change="onDateChange"
@@ -31,71 +53,49 @@ export default defineComponent({
     },
   },
   emits: ["update:modelValue"],
-
   setup(props, { emit }) {
     const selectedDate = ref(new Date(props.modelValue));
-
     const dateString = ref(formatDate(selectedDate.value));
 
-    const weekdayString = computed(() => {
-      return selectedDate.value.toLocaleDateString("en-US", {
-        weekday: "long",
-      });
-    });
+    const weekdayString = computed(() =>
+      selectedDate.value.toLocaleDateString("en-US", { weekday: "long" })
+    );
 
-    function formatDate(date) {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      return `${year}-${month}-${day}`;
+    function formatDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+
+    function changeDateBy(offset) {
+      const d = new Date(selectedDate.value);
+      d.setDate(d.getDate() + offset);
+      selectedDate.value = d;
+      dateString.value = formatDate(d);
+      emit("update:modelValue", new Date(d));
     }
 
     function goBack() {
-      const oldDate = selectedDate.value;
-      const newDate = new Date(oldDate);
-      newDate.setDate(newDate.getDate() - 1);
-
-      selectedDate.value = newDate;
-      dateString.value = formatDate(newDate);
-      emit("update:modelValue", new Date(newDate));
+      changeDateBy(-1);
     }
-
     function goForward() {
-      const oldDate = selectedDate.value;
-      const newDate = new Date(oldDate);
-      newDate.setDate(newDate.getDate() + 1);
-
-      selectedDate.value = newDate;
-      dateString.value = formatDate(newDate);
-      emit("update:modelValue", new Date(newDate));
+      changeDateBy(1);
     }
 
-    function onDateChange(event) {
-      const newDate = new Date(event.target.value);
-      selectedDate.value = newDate;
-      dateString.value = event.target.value;
-      emit("update:modelValue", newDate);
-    }
-
-    function openDatePicker() {
-      const inputEl = document.getElementById("date-input");
-      if (inputEl) {
-        if (typeof inputEl.showPicker === "function") {
-          inputEl.showPicker();
-        } else {
-          inputEl.focus();
-        }
-      }
+    function onDateChange(e) {
+      const d = new Date(e.target.value);
+      selectedDate.value = d;
+      dateString.value = e.target.value;
+      emit("update:modelValue", d);
     }
 
     return {
-      selectedDate,
-      dateString,
       weekdayString,
+      dateString,
       goBack,
       goForward,
       onDateChange,
-      openDatePicker,
     };
   },
 });
@@ -108,6 +108,38 @@ export default defineComponent({
   justify-content: center;
   gap: 1rem;
   margin: 15px 0;
+  position: relative;
+}
+
+.calendar-button {
+  display: inline-block;
+  position: relative;
+  width: 1.6rem;
+  height: 1.6rem;
+  cursor: pointer;
+  color: #ffffff;
+  padding: 0.2rem;
+}
+
+.mobile-date-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.calendar-icon {
+  width: 1.6rem;
+  height: 1.6rem;
+  display: block;
+  fill: currentColor;
 }
 
 .nav-button {
@@ -115,39 +147,23 @@ export default defineComponent({
   height: 30px;
   font-size: 1.6rem;
   cursor: pointer;
-  background-color: none;
+  background: none;
   border: none;
   color: #ffffff;
-  background: none;
 }
 
-/* weekday + date */
 .date-display {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 3px;
+  gap: 0.5rem;
   color: #ffffff;
-  margin-right: 10px;
 }
-
 .weekday {
   font-size: 1.6rem;
   font-weight: bold;
-  color: #ffffff;
-  min-width: 10ch;
+  min-width: 8ch;
 }
-
-/* date + icon */
-.date-input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 0rem;
-  color: #ffffff;
-}
-
-.date-input {
+.date-input-container .date-input {
   border: none;
   background: transparent;
   font-family: inherit;
@@ -155,20 +171,30 @@ export default defineComponent({
   font-size: 1rem;
   width: 8rem;
   cursor: pointer;
-  color: rgb(255, 255, 255);
-}
-
-.date-input::-webkit-calendar-picker-indicator:hover {
-  cursor: pointer;
-}
-
-/* Simple calendar icon */
-.calendar-icon {
-  cursor: pointer;
-  font-size: 1.2rem;
   color: #ffffff;
 }
 .date-input::-webkit-calendar-picker-indicator {
   filter: invert(1);
+}
+.date-input::-webkit-calendar-picker-indicator:hover {
+  cursor: pointer;
+}
+
+/* MOBILE  */
+@media (max-width: 600px) {
+  .date-navigator > .nav-button,
+  .date-navigator > .date-display {
+    display: none !important;
+  }
+  .date-navigator {
+    justify-content: center;
+  }
+}
+
+/* DESKTOP  */
+@media (min-width: 601px) {
+  .calendar-button {
+    display: none !important;
+  }
 }
 </style>
