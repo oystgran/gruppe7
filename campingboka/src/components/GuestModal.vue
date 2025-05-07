@@ -155,12 +155,20 @@
               </span>
             </template>
             <div style="display: flex; align-items: center; margin-left: 12px">
-              <el-input
-                :value="form.spotId"
-                disabled
-                style="width: 100px; margin-left: 25px"
-                input-style="text-align: center"
-              />
+              <el-form-item label="" prop="spotId">
+                <el-select
+                  v-model="form.spotId"
+                  placeholder="Select spot"
+                  style="width: 120px"
+                >
+                  <el-option
+                    v-for="id in availableSpots"
+                    :key="id"
+                    :label="getSpotLabel(id)"
+                    :value="id"
+                  />
+                </el-select>
+              </el-form-item>
               <span
                 style="
                   opacity: 0.6;
@@ -351,6 +359,7 @@ export default {
       isVip: false,
       nameSelectedFromList: false,
       carSelectedFromList: false,
+      skipNextSpotWatcher: false,
       form: {
         name: "",
         car_number: "",
@@ -448,6 +457,83 @@ export default {
     }
   },
   watch: {
+    "form.spotId"(newVal, oldVal) {
+      if (this.skipNextSpotWatcher) {
+        this.skipNextSpotWatcher = false;
+        return;
+      }
+      if (this.mode !== "edit" || newVal === oldVal) return;
+
+      if (this.isSpotOccupied(newVal)) {
+        // 🔁 SWAP
+        const stay1Id = this.guest?.stayId;
+        const stay2 = this.store.bookingsToday[newVal];
+        if (!stay1Id || !stay2?.id) {
+          this.$message.error("Could not find stays to swap.");
+          this.form.spotId = oldVal;
+          return;
+        }
+
+        this.$confirm(
+          `Are you sure you want to swap:\n\n• ${
+            this.guest.car_number
+          } (spot ${oldVal})\n• with ${
+            stay2.car_number
+          } (spot ${newVal})\n\nFrom ${dayjs(this.selectedDate).format(
+            "YYYY-MM-DD"
+          )}`,
+          "Confirm Swap",
+          {
+            confirmButtonText: "Yes, move",
+            cancelButtonText: "Cancel",
+            type: "info",
+          }
+        )
+          .then(() => {
+            this.handleSwapProposal(
+              stay1Id,
+              stay2.id,
+              dayjs(this.selectedDate).format("YYYY-MM-DD")
+            );
+          })
+          .catch(() => {
+            this.$message.info("Swap cancelled.");
+            this.skipNextSpotWatcher = true;
+            this.form.spotId = oldVal;
+          });
+      } else {
+        // 🛏️ MOVE to free spot
+        this.$confirm(
+          `Move ${
+            this.guest.car_number
+          } from spot ${oldVal} to ${newVal} starting ${dayjs(
+            this.selectedDate
+          ).format("YYYY-MM-DD")}?`,
+          "Confirm Move",
+          {
+            confirmButtonText: "Yes, move",
+            cancelButtonText: "Cancel",
+            type: "warning",
+          }
+        )
+          .then(() => {
+            this.handleMoveProposal(
+              this.guest.stayId,
+              newVal,
+              dayjs(this.selectedDate)
+                .hour(14)
+                .minute(0)
+                .second(0)
+                .format("YYYY-MM-DDTHH:mm:ss")
+            );
+          })
+          .catch(() => {
+            this.skipNextSpotWatcher = true;
+            this.form.spotId = oldVal;
+            this.$message.info("Move cancelled.");
+          });
+      }
+    },
     "form.name"(newVal) {
       if (!newVal || !this.nameSelectedFromList) {
         this.isVip = false;
@@ -506,6 +592,15 @@ export default {
     },
   },
   computed: {
+    allSpots() {
+      return Array.from({ length: 42 }, (_, i) => i + 1);
+    },
+    availableSpots() {
+      const all = this.allSpots;
+      const current = this.form.spotId;
+      const withCurrent = new Set([...all, current]);
+      return Array.from(withCurrent);
+    },
     isFjordSpot() {
       return FJORD_SPOTS.has(this.form.spotId);
     },
@@ -528,6 +623,78 @@ export default {
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
   },
   methods: {
+    async handleMoveProposal(stayId, newSpotId, fromDate) {
+      try {
+        const res = await fetch("/api/stays/move", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ stayId, newSpotId, fromDate }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Move failed");
+        }
+
+        this.$message.success("Guest moved successfully!");
+        this.store.loadGuests(this.selectedDate); // reload UI
+        this.$emit("guestSaved");
+        this.closeModal();
+      } catch (err) {
+        console.error("Move error:", err);
+        this.$message.error("Could not move guest.");
+      }
+    },
+    async handleSwapProposal(stayId1, stayId2, fromDate) {
+      try {
+        const stay1 = this.guest;
+        const stay2 = this.store.bookingsToday[this.form.spotId];
+
+        if (!stay1 || !stay2) {
+          this.$message.error("Could not find stays to swap.");
+          return;
+        }
+
+        // Utfør swap
+        const res = await fetch("/api/stays/partial-swap", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            stay1: { id: stayId1 },
+            stay2: { id: stay2.id },
+            fromDate,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.error || "Swap failed");
+        }
+
+        this.store.loadGuests(this.selectedDate);
+        this.$message.success("Swap completed!");
+        this.$emit("guestSaved");
+        this.closeModal();
+      } catch (err) {
+        console.error("Swap error:", err);
+        this.$message.error("Could not complete partial swap.");
+      }
+    },
+    isSpotOccupied(id) {
+      const currentStay = this.guest?.stayId;
+      const stayOnSpot = this.store.bookingsToday?.[id];
+
+      return (
+        stayOnSpot && (!currentStay || stayOnSpot.id !== currentStay) // Ikke den samme
+      );
+    },
+    getSpotLabel(id) {
+      const stay = this.store.bookingsToday?.[id];
+      if (stay && (!this.guest || stay.id !== this.guest.stayId)) {
+        return `Spot ${id} – ${stay.car_number || "Occupied"}`;
+      }
+      return `Spot ${id}`;
+    },
     async checkVipStatus(nameOrCarNumber) {
       if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
         this.isVip = false;
@@ -719,6 +886,15 @@ export default {
           this.$message.error("Please fix the errors before submitting.");
           return;
         }
+
+        // 🔐 Ekstra sjekk for å hindre overskriving av annen gjest sin plass
+        if (this.mode === "edit" && this.isSpotOccupied(this.form.spotId)) {
+          this.$message.warning(
+            `Spot ${this.form.spotId} is already occupied. Please propose a swap or select another spot.`
+          );
+          return;
+        }
+
         const checkOutDate = new Date(this.form.check_out);
         checkOutDate.setHours(12, 0, 0, 0);
 
@@ -758,8 +934,12 @@ export default {
           this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
           this.closeModal(); // ✅ Bare én gang, etterpå
         } catch (err) {
-          console.error(err);
-          this.$message.error("Something went wrong.");
+          console.error("❌ Guest save failed:", err);
+          const message =
+            err?.message && err.message !== "Failed to fetch"
+              ? err.message
+              : "Could not communicate with the server.";
+          this.$message.error(message);
         }
       });
     },
