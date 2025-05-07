@@ -14,12 +14,18 @@ export const useArchiveStore = defineStore("archive", {
 
   actions: {
     async fetchArchiveStays() {
-      const [start, end] = this.dateRange;
-      try {
-        const res = await fetch(`/api/stays/archive?start=${start}&end=${end}`);
-        if (!res.ok) throw new Error("Failed to fetch archive stays");
+      if (!Array.isArray(this.dateRange) || this.dateRange.length < 2) {
+        console.warn("Ugyldig dateRange i fetchArchiveStays:", this.dateRange);
+        return;
+      }
 
-        const data = await res.json();
+      const [start, end] = this.dateRange;
+
+      try {
+        const response = await fetch(
+          `/api/stays/archive?start=${start}&end=${end}`
+        );
+        const data = await response.json();
 
         this.stays = data.map((stay) => ({
           ...stay,
