@@ -274,8 +274,8 @@
                 v-model="form.price"
                 :controls="false"
                 :min="0"
-                :disabled="true"
                 class="price-field"
+                @input="priceManuallyEdited = true"
               />
             </div>
           </el-form-item>
@@ -360,6 +360,7 @@ export default {
       nameSelectedFromList: false,
       carSelectedFromList: false,
       skipNextSpotWatcher: false,
+      priceManuallyEdited: false,
       form: {
         name: "",
         car_number: "",
@@ -853,6 +854,7 @@ export default {
       return nights > 0 ? nights : 0;
     },
     calculatePrice() {
+      if (this.priceManuallyEdited) return;
       const nights = this.calculateNights();
       if (!nights) return (this.form.price = 0);
       const base = BASE_PRICE + (this.isFjordSpot ? FJORD_EXTRA : 0);
