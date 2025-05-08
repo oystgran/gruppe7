@@ -2,21 +2,25 @@
   <el-card shadow="hover">
     <el-row :gutter="30">
       <el-col :span="2">{{ spot }}</el-col>
+      <el-col :span="2" class="vip-col">
+        <el-tag
+          v-if="vip"
+          type="warning"
+          effect="dark"
+          size="small"
+          class="vip-badge"
+        >
+          <span class="vip-icon">🌟</span>
+          <span class="vip-text">VIP</span>
+        </el-tag>
+      </el-col>
+
       <el-col :span="6" style="font-weight: bold">
         <div class="car-number-wrapper">
           <slot name="car_number" />
-          <el-tag
-            v-if="vip"
-            type="warning"
-            effect="dark"
-            size="small"
-            class="vip-badge"
-          >
-            🌟 VIP
-          </el-tag>
         </div>
       </el-col>
-      <el-col :span="4" style="display: flex; align-items: center; gap: 6px">
+      <el-col :span="2" style="display: flex; align-items: center; gap: 6px">
         <el-tooltip
           v-if="country"
           :content="country.name"
@@ -34,12 +38,23 @@
           />
         </el-tooltip>
       </el-col>
-      <el-col :span="4">{{ checkIn }}</el-col>
-      <el-col :span="4">{{ checkOut }}</el-col>
-      <el-col :span="2" class="price-col">
+      <el-col :span="3">{{ checkIn }}</el-col>
+      <el-col :span="3">{{ checkOut }}</el-col>
+      <el-col :span="3" class="price-col">
         <div class="price-wrapper">
-          <span>{{ price ? Math.round(price) : "" }}</span>
+          <span>{{ price ? Math.round(price) + ",-" : "" }}</span>
         </div>
+      </el-col>
+      <el-col :span="1" class="check-col">
+        <el-checkbox
+          class="custom-check"
+          :model-value="checked"
+          @click.stop
+          @change="$emit('toggleCheck')"
+          :style="{
+            '--el-color-primary': '#394856',
+          }"
+        />
       </el-col>
     </el-row>
   </el-card>
@@ -58,6 +73,28 @@ export default {
     price: [Number, String],
     checkOut: String,
     vip: Boolean,
+    checked: Boolean,
+  },
+  methods: {
+    handleClick(event) {
+      this.$emit("toggleCheck");
+
+      const ripple = this.$refs.ripple;
+      if (!ripple) return;
+
+      ripple.classList.remove("show");
+
+      const rect = event.currentTarget.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + "px";
+      ripple.style.left = event.clientX - rect.left - size / 2 + "px";
+      ripple.style.top = event.clientY - rect.top - size / 2 + "px";
+
+      // Trigger animation
+      requestAnimationFrame(() => {
+        ripple.classList.add("show");
+      });
+    },
   },
   computed: {
     country() {
@@ -100,21 +137,68 @@ export default {
   font-size: 14px;
   color: #fff;
 }
+.car-number {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100%;
+  flex: 1;
+}
 .car-number-wrapper {
   position: relative;
   display: flex;
-  display: inline-block;
-  padding-left: 18px;
+  align-items: center;
   width: 100%;
+  /*  padding-left: 10px; */
+  overflow: hidden;
+}
+
+.car-number-wrapper span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: inline-block;
 }
 
 .vip-badge {
-  position: absolute;
-  top: 0px;
-  left: -25px;
-  font-size: 10px;
-  padding: 0 6px;
-  line-height: 1;
+  font-size: 9px;
+  padding: 0 4px;
+  height: 14px;
+  line-height: 14px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: fit-content;
+  max-width: 80px;
+  margin-left: 10px;
+}
+
+.vip-text {
+  display: inline;
+}
+
+@media (max-width: 600px) {
+  .vip-text {
+    display: none;
+  }
+}
+.vip-col {
+  padding: 0 !important;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+.checkmark-col {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+.el-checkbox {
+  transform: scale(1.6);
+
+  margin-left: 5px;
 }
 </style>
