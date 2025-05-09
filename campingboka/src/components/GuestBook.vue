@@ -20,14 +20,20 @@
           "
           :price="store.bookingsToday[spotId]?.price"
           :vip="store.bookingsToday[spotId]?.vip"
+          :checked="checksStore.checkedSpots.includes(spotId)"
           @click="openModalWithGuest(spotId)"
           draggable="true"
           @dragstart="onDragStart(spotId)"
           @dragover.prevent
           @drop="onDrop(spotId)"
+          @toggleCheck="toggleSpotCheck(spotId)"
         >
           <template v-slot:car_number>
-            <span v-if="store.bookingsToday[spotId]?.car_number">
+            <span
+              class="car-number"
+              v-if="store.bookingsToday[spotId]?.car_number"
+              :title="store.bookingsToday[spotId]?.car_number"
+            >
               {{ store.bookingsToday[spotId]?.car_number }}
             </span>
             <el-icon v-else class="plus-icon">
@@ -44,6 +50,7 @@
 import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { useStaysStore } from "@/stores/stays";
+import { useChecksStore } from "@/stores/checks";
 
 export default {
   name: "GuestBook",
@@ -51,7 +58,8 @@ export default {
   emits: ["showAddGuestModal", "showUpdateGuestModal"],
   setup() {
     const store = useStaysStore();
-    return { store };
+    const checksStore = useChecksStore();
+    return { store, checksStore };
   },
   props: {
     selectedDate: Date,
@@ -61,6 +69,7 @@ export default {
       immediate: true,
       handler(newDate) {
         this.store.loadGuests(newDate);
+        this.checksStore.loadCheckedSpots(newDate);
       },
     },
   },
@@ -78,6 +87,9 @@ export default {
     window.removeEventListener("resize", this.updateWindowWidth);
   },
   methods: {
+    toggleSpotCheck(spotId) {
+      this.checksStore.toggleCheck(spotId, this.selectedDate);
+    },
     onDragStart(spotId) {
       this.dragSourceSpotId = spotId;
     },
@@ -186,7 +198,11 @@ export default {
       const date =
         value instanceof Date ? value : value?.toDate?.() ?? new Date(value);
 
-      return isNaN(date) ? "" : date.toLocaleDateString("no-NO");
+      if (isNaN(date)) return "";
+
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      return `${day}.${month}`;
     },
     openModalWithGuest(index) {
       const guest = this.store.bookingsToday[index];
