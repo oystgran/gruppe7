@@ -1477,10 +1477,10 @@ export default {
       const y = evt.clientY - rect.top;
 
       // Juster for tooltip størrelse (valgfritt)
-      const offsetX = -60;
+      /* const offsetX = -60; */
       const offsetY = -150;
 
-      this.tooltipStyle.left = x + offsetX + "px";
+      this.tooltipStyle.left = x /* + offsetX +  */ + "px";
       this.tooltipStyle.top = y + offsetY + "px";
 
       const booking = this.guests[spot];
