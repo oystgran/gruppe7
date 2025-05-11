@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { keyBy } from "lodash";
 import dayjs from "dayjs";
+import { getIdTokenHeader } from "@/tools/firebaseToken";
 
 export const useStaysStore = defineStore("stays", () => {
   const count = ref(0);
@@ -34,7 +35,9 @@ export const useStaysStore = defineStore("stays", () => {
       return;
     }
 
-    const res = await fetch(`/api/stays?date=${date}`);
+    const headers = await getIdTokenHeader();
+
+    const res = await fetch(`/api/stays?date=${date}`, { headers });
     const stays = await res.json();
 
     bookingsToday.value = {
@@ -45,7 +48,11 @@ export const useStaysStore = defineStore("stays", () => {
     console.log("📡 Hentet nye bookinger:", bookingsToday.value);
   }
   async function addGuest(guestData, stayData) {
-    const searchRes = await fetch(`/api/guests/search?query=${guestData.name}`);
+    const headers = await getIdTokenHeader();
+    const searchRes = await fetch(
+      `/api/guests/search?query=${guestData.name}`,
+      { headers }
+    );
     const matches = await searchRes.json();
 
     const existing = matches.find(
@@ -65,7 +72,7 @@ export const useStaysStore = defineStore("stays", () => {
 
     const res = await fetch("/api/stays", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(payload),
     });
 
@@ -78,9 +85,10 @@ export const useStaysStore = defineStore("stays", () => {
   }
 
   async function updateGuest(gjestId, guestData, stayId, stayData) {
+    const headers = await getIdTokenHeader();
     const res = await fetch(`/api/stays/${stayId}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         guestId: gjestId,
         guest: guestData,
@@ -106,14 +114,19 @@ export const useStaysStore = defineStore("stays", () => {
   }
 
   async function deleteGuest(gjestId, stayId) {
+    const headers = await getIdTokenHeader();
     const res = await fetch(`/api/stays/${stayId}?guestId=${gjestId}`, {
       method: "DELETE",
+      headers,
     });
     if (!res.ok) throw new Error("Failed to delete guest or stay");
   }
 
   async function fetchStaysInRange(start, end) {
-    const res = await fetch(`/api/stays/archive?start=${start}&end=${end}`);
+    const headers = await getIdTokenHeader();
+    const res = await fetch(`/api/stays/archive?start=${start}&end=${end}`, {
+      headers,
+    });
     if (!res.ok) throw new Error("Failed to fetch stays in archive");
     return await res.json();
   }

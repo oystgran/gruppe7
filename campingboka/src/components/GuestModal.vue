@@ -326,6 +326,7 @@ import { useStaysStore } from "@/stores/stays";
 import { countries } from "@/tools/countries";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
+import { getIdTokenHeader } from "@/tools/firebaseToken";
 
 const BASE_PRICE = 340;
 const FJORD_EXTRA = 120;
@@ -476,18 +477,18 @@ export default {
         }
 
         this.$confirm(
-          `Are you sure you want to swap:\n\n• ${
+          `Are you sure you want to swap:\n\n ${
             this.guest.car_number
-          } (spot ${oldVal})\n• with ${
+          } (spot ${oldVal})\n with ${
             stay2.car_number
           } (spot ${newVal})\n\nFrom ${dayjs(this.selectedDate).format(
             "YYYY-MM-DD"
-          )}`,
+          )}?`,
           "Confirm Swap",
           {
             confirmButtonText: "Yes, move",
             cancelButtonText: "Cancel",
-            type: "info",
+            type: "warning",
           }
         )
           .then(() => {
@@ -626,9 +627,12 @@ export default {
   methods: {
     async handleMoveProposal(stayId, newSpotId, fromDate) {
       try {
+        const headers = await getIdTokenHeader();
+        headers["Content-Type"] = "application/json";
+
         const res = await fetch("/api/stays/move", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({ stayId, newSpotId, fromDate }),
         });
 
@@ -638,7 +642,7 @@ export default {
         }
 
         this.$message.success("Guest moved successfully!");
-        this.store.loadGuests(this.selectedDate); // reload UI
+        await this.store.loadGuests(this.selectedDate, true); // force reload
         this.$emit("guestSaved");
         this.closeModal();
       } catch (err) {
@@ -656,10 +660,13 @@ export default {
           return;
         }
 
+        const headers = await getIdTokenHeader();
+        headers["Content-Type"] = "application/json";
+
         // Utfør swap
         const res = await fetch("/api/stays/partial-swap", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers,
           body: JSON.stringify({
             stay1: { id: stayId1 },
             stay2: { id: stay2.id },
@@ -672,7 +679,7 @@ export default {
           throw new Error(err.error || "Swap failed");
         }
 
-        this.store.loadGuests(this.selectedDate);
+        await this.store.loadGuests(this.selectedDate, true); // force reload
         this.$message.success("Swap completed!");
         this.$emit("guestSaved");
         this.closeModal();
