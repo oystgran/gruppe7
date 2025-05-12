@@ -265,7 +265,7 @@ export default {
         const diffDays = (co - ci) / MS_PER_DAY;
         return sum + diffDays;
       }, 0);
-      const avgDays = total ? +(sumDays / total).toFixed(2) : 0;
+      const avgDays = total ? Math.round(sumDays / total) : 0;
 
       return {
         labels: ["Average stay (days)"],
@@ -322,6 +322,8 @@ export default {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-items: center;
+  justify-content: center;
 }
 
 .panel-upper,
@@ -330,6 +332,10 @@ export default {
   flex: 1 1 50%;
   overflow: auto;
   padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
 }
 
 .panel-upper {
