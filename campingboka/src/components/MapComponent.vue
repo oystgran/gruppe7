@@ -1327,7 +1327,7 @@
         </g>
         <g class="spot41">
           <rect
-            @mouseover="showTooltip(41)"
+            @mouseover="showTooltip(41, $event)"
             @mouseleave="hideTooltip"
             @click="$emit('rectangleClicked', 41)"
             :class="{ occupied: guests[41] }"
@@ -1360,7 +1360,7 @@
         </g>
         <g class="spot42">
           <rect
-            @mouseover="showTooltip(42)"
+            @mouseover="showTooltip(42, $event)"
             @mouseleave="hideTooltip"
             @click="$emit('rectangleClicked', 42)"
             :class="{ occupied: guests[42] }"
@@ -1407,11 +1407,7 @@
       </g>
     </svg>
 
-    <div
-      v-if="tooltipVisible"
-      :style="tooltipStyle"
-      class="guest-tooltip"
-    >
+    <div v-if="tooltipVisible" :style="tooltipStyle" class="guest-tooltip">
       <div class="car-number">
         {{ tooltipData.registrationNumber }}
       </div>
@@ -1455,38 +1451,54 @@ export default {
         registrationNumber: "",
         nationality: "",
         checkIn: "",
-        checkOut: ""
+        checkOut: "",
       },
       tooltipStyle: {
         position: "absolute",
         left: "0px",
-        top: "0px"
+        top: "0px",
       },
     };
   },
 
   setup() {
-    const store  = useStaysStore();
+    const store = useStaysStore();
     const guests = computed(() => store.bookingsToday);
     return { guests };
   },
 
   methods: {
-    showTooltip(spot) {
+    showTooltip(spot, evt) {
+      const svg = this.$el.querySelector("svg");
+      const rect = svg.getBoundingClientRect();
+
+      // Beregn museposisjon relativt til svg-container
+      const x = evt.clientX - rect.left;
+      const y = evt.clientY - rect.top;
+
+      // Juster for tooltip størrelse (valgfritt)
+      /* const offsetX = -60; */
+      const offsetY = -150;
+
+      this.tooltipStyle.left = x /* + offsetX +  */ + "px";
+      this.tooltipStyle.top = y + offsetY + "px";
+
       const booking = this.guests[spot];
       if (!booking) {
         this.tooltipVisible = false;
         return;
       }
+
       this.tooltipData = {
         registrationNumber:
           booking.car_number ||
           booking.registration_number ||
           "(ingen registrering)",
         nationality: booking.nationality,
-        checkIn:  booking.check_in,
+        checkIn: booking.check_in,
         checkOut: booking.check_out,
       };
+
       this.tooltipVisible = true;
     },
 
@@ -1506,9 +1518,9 @@ export default {
       if (!dateStr) return "";
       const d = new Date(dateStr);
       return d.toLocaleString("no-NO", {
-        day:    "2-digit",
-        month:  "2-digit",
-        year:   "numeric",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
       });
     },
   },
