@@ -989,12 +989,13 @@ export default {
   padding: 10px;
   border-radius: 8px;
   max-width: 90%;
-  max-height: 90%;
+  max-height: none;
   width: 500px;
-  overflow: auto;
+  overflow: hidden !important;
   display: flex;
   flex-direction: column;
   align-items: center;
+  
 }
 .modal-content .el-form {
   width: 300px;
