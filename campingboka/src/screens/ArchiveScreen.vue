@@ -357,15 +357,12 @@ export default {
 
   .archive-panel {
     width: 100%;
+    overflow-x: auto;
   }
 
   .table {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-  }
-
-  .search {
-    padding: 0 10px;
   }
   
 }
