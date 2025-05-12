@@ -10,14 +10,14 @@
         @submit.prevent="onSubmit"
         label-position="top"
       >
-        <el-form-item label="E-post" prop="email">
+        <el-form-item label="E-mail" prop="email">
           <el-input v-model="form.email" autocomplete="username" />
         </el-form-item>
-        <el-form-item label="Passord" prop="password">
+        <el-form-item label="Password" prop="password">
           <el-input v-model="form.password" type="password" autocomplete="current-password" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" native-type="submit" :loading="loading" style="width: 100%;">Logg inn</el-button>
+          <el-button type="primary" native-type="submit" :loading="loading" style="width: 100%;">Log in</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -41,10 +41,10 @@ export default {
 
     const rules = {
       email: [
-        { type: "email", message: "Ugyldig e-post" }
+        { type: "email", message: "Incorrect e-mail address" }
       ],
       password: [
-        { min: 6, message: "Passord må være minst 6 tegn" }
+        { min: 6, message: "Password must be at least 6 characters long" }
       ]
     };
 
@@ -57,11 +57,11 @@ export default {
           router.push({ name: "Dashboard" });
         } catch (error) {
           if (error.code === 'auth/user-not-found') {
-            ElMessage.error('Konto eksisterer ikke');
+            ElMessage.error('Account does not exist');
           } else if (error.code === 'auth/wrong-password') {
-            ElMessage.error('Feil passord');
+            ElMessage.error('Wrong password');
           } else {
-            ElMessage.error(error.message || 'Innlogging feilet');
+            ElMessage.error(error.message || 'Log in failed');
           }
         } finally {
           loading.value = false;
