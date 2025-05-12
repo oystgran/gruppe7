@@ -621,8 +621,8 @@ export default {
     },
   },
   created() {
-    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 300);
-    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 300);
+    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 600);
+    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 600);
   },
   methods: {
     async handleMoveProposal(stayId, newSpotId, fromDate) {
@@ -710,8 +710,10 @@ export default {
       }
 
       try {
+        const headers = await getIdTokenHeader();
         const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`
+          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`,
+          { headers }
         );
         const guests = await res.json();
 
@@ -745,8 +747,10 @@ export default {
     async fetchCarSuggestions(query, cb) {
       if (!query || query.trim().length < 1) return cb([]);
       try {
+        const headers = await getIdTokenHeader();
         const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`
+          `/api/guests/search?query=${encodeURIComponent(query)}`,
+          { headers }
         );
         const suggestions = await res.json();
         cb(
@@ -764,8 +768,10 @@ export default {
       if (!query || query.trim().length < 1) return cb([]);
 
       try {
+        const headers = await getIdTokenHeader();
         const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`
+          `/api/guests/search?query=${encodeURIComponent(query)}`,
+          { headers }
         );
         const suggestions = await res.json();
         cb(
@@ -995,7 +1001,6 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  
 }
 .modal-content .el-form {
   width: 300px;

@@ -58,7 +58,7 @@ const closeModal = () => {
 };
 
 const refreshGuestList = () => {
-  staysStore.loadGuests(dateStore.selectedDate);
+  staysStore.loadGuests(dateStore.selectedDate, true);
 };
 </script>
 

@@ -1,6 +1,7 @@
 // stores/archive.js
 import { defineStore } from "pinia";
 import dayjs from "dayjs";
+import { getIdTokenHeader } from "@/tools/firebaseToken";
 
 export const useArchiveStore = defineStore("archive", {
   state: () => ({
@@ -22,8 +23,10 @@ export const useArchiveStore = defineStore("archive", {
       const [start, end] = this.dateRange;
 
       try {
+        const headers = await getIdTokenHeader();
         const response = await fetch(
-          `/api/stays/archive?start=${start}&end=${end}`
+          `/api/stays/archive?start=${start}&end=${end}`,
+          { headers }
         );
         const data = await response.json();
 
