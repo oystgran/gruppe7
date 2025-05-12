@@ -2,6 +2,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import dayjs from "dayjs";
+import { getIdTokenHeader } from "@/tools/firebaseToken";
 
 export const useChecksStore = defineStore("checks", () => {
   const checkedSpots = ref([]);
@@ -20,7 +21,8 @@ export const useChecksStore = defineStore("checks", () => {
     error.value = null;
 
     try {
-      const res = await fetch(`/api/checks?date=${dateStr}`);
+      const headers = await getIdTokenHeader();
+      const res = await fetch(`/api/checks?date=${dateStr}`, { headers });
       const data = await res.json();
       checkedSpots.value = data.map((row) => row.spot_id);
       currentDate.value = dateStr;
@@ -37,9 +39,10 @@ export const useChecksStore = defineStore("checks", () => {
     const dateStr = dayjs(selectedDate).format("YYYY-MM-DD");
 
     try {
+      const headers = await getIdTokenHeader();
       await fetch("/api/checks", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ spot_id: spotId, date: dateStr }),
       });
       if (!checkedSpots.value.includes(spotId)) {
@@ -54,9 +57,10 @@ export const useChecksStore = defineStore("checks", () => {
     const dateStr = dayjs(selectedDate).format("YYYY-MM-DD");
 
     try {
+      const headers = await getIdTokenHeader();
       await fetch("/api/checks", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: { ...headers, "Content-Type": "application/json" },
         body: JSON.stringify({ spot_id: spotId, date: dateStr }),
       });
       checkedSpots.value = checkedSpots.value.filter((id) => id !== spotId);

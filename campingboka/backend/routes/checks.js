@@ -1,8 +1,10 @@
+const verifyFirebaseToken = require("../middlewares/authMiddleware");
+
 const express = require("express");
 
 module.exports = function (pool) {
   const router = express.Router();
-
+  router.use(verifyFirebaseToken);
   // Hent alle sjekker for en gitt dato
   router.get("/", async (req, res) => {
     const { date } = req.query;

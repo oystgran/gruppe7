@@ -1,6 +1,9 @@
+const verifyFirebaseToken = require("../middlewares/authMiddleware");
+
 module.exports = (pool) => {
   const express = require("express");
   const router = express.Router();
+  router.use(verifyFirebaseToken);
 
   router.get("/", async (req, res) => {
     try {
