@@ -18,19 +18,10 @@
       @close="closeModal"
       @guestSaved="refreshGuestList"
     />
-
-    <el-button type="primary" @click="openPosterModal">Show Poster</el-button>
-    <div v-if="isPosterModalOpen" class="modal">
-      <div class="modal-content">
-        <span class="close" @click="closePosterModal">&times;</span>
-        <img :src="posterMap" alt="Map Poster" class="modal-image" />
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
-import posterMap from "@/assets/posterMap.png";
 import MapComponent from "@/components/MapComponent.vue";
 import GuestModal from "@/components/GuestModal.vue";
 import { useStaysStore } from "@/stores/stays";
@@ -47,8 +38,6 @@ export default {
   },
   data() {
     return {
-      posterMap,
-      isPosterModalOpen: false,
       showAddGuestModal: false,
       showUpdateGuestModal: false,
       selectedSpot: null,
