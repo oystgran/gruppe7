@@ -9,7 +9,6 @@
     router
     :ellipsis="false"
   >
-    <el-menu-item index="/">Dashboard</el-menu-item>
     <el-menu-item index="/book">Book</el-menu-item>
     <el-menu-item index="/map">Map</el-menu-item>
     <el-menu-item index="/archive">Archive</el-menu-item>
@@ -31,7 +30,7 @@
 import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
-import {  useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { debounce } from "lodash";
 import { useDateStore } from "@/stores/dateStore";
 import { useAuthStore } from "@/stores/auth";
