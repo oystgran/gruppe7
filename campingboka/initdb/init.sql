@@ -22,11 +22,7 @@ SET row_security = off;
 -- TOC entry 6 (class 2615 OID 16512)
 -- Name: campingboka; Type: SCHEMA; Schema: -; Owner: postgres
 --
-
 CREATE SCHEMA campingboka;
-
-/* 
-ALTER SCHEMA campingboka OWNER TO Geirangerfjorden; */
 
 --
 -- TOC entry 224 (class 1255 OID 16520)
@@ -57,7 +53,7 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_vip_status() OWNER TO postgres;
+ALTER FUNCTION public.update_vip_status() OWNER TO Geirangerfjorden;
 
 SET default_tablespace = '';
 
@@ -74,7 +70,7 @@ CREATE TABLE campingboka.checks (
 );
 
 
-ALTER TABLE campingboka.checks OWNER TO postgres;
+ALTER TABLE campingboka.checks OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 219 (class 1259 OID 16460)
@@ -90,7 +86,7 @@ CREATE TABLE campingboka.guests (
 );
 
 
-ALTER TABLE campingboka.guests OWNER TO postgres;
+ALTER TABLE campingboka.guests OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 218 (class 1259 OID 16459)
@@ -106,7 +102,7 @@ CREATE SEQUENCE campingboka.guests_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE campingboka.guests_id_seq OWNER TO postgres;
+ALTER SEQUENCE campingboka.guests_id_seq OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 3640 (class 0 OID 0)
@@ -130,7 +126,7 @@ CREATE TABLE campingboka.spots (
 );
 
 
-ALTER TABLE campingboka.spots OWNER TO postgres;
+ALTER TABLE campingboka.spots OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 222 (class 1259 OID 16475)
@@ -150,7 +146,7 @@ CREATE TABLE campingboka.stays (
 );
 
 
-ALTER TABLE campingboka.stays OWNER TO postgres;
+ALTER TABLE campingboka.stays OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 221 (class 1259 OID 16474)
@@ -166,7 +162,7 @@ CREATE SEQUENCE campingboka.stays_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE campingboka.stays_id_seq OWNER TO postgres;
+ALTER SEQUENCE campingboka.stays_id_seq OWNER TO Geirangerfjorden;
 
 --
 -- TOC entry 3641 (class 0 OID 0)
