@@ -16,6 +16,7 @@
     "dayjs": "^1.11.13",
     "element-plus": "^2.9.5",
     "firebase": "^11.4.0",
+    "firebase-admin": "^13.3.0",
     "lodash": "^4.17.21",
     "pinia": "^3.0.2",
     "vue": "^3.2.13",

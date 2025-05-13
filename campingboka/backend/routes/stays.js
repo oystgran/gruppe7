@@ -1,5 +1,6 @@
 // backend/routes/stays.js
 const express = require("express");
+const verifyFirebaseToken = require("../middlewares/authMiddleware");
 
 module.exports = function (pool) {
   const router = express.Router();
@@ -21,7 +22,7 @@ module.exports = function (pool) {
   }
 
   // GET stays for selected date (with guest info)
-  router.get("/", async (req, res) => {
+  router.get("/", verifyFirebaseToken, async (req, res) => {
     const { date } = req.query;
     console.log("🔍 Request received with date:", date); // Debug
 
@@ -63,7 +64,7 @@ ORDER BY s.check_in`,
   });
 
   // POST add guest and stay
-  router.post("/", async (req, res) => {
+  router.post("/", verifyFirebaseToken, async (req, res) => {
     const { guest, stay } = req.body;
 
     try {
@@ -117,7 +118,7 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.get("/archive", async (req, res) => {
+  router.get("/archive", verifyFirebaseToken, async (req, res) => {
     const { start, end } = req.query;
 
     try {
@@ -149,7 +150,7 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.put("/:stayId", async (req, res) => {
+  router.put("/:stayId", verifyFirebaseToken, async (req, res) => {
     const { stayId } = req.params;
     const { guestId, guest, stay } = req.body;
 
@@ -202,7 +203,7 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.delete("/:stayId", async (req, res) => {
+  router.delete("/:stayId", verifyFirebaseToken, async (req, res) => {
     const { stayId } = req.params;
     try {
       await pool.query("DELETE FROM stays WHERE id = $1", [stayId]);
@@ -213,7 +214,7 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.post("/partial-swap", async (req, res) => {
+  router.post("/partial-swap", verifyFirebaseToken, async (req, res) => {
     const { stay1, stay2, fromDate } = req.body;
 
     console.log("🔁 Partial swap request:", { stay1, stay2, fromDate });
@@ -326,7 +327,7 @@ ORDER BY s.check_in`,
     }
   });
 
-  router.post("/move", async (req, res) => {
+  router.post("/move", verifyFirebaseToken, async (req, res) => {
     const { stayId, newSpotId, fromDate } = req.body;
 
     const client = await pool.connect();
@@ -439,7 +440,7 @@ ORDER BY s.check_in`,
       client.release();
     }
   });
-
+  /* 
   router.post("/move", async (req, res) => {
     const { stayId, newSpotId, fromDate } = req.body;
 
@@ -506,7 +507,7 @@ ORDER BY s.check_in`,
     } finally {
       client.release();
     }
-  });
+  }); */
 
   return router;
 };

@@ -51,11 +51,12 @@ import GuestBookCard from "./GuestBookCard.vue";
 import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { useStaysStore } from "@/stores/stays";
 import { useChecksStore } from "@/stores/checks";
+import { getIdTokenHeader } from "@/tools/firebaseToken";
 
 export default {
   name: "GuestBook",
   components: { GuestBookCard, CirclePlusFilled },
-  emits: ["showAddGuestModal", "showUpdateGuestModal"],
+  emits: ["showAddGuestModal", "showUpdateGuestModal", "guestSaved"],
   setup() {
     const store = useStaysStore();
     const checksStore = useChecksStore();
@@ -122,9 +123,12 @@ export default {
         if (!confirmed) return;
 
         try {
+          const headers = await getIdTokenHeader();
+          headers["Content-Type"] = "application/json";
+
           const response = await fetch("/api/stays/partial-swap", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify({
               stay1: { id: stay1.id },
               stay2: { id: stay2.id },
@@ -138,7 +142,8 @@ export default {
           }
 
           this.$message.success("Guests swapped!");
-          this.store.loadGuests(this.selectedDate);
+          await this.store.loadGuests(this.selectedDate, true);
+          this.$emit("guestSaved");
         } catch (err) {
           console.error("Swap failed:", err);
           this.$message.error(err.message || "Swap failed.");
@@ -163,9 +168,12 @@ export default {
         if (!confirmed) return;
 
         try {
+          const headers = await getIdTokenHeader();
+          headers["Content-Type"] = "application/json";
+
           const response = await fetch("/api/stays/move", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers,
             body: JSON.stringify({
               stayId: stay1.id,
               newSpotId: targetSpotId,
@@ -179,7 +187,8 @@ export default {
           }
 
           this.$message.success("Guest moved!");
-          this.store.loadGuests(this.selectedDate);
+          await this.store.loadGuests(this.selectedDate, true);
+          this.$emit("guestSaved");
         } catch (err) {
           console.error("Move failed:", err);
           this.$message.error(err.message || "Move failed.");

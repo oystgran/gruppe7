@@ -96,9 +96,9 @@ export default {
       this.selectedSpot = null;
       this.updateGuestData = null;
     },
-  },
-  refreshGuestList() {
-    this.store.loadGuests(this.dateStore.selectedDate);
+    refreshGuestList() {
+      this.store.loadGuests(this.dateStore.selectedDate, true);
+    },
   },
 };
 </script>
