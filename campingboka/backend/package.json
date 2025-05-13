@@ -11,8 +11,10 @@
   "description": "",
   "dependencies": {
     "cors": "^2.8.5",
+    "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "firebase-admin": "^13.4.0",
     "pg": "^8.15.1"
   }
 }

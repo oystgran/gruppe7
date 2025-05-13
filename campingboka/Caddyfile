@@ -1,0 +1,11 @@
+campingboka.no {
+  handle /api/* {
+    reverse_proxy backend:3000
+  }
+
+  handle {
+    root * /usr/share/caddy
+    try_files {path} /index.html
+    file_server
+  }
+}

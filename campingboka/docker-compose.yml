@@ -2,17 +2,35 @@ version: "3.8"
 
 services:
   db:
-    image: postgres:16
-    container_name: campingboka-db
-    restart: always
-    environment:
-      POSTGRES_DB: campingboka
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+    image: postgres:15-alpine
+    env_file:
+      - .env
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+    restart: always
+
+  backend:
+    build: ./backend
+    env_file:
+      - backend/.env
+    depends_on:
+      - db
+    restart: always
+
+  caddy:
+    image: caddy:2-alpine
     ports:
-      - "5433:5432" # Gjør databasen tilgjengelig på localhost:5432
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./dist:/usr/share/caddy
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy-data:/data
+    depends_on:
+      - backend
+    restart: always
 
 volumes:
-  db_data:
+  db-data:
+  caddy-data:
