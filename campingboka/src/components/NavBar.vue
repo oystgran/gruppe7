@@ -11,8 +11,8 @@
   >
     <el-menu-item index="/">Dashboard</el-menu-item>
     <el-menu-item index="/book">Book</el-menu-item>
-    <el-menu-item index="/map">Kart</el-menu-item>
-    <el-menu-item index="/archive">Arkiv</el-menu-item>
+    <el-menu-item index="/map">Map</el-menu-item>
+    <el-menu-item index="/archive">Archive</el-menu-item>
 
     <el-menu-item
       v-if="auth.isLoggedIn"

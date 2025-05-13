@@ -1424,11 +1424,11 @@
       </div>
       <div class="guest-times">
         <div>
-          <strong>Innsjekk:</strong>
+          <strong>Check-in:</strong>
           {{ formatDateTime(tooltipData.checkIn) }}
         </div>
         <div>
-          <strong>Utsjekk:</strong>
+          <strong>Check-out:</strong>
           {{ formatDateTime(tooltipData.checkOut) }}
         </div>
       </div>
