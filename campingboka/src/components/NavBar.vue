@@ -9,8 +9,7 @@
     router
     :ellipsis="false"
   >
-    <el-menu-item index="/">Dashboard</el-menu-item>
-    <el-menu-item index="/book">Book</el-menu-item>
+    <el-menu-item index="/" class="book-menu-item">Book</el-menu-item>
     <el-menu-item index="/map">Map</el-menu-item>
     <el-menu-item index="/archive">Archive</el-menu-item>
 
@@ -31,7 +30,7 @@
 import { computed, watch } from "vue";
 import DateNavigator from "./DateNavigator.vue";
 import { useStaysStore } from "@/stores/stays";
-import {  useRouter } from "vue-router";
+import { useRouter } from "vue-router";
 import { debounce } from "lodash";
 import { useDateStore } from "@/stores/dateStore";
 import { useAuthStore } from "@/stores/auth";
@@ -117,5 +116,21 @@ function logout() {
 .logout-menu-item {
   color: rgb(255, 73, 73) !important;
   font-size: clamp(14px, 1.5vw, 18px);
+}
+@media (max-width: 600px) {
+  .nav-bar .el-menu-item {
+    display: none !important;
+  }
+  .nav-bar .book-menu-item,
+  .nav-bar .logout-menu-item {
+    display: inline-flex !important;
+  }
+
+  .date-navigator-wrapper {
+    display: flex !important;
+    margin-left: auto;
+    margin-right: 10px;
+    align-items: center;
+  }
 }
 </style>

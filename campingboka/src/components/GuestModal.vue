@@ -1035,7 +1035,7 @@ export default {
 }
 .modal-content .el-form {
   width: 100%;
-  max-width: 350px; /* eller større hvis du ønsker mer plass */
+  max-width: 350px;
 }
 .form-indent {
   margin-left: 12px;

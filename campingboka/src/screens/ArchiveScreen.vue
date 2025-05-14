@@ -326,7 +326,15 @@ export default {
   justify-content: center;
 }
 
-.panel-upper,
+.panel-upper {
+  flex: 1 1 50%;
+  overflow: auto;
+  padding: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
 .panel-middle,
 .panel-lower {
   flex: 1 1 50%;
@@ -352,6 +360,13 @@ export default {
 .table {
   width: 100%;
 }
+.export-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%; /* valgfritt – hvis du vil at den skal fylle bredden */
+  margin-top: 20px; /* valgfritt for spacing */
+}
 @media (max-width: 600px) {
   .archive-screen {
     flex-direction: column;
@@ -370,6 +385,5 @@ export default {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
 }
 </style>
