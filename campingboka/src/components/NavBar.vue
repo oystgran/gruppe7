@@ -68,6 +68,9 @@ function logout() {
   height: clamp(40px, 8vh, 60px);
   line-height: clamp(40px, 8vh, 60px);
   width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .nav-bar .el-menu-item,
