@@ -126,7 +126,6 @@ function logout() {
     display: inline-flex !important;
   }
 
-  /* ensure your date picker stays visible */
   .date-navigator-wrapper {
     display: flex !important;
     margin-left: auto;
