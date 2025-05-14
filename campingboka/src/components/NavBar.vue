@@ -9,7 +9,7 @@
     router
     :ellipsis="false"
   >
-    <el-menu-item index="/book">Book</el-menu-item>
+    <el-menu-item index="/" class="book-menu-item">Book</el-menu-item>
     <el-menu-item index="/map">Map</el-menu-item>
     <el-menu-item index="/archive">Archive</el-menu-item>
 
@@ -116,5 +116,22 @@ function logout() {
 .logout-menu-item {
   color: rgb(255, 73, 73) !important;
   font-size: clamp(14px, 1.5vw, 18px);
+}
+@media (max-width: 600px) {
+  .nav-bar .el-menu-item {
+    display: none !important;
+  }
+  .nav-bar .book-menu-item,
+  .nav-bar .logout-menu-item {
+    display: inline-flex !important;
+  }
+
+  /* ensure your date picker stays visible */
+  .date-navigator-wrapper {
+    display: flex !important;
+    margin-left: auto;
+    margin-right: 10px;
+    align-items: center;
+  }
 }
 </style>

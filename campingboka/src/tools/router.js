@@ -13,7 +13,7 @@ const routes = [
     meta: { requiresAuth: false },
   },
   {
-    path: "/book",
+    path: "/",
     name: "Books",
     component: BookScreen,
     meta: { requiresAuth: true },
