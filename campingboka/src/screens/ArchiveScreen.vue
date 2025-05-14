@@ -47,7 +47,6 @@
         type="success"
         plain
         size="small"
-        icon="Download"
         class="export-btn"
         @click="exportNationalityCSV"
       >
