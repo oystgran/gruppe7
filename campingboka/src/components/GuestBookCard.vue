@@ -129,7 +129,6 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 100px;
 }
 
 .custom-tooltip {
