@@ -161,7 +161,7 @@ export default defineComponent({
 .weekday {
   font-size: 1.6rem;
   font-weight: bold;
-  min-width: 8ch;
+  min-width: 10ch;
 }
 .date-input-container .date-input {
   border: none;
