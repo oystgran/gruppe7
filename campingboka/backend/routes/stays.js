@@ -373,10 +373,13 @@ ORDER BY s.check_in`,
         );
 
         const conflictStay = conflict.rows[0];
+        const dayjs = require("dayjs");
         if (conflictStay) {
           throw new Error(
             `Cannot move: Target spot ${newSpotId} has a conflicting stay from ` +
-              `${conflictStay.check_in} to ${conflictStay.check_out}.`
+              `${dayjs(conflictStay.check_in).format("YYYY-MM-DD")} to ${dayjs(
+                conflictStay.check_out
+              ).format("YYYY-MM-DD")}.`
           );
         }
       }
