@@ -1,3 +1,12 @@
+<!--
+  ArchiveChart.vue
+  --------------------------------------------------
+  Reusable chart component using Chart.js:
+    • Renders chart of specified type (default is 'pie') with given data and options.
+    • Automatically re-renders when `chartData` changes (deep watch).
+    • Supports all Chart.js chart types by registering all components globally.
+    • Canvas is responsive with `max-width: 100%` for fluid layout integration.
+-->
 <template>
   <div>
     <canvas ref="canvas"></canvas>

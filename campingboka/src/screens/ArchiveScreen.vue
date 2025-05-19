@@ -1,3 +1,16 @@
+<!--
+  ArchiveScreen.vue
+  --------------------------------------------------
+  Archive view for historical booking data:
+    • Displays filter controls and data table for archived stays.
+    • Computes `filteredData` and passes `searchText` for quick filtering.
+    • Shows statistics panels with charts:
+      – Pie chart of guests by nationality.
+      – Bar chart of average adults/children per visit.
+      – Bar chart of average length of stay.
+    • Provides CSV export of guest-days by country with date-range filename.
+    • Responsive layout: hides stats on small screens, enables horizontal scrolling.
+-->
 <template>
   <div class="archive-screen">
     <div class="archive-panel">
@@ -27,14 +40,6 @@
         />
       </div>
 
-      <!--div class="panel-lower">
-        <h3>Electricity usage</h3>
-        <ArchiveChart
-          :chartData="electricityData"
-          :chartOptions="electricityOptions"
-          chartType="doughnut"
-        />
-      </div-->
       <div class="panel-lower">
         <h3>Average length of stay</h3>
         <ArchiveChart
@@ -363,8 +368,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%; /* valgfritt – hvis du vil at den skal fylle bredden */
-  margin-top: 20px; /* valgfritt for spacing */
+  width: 100%;
+  margin-top: 20px;
 }
 @media (max-width: 600px) {
   .archive-screen {

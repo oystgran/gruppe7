@@ -1,3 +1,13 @@
+/*
+  autocompleteUtils.js
+  --------------------------------------------------
+  Utility functions for autocomplete suggestions:
+    • fetchGuestSuggestions(): Fetches guest name suggestions from backend with VIP flag.
+    • fetchCarSuggestions(): Fetches car number suggestions from backend with VIP flag.
+    • queryNationalitySuggestions(): Filters static country list by code or name for autocomplete.
+    • All guest-related queries are authenticated using Firebase ID token headers.
+    • Used in GuestModal.vue to support smart inputs for name, car number, and nationality.
+*/
 import { getIdTokenHeader } from "@/tools/firebaseToken";
 import { countries } from "@/tools/countries";
 

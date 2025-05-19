@@ -1,3 +1,15 @@
+/*
+  guestPriceUtils.js
+  --------------------------------------------------
+  Utility constants and functions for calculating stay prices:
+    • BASE_PRICE, FJORD_EXTRA, ADULT_PRICE, etc. define pricing rules for the campsite.
+    • FJORD_SPOTS: Set of spot IDs considered fjord-facing (1–19, 38–42).
+    • isFjordSpot(): Returns true if given spotId is a fjord spot.
+    • calculateNights(): Computes number of nights between two dates (midnight-normalized).
+    • calculatePrice(): Calculates total price based on spot type, party size, electricity, and stay length.
+    • Used in GuestModal.vue to provide automatic price estimation and summary.
+*/
+
 //Prices used for giving price estimates for receptionists.
 export const BASE_PRICE = 340;
 export const FJORD_EXTRA = 120;

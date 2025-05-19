@@ -1,4 +1,14 @@
-// stores/checks.js
+/*
+  checks.js (Pinia store)
+  --------------------------------------------------
+  Store for managing spot checkmarks (e.g. inspected or verified spots):
+    • loadCheckedSpots(): Fetches checked spot IDs for a specific date from the backend.
+    • addCheck(): Adds a checkmark for a specific spot and date.
+    • removeCheck(): Removes a checkmark for a specific spot and date.
+    • toggleCheck(): Toggles a checkmark based on current state.
+    • Stores current state: `checkedSpots`, selected `currentDate`, `isLoading`, and `error`.
+    • Used in GuestBook.vue to toggle and display visual check status per spot.
+*/
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import dayjs from "dayjs";

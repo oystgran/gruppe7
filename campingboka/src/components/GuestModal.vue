@@ -1,3 +1,16 @@
+<!--
+  GuestModal.vue
+  --------------------------------------------------
+  Modal component for adding or updating guest bookings:
+    • Displays a form for editing guest, spot, and stay details.
+    • Autofills and validates inputs like name, car number, nationality, check-in/out, and pricing.
+    • Calculates total price dynamically unless manually overridden.
+    • Detects and proposes swaps or moves if the selected spot is already occupied.
+    • Supports autocomplete suggestions and VIP recognition from previous stays.
+    • Emits 'guestSaved' to refresh parent components after changes.
+    • Handles creation, update, and deletion of guest and stay data.
+    • Uses utility modules for price calculation, validation, and autocomplete logic.
+-->
 <template>
   <div class="guest-modal">
     <div v-if="visible" class="modal">

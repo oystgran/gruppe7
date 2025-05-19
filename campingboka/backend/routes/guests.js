@@ -1,3 +1,22 @@
+/*
+  routes/guests.js
+  --------------------------------------------------
+  Express route handler for managing guests:
+    • Secured by Firebase authentication middleware (`verifyFirebaseToken`).
+    • GET /api/guests
+        – Returns all guest entries from the database.
+    • GET /api/guests/search?query=
+        – Searches guests by name or car number (case-insensitive), limited to 10 results.
+    • PUT /api/guests/:guestId
+        – Updates name, car number, and nationality for a specific guest.
+    • DELETE /api/guests/:guestId
+        – Deletes a guest only if they have no associated stays.
+
+  Notes:
+    • All endpoints require a valid Firebase ID token via Authorization header.
+    • Used by GuestModal.vue for search, add, update, and delete workflows.
+    • Prevents deletion of guests who have active or historical stay records.
+*/
 const verifyFirebaseToken = require("../middlewares/authMiddleware");
 
 module.exports = (pool) => {
