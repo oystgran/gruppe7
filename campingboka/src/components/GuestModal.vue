@@ -805,7 +805,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
+  z-index: 700;
 }
 .modal-content {
   position: relative;
