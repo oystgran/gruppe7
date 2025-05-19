@@ -178,7 +178,7 @@
                 "
               >
                 {{
-                  isFjordSpot
+                  isFjordSpotComputed
                     ? `Fjord spot + ${120 + 340}kr`
                     : `Standard spot + ${340}kr`
                 }}
@@ -327,20 +327,11 @@ import { countries } from "@/tools/countries";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
 import { getIdTokenHeader } from "@/tools/firebaseToken";
-
-const BASE_PRICE = 340;
-const FJORD_EXTRA = 120;
-const ADULT_PRICE = 40;
-const CHILD_PRICE = 20;
-const ELECTRICITY_PRICE = 50;
-const FJORD_SPOTS = new Set([
-  ...Array.from({ length: 19 }, (_, i) => i + 1),
-  38,
-  39,
-  40,
-  41,
-  42,
-]);
+import {
+  calculatePrice,
+  calculateNights,
+  isFjordSpot,
+} from "@/utils/guestPriceUtils";
 
 export default {
   name: "GuestModal",
@@ -571,7 +562,9 @@ export default {
     },
     form: {
       handler() {
-        this.calculatePrice();
+        if (!this.priceManuallyEdited) {
+          this.form.price = calculatePrice({ ...this.form });
+        }
       },
       deep: true,
     },
@@ -592,6 +585,9 @@ export default {
     },
   },
   computed: {
+    isFjordSpotComputed() {
+      return isFjordSpot(this.form.spotId);
+    },
     allSpots() {
       return Array.from({ length: 42 }, (_, i) => i + 1);
     },
@@ -601,21 +597,13 @@ export default {
       const withCurrent = new Set([...all, current]);
       return Array.from(withCurrent);
     },
-    isFjordSpot() {
-      return FJORD_SPOTS.has(this.form.spotId);
-    },
     priceSummary() {
-      const nights = this.calculateNights();
+      const nights = calculateNights(this.form.check_in, this.form.check_out);
       if (!nights) return "";
-      const nightlyRate =
-        BASE_PRICE +
-        (this.isFjordSpot ? FJORD_EXTRA : 0) +
-        this.form.adults * ADULT_PRICE +
-        this.form.children * CHILD_PRICE +
-        (this.form.electricity ? ELECTRICITY_PRICE : 0);
-      return `${nightlyRate} kr × ${nights} nights = ${
-        nightlyRate * nights
-      } kr`;
+      const total = calculatePrice({ ...this.form });
+      return `${Math.round(
+        total / nights
+      )} kr × ${nights} nights = ${total} kr`;
     },
   },
   created() {
@@ -805,27 +793,6 @@ export default {
         date.getMonth() === today.getMonth() &&
         date.getFullYear() === today.getFullYear()
       );
-    },
-    calculateNights() {
-      const checkIn = new Date(this.form.check_in);
-      const checkOut = new Date(this.form.check_out);
-      checkIn.setHours(0, 0, 0, 0);
-      checkOut.setHours(0, 0, 0, 0);
-      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-      return nights > 0 ? nights : 0;
-    },
-    calculatePrice() {
-      if (this.priceManuallyEdited) return;
-      const nights = this.calculateNights();
-      if (!nights) return (this.form.price = 0);
-      const base = BASE_PRICE + (this.isFjordSpot ? FJORD_EXTRA : 0);
-      const total =
-        nights *
-        (base +
-          this.form.adults * ADULT_PRICE +
-          this.form.children * CHILD_PRICE +
-          (this.form.electricity ? ELECTRICITY_PRICE : 0));
-      this.form.price = Number(total);
     },
     querySearch(queryString, cb) {
       const results = Object.entries(countries).filter(([code, { name }]) => {
