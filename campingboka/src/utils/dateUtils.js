@@ -1,5 +1,5 @@
 /*
-  isGuestActiveOnDate.js
+  dateUtils.js
   --------------------------------------------------
   Utility function to check if a guest is active on a specific date:
     • Normalizes check-in, check-out, and selected date to 00:00 for accurate comparison.
