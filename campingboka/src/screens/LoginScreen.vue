@@ -1,3 +1,13 @@
+<!--
+  LoginView.vue
+  --------------------------------------------------
+  User authentication view for Geirangerfjorden Feriesenter:
+    • Renders a centered login card with email and password fields.
+    • Validates input: ensures a valid email and minimum password length.
+    • Handles form submission: displays loading state and shows error messages for common auth failures.
+    • On successful login, redirects the user to the "Books" route.
+    • Styled responsively with full-screen background image.
+-->
 <template>
   <div class="login-view" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
     <el-card class="login-card" style="width: 360px;">

@@ -1,3 +1,13 @@
+<!--
+  MapScreen.vue
+  --------------------------------------------------
+  Screen for managing and viewing camping spot bookings:
+    • Displays the MapComponent with rotated SVG of spots and filtered guest data.
+    • Computes `filteredGuests` to show only guests active on the selected date.
+    • Handles spot clicks: opens GuestModal in add or edit mode based on booking existence.
+    • Passes initial spot ID, guest data, and selected date to GuestModal.
+    • Refreshes guest list on save and resets state on modal close.
+-->
 <template>
   <div class="map-screen">
     <div class="map-panel">

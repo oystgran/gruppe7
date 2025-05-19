@@ -1,3 +1,14 @@
+<!--
+  MapComponent.vue
+  --------------------------------------------------
+  Interactive SVG map displaying camping spots:
+    • Renders an SVG with numbered spot rectangles rotated and styled.
+    • Uses Vue reactivity to mark spots occupied (red) based on today's bookings.
+    • Emits "rectangleClicked" with spot ID on click.
+    • Shows a custom tooltip on hover with guest details: registration number, nationality, check-in/out dates.
+    • Lookup of country flag icons from a shared countries tool.
+    • Responsive container centering and hover styles for interactive feedback.
+-->
 <template>
   <div class="svg-container">
     <svg

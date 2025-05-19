@@ -1,3 +1,12 @@
+<!--
+  NavBar.vue
+  --------------------------------------------------
+  Main navigation bar component for the application:
+    • Displays "Book", "Map", and "Archive" menu items with active-route highlighting.
+    • Includes a DateNavigator for selecting dates and debounced loading of guests.
+    • Handles user logout and navigation.
+    • Responsive: hides most menu items under (phone screen) 600px width, showing only "Book" and "Logout".
+-->
 <template>
   <el-menu
     :default-active="$route.path"
