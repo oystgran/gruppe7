@@ -120,9 +120,10 @@
             </template>
             <el-date-picker
               v-model="form.check_in"
-              type="datetime"
+              type="date"
               placeholder="Choose check-in date"
               required
+              @change="setCheckInTime"
             />
           </el-form-item>
 
@@ -332,6 +333,12 @@ import {
   calculateNights,
   isFjordSpot,
 } from "@/utils/guestPriceUtils";
+import {
+  fetchGuestSuggestions,
+  fetchCarSuggestions,
+  queryNationalitySuggestions,
+} from "@/utils/autocompleteUtils";
+import { createGuestFormRules } from "@/utils/guestFormRules";
 
 export default {
   name: "GuestModal",
@@ -364,69 +371,6 @@ export default {
         electricity: false,
         check_out: null,
         vip: false,
-      },
-      formRules: {
-        name: [
-          { required: true, message: "Please enter a name", trigger: "blur" },
-        ],
-        car_number: [
-          {
-            required: true,
-            message: "Please enter a car number",
-            trigger: "blur",
-          },
-        ],
-        nationality: [
-          {
-            required: true,
-            message: "Please select a nationality",
-            trigger: "blur",
-          },
-        ],
-        check_in: [
-          {
-            required: true,
-            message: "Please choose a check-in date",
-            trigger: "change",
-          },
-        ],
-        check_out: [
-          {
-            required: true,
-            validator: (rule, value, callback) => {
-              if (!value)
-                return callback(new Error("Please select a check-out date"));
-              const checkIn = new Date(this.form.check_in);
-              const checkOut = new Date(value);
-              if (checkOut <= checkIn) {
-                return callback(new Error("Check-out must be after check-in"));
-              }
-              callback();
-            },
-            trigger: "change",
-          },
-        ],
-        spotId: [
-          {
-            required: true,
-            message: "Spot number is required",
-            trigger: "change",
-          },
-        ],
-        adults: [
-          {
-            required: true,
-            validator: (rule, value, callback) => {
-              if (this.form.adults === 0 && this.form.children === 0) {
-                return callback(
-                  new Error("At least one adult or child is required")
-                );
-              }
-              callback();
-            },
-            trigger: "change",
-          },
-        ],
       },
     };
   },
@@ -605,12 +549,22 @@ export default {
         total / nights
       )} kr × ${nights} nights = ${total} kr`;
     },
+    formRules() {
+      return createGuestFormRules(this.form);
+    },
   },
   created() {
-    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 600);
-    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 600);
+    this.debouncedGuestSearch = debounce(fetchGuestSuggestions, 600);
+    this.debouncedCarSearch = debounce(fetchCarSuggestions, 600);
   },
   methods: {
+    setCheckInTime(date) {
+      if (date instanceof Date) {
+        const withTime = new Date(date);
+        withTime.setHours(15, 0, 0, 0); // Alltid 15:00
+        this.form.check_in = withTime;
+      }
+    },
     async handleMoveProposal(stayId, newSpotId, fromDate) {
       try {
         const headers = await getIdTokenHeader();
@@ -697,49 +651,6 @@ export default {
       const isEmpty = !this.form[fieldName];
       return isInvalid || isEmpty;
     },
-    async fetchCarSuggestions(query, cb) {
-      if (!query || query.trim().length < 1) return cb([]);
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`,
-          { headers }
-        );
-        const suggestions = await res.json();
-        cb(
-          suggestions.map((g) => ({
-            value: `${g.car_number} (${g.name})`,
-            guest: g,
-            vip: g.vip === true,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching car number suggestions:", err);
-        cb([]);
-      }
-    },
-    async fetchGuestSuggestions(query, cb) {
-      if (!query || query.trim().length < 1) return cb([]);
-
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`,
-          { headers }
-        );
-        const suggestions = await res.json();
-        cb(
-          suggestions.map((g) => ({
-            value: `${g.name} (${g.car_number})`,
-            guest: g,
-            vip: g.vip === true,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-        cb([]);
-      }
-    },
     onGuestSelected(item) {
       this.nameSelectedFromList = true;
       if (!item || !item.guest) return;
@@ -795,16 +706,7 @@ export default {
       );
     },
     querySearch(queryString, cb) {
-      const results = Object.entries(countries).filter(([code, { name }]) => {
-        const lower = queryString.toLowerCase();
-        return (
-          code.toLowerCase().includes(lower) ||
-          name.toLowerCase().includes(lower)
-        );
-      });
-      cb(
-        results.map(([code, { name, flag }]) => ({ value: name, code, flag }))
-      );
+      queryNationalitySuggestions(queryString, cb);
     },
     validateNationality() {
       const valid = Object.values(countries).map((c) => c.name);
@@ -817,13 +719,16 @@ export default {
           return;
         }
 
-        // 🔐 Ekstra sjekk for å hindre overskriving av annen gjest sin plass
+        // Ekstra sjekk for å hindre overskriving av annen gjest sin plass
         if (this.mode === "edit" && this.isSpotOccupied(this.form.spotId)) {
           this.$message.warning(
             `Spot ${this.form.spotId} is already occupied. Please propose a swap or select another spot.`
           );
           return;
         }
+
+        const checkInDate = new Date(this.form.check_in);
+        checkInDate.setHours(15, 0, 0, 0);
 
         const checkOutDate = new Date(this.form.check_out);
         checkOutDate.setHours(12, 0, 0, 0);
@@ -836,7 +741,7 @@ export default {
 
         const stayPayload = {
           spot_Id: this.form.spotId,
-          check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
+          check_in: dayjs(checkInDate).format("YYYY-MM-DDTHH:mm:ss"),
           check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
           price: this.form.price,
           adults: this.form.adults,
@@ -849,7 +754,8 @@ export default {
             console.log("Updating guest:", this.guest);
             console.log("guestId:", this.guest?.guestId);
             console.log("stayId:", this.guest?.stayId);
-
+            console.log("Innsjekk som sendes:", stayPayload.check_in);
+            console.log("Utsjekk som sendes:", stayPayload.check_out);
             await this.store.updateGuest(
               this.guest.guestId,
               guestPayload,
@@ -861,8 +767,8 @@ export default {
           }
 
           this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
-          this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
-          this.closeModal(); // ✅ Bare én gang, etterpå
+          this.$emit("guestSaved");
+          this.closeModal();
         } catch (err) {
           console.error("❌ Guest save failed:", err);
           const message =
@@ -933,17 +839,9 @@ export default {
 .close:hover {
   color: red;
 }
-/* ::v-deep(.el-form-item.is-required .el-form-item__label::before) {
-  content: "*";
-  color: red;
-  position: absolute;
-  left: -10px; 
-  font-size: 16px;
-} */
 
 ::v-deep(.el-form-item__label) {
-  position: relative; /* 
-  padding-right: 10px; */
+  position: relative;
 }
 ::v-deep(.el-form-item__label::before) {
   display: none !important;

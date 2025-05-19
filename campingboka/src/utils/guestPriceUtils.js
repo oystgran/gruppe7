@@ -1,8 +1,11 @@
+//Prices used for giving price estimates for receptionists.
 export const BASE_PRICE = 340;
 export const FJORD_EXTRA = 120;
 export const ADULT_PRICE = 40;
 export const CHILD_PRICE = 20;
 export const ELECTRICITY_PRICE = 50;
+
+//List of fjord spots. 1-19, 38-42.
 export const FJORD_SPOTS = new Set([
   ...Array.from({ length: 19 }, (_, i) => i + 1),
   38,
