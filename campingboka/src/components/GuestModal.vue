@@ -339,6 +339,7 @@ import {
   queryNationalitySuggestions,
 } from "@/utils/autocompleteUtils";
 import { createGuestFormRules } from "@/utils/guestFormRules";
+import { fillGuestForm } from "@/utils/guestUtils";
 
 export default {
   name: "GuestModal",
@@ -653,48 +654,17 @@ export default {
     },
     onGuestSelected(item) {
       this.nameSelectedFromList = true;
-      if (!item || !item.guest) return;
-
-      const guest = item.guest;
-      console.log("Valgt gjest:", guest);
-
-      this.form.name = guest.name || "";
-      this.form.car_number = guest.car_number || "";
-      this.form.vip = item.vip;
-      this.isVip = item.vip;
-
-      const nationality = guest.nationality;
-      console.log("Tidligere brukt nasjonalitet:", nationality);
-
-      if (nationality) {
-        const match = Object.values(countries).find(
-          (c) => c.name.toLowerCase() === nationality.toLowerCase()
-        );
-        this.form.nationality = match ? match.name : "";
-        console.log("Matchet nasjonalitet:", this.form.nationality);
-      } else {
-        this.form.nationality = "";
+      if (item?.guest) {
+        fillGuestForm(this.form, item.guest, item.vip);
+        this.isVip = item.vip;
       }
     },
 
     onCarSelected(item) {
       this.carSelectedFromList = true;
-      if (!item || !item.guest) return;
-
-      const guest = item.guest;
-
-      this.form.name = guest.name || "";
-      this.form.car_number = guest.car_number || "";
-      this.form.vip = item.guest.vip || false;
-
-      const nationality = guest.nationality;
-      if (nationality) {
-        const match = Object.values(countries).find(
-          (c) => c.name.toLowerCase() === nationality.toLowerCase()
-        );
-        this.form.nationality = match ? match.name : "";
-      } else {
-        this.form.nationality = "";
+      if (item?.guest) {
+        fillGuestForm(this.form, item.guest, item.guest.vip);
+        this.isVip = item.guest.vip || false;
       }
     },
     isToday(date) {
@@ -780,15 +750,29 @@ export default {
       });
     },
     async handleDelete() {
-      try {
-        await this.store.deleteGuest(this.guest.guestId, this.guest.stayId);
-        this.$message.success("Guest deleted");
-        this.$emit("guestSaved");
-        this.closeModal();
-      } catch (err) {
-        console.error(err);
-        this.$message.error("Deletion failed");
-      }
+      this.$confirm(
+        `Are you sure you want to delete ${this.guest.name} (${this.guest.car_number})?`,
+        "Confirm Deletion",
+        {
+          confirmButtonText: "Yes, delete",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }
+      )
+        .then(async () => {
+          try {
+            await this.store.deleteGuest(this.guest.guestId, this.guest.stayId);
+            this.$message.success("Guest deleted");
+            this.$emit("guestSaved");
+            this.closeModal();
+          } catch (err) {
+            console.error(err);
+            this.$message.error("Deletion failed");
+          }
+        })
+        .catch(() => {
+          this.$message.info("Deletion cancelled.");
+        });
     },
     closeModal() {
       this.$emit("close");
