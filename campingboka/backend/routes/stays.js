@@ -130,6 +130,7 @@ ORDER BY s.check_in`,
        FROM stays s
        JOIN guests g ON s.guest_id = g.id
        WHERE NOT (s.check_out <= $1 OR s.check_in >= $2)
+       AND g.name NOT ILIKE '%CLOSED%'
        ORDER BY s.check_in`,
         [start, endInclusive]
       );
