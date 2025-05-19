@@ -539,14 +539,14 @@ export default {
     "form.name"(newVal) {
       if (!newVal || !this.nameSelectedFromList) {
         this.isVip = false;
-        this.checkVipStatus(newVal);
+        this.debouncedVipCheck(newVal);
       }
       this.nameSelectedFromList = false;
     },
     "form.car_number"(newVal) {
       if (!newVal || !this.carSelectedFromList) {
         this.isVip = false;
-        this.checkVipStatus(newVal);
+        this.debouncedVipCheck(newVal);
       }
       this.carSelectedFromList = false;
     },
@@ -623,6 +623,7 @@ export default {
   created() {
     this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 600);
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 600);
+    this.debouncedVipCheck = debounce(this.checkVipStatus, 600);
   },
   methods: {
     async handleMoveProposal(stayId, newSpotId, fromDate) {
