@@ -1,3 +1,13 @@
+<!--
+  ArchiveFilter.vue
+  --------------------------------------------------
+  Filter component for archive view:
+    • Allows selecting a date range to filter archived stays using Element Plus date picker.
+    • Provides a search input to filter guests by name, car number, etc.
+    • Syncs date range and search text with Pinia store (`archiveStore`) using watchers.
+    • Automatically fetches archive data on first mount if not already loaded.
+    • Styled with simple responsive layout and spacing.
+-->
 <template>
   <div class="filter-container">
     <el-date-picker
@@ -24,7 +34,7 @@ const archiveStore = useArchiveStore();
 const dateRange = ref([...archiveStore.dateRange]);
 const searchText = ref(archiveStore.searchText);
 
-// ✅ Bare hent første gang dersom ingen data finnes
+// Only fetch first time if no data is present
 onMounted(async () => {
   if (!dateRange.value.length) {
     const today = dayjs();

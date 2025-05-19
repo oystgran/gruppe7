@@ -1,6 +1,13 @@
+/*
+  firebase.js
+  --------------------------------------------------
+  Firebase initialization file (authentication only):
+    • Initializes Firebase app with config from environment variables.
+    • Exports Firebase Authentication instance for use in auth workflows.
+    • Firestore is no longer used in this project and has been removed.
+*/
 import firebase from "firebase/compat/app";
 import "firebase/compat/auth";
-import "firebase/compat/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.VUE_APP_FIREBASE_API_KEY,
@@ -14,4 +21,3 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 
 export const auth = firebase.auth();
-export const db = firebase.firestore();

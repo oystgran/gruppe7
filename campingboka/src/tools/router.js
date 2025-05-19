@@ -1,3 +1,14 @@
+/*
+  router.js
+  --------------------------------------------------
+  Vue Router setup with route-based authentication guard:
+    • Defines routes for login, booking, map, and archive screens.
+    • Uses `meta.requiresAuth` to protect authenticated views.
+    • Global `beforeEach` guard checks auth store:
+      – Waits for `loading` to complete before proceeding.
+      – Redirects unauthenticated users to login with redirect path.
+    • Routes are structured for modular screen components.
+*/
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import BookScreen from "@/screens/BookScreen.vue";

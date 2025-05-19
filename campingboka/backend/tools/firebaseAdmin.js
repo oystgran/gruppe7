@@ -1,11 +1,15 @@
-// backend/tools/firebaseAdmin.js
+/*
+  tools/firebaseAdmin.js
+  --------------------------------------------------
+  Initializes Firebase Admin SDK:
+    • Uses application default credentials (ADC) to verify ID tokens.
+    • Required for server-side authentication checks (e.g. in middleware).
+    • Used in authMiddleware.js to validate incoming requests.
+*/
 const admin = require("firebase-admin");
 
-// Hvis du bruker .env + GOOGLE_APPLICATION_CREDENTIALS:
-// admin.initializeApp();
-
 admin.initializeApp({
-  credential: admin.credential.applicationDefault(), // eller bruk .cert() og en .json-fil
+  credential: admin.credential.applicationDefault(),
 });
 
 module.exports = admin;

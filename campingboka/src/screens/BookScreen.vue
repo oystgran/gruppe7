@@ -1,3 +1,14 @@
+<!--
+  BookScreen.vue
+  --------------------------------------------------
+  Screen for managing guest bookings in a list format:
+    • Displays the GuestBook component, showing all bookings per spot for the selected date.
+    • Handles user interactions for adding or updating a guest (via emitted events).
+    • Opens GuestModal in 'add' or 'edit' mode depending on user action.
+    • Passes spot ID, guest data, and selected date to GuestModal.
+    • Refreshes guest list from store after saving changes.
+    • Resets internal modal state on close to avoid data leaks.
+-->
 <template>
   <div class="book-screen">
     <!-- GuestBook component -->

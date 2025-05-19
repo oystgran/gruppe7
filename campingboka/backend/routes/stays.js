@@ -1,4 +1,20 @@
-// backend/routes/stays.js
+/*
+  routes/stays.js
+  --------------------------------------------------
+  API routes for managing stays:
+    • Protected by Firebase authentication.
+    • GET /api/stays?date=      → Fetch stays active on selected date.
+    • POST /api/stays           → Add new guest and stay.
+    • GET /api/stays/archive    → Get stays within a date range (for archive).
+    • PUT /api/stays/:stayId    → Update guest and stay details.
+    • DELETE /api/stays/:id     → Delete a stay.
+    • POST /partial-swap        → Swap two guests between spots from a date.
+    • POST /move                → Move a guest to another spot from a date.
+
+  Notes:
+    • Prevents double-booking via overlap checks.
+    • Uses transactions for safe partial moves and swaps.
+*/
 const express = require("express");
 const verifyFirebaseToken = require("../middlewares/authMiddleware");
 
@@ -130,6 +146,7 @@ ORDER BY s.check_in`,
        FROM stays s
        JOIN guests g ON s.guest_id = g.id
        WHERE NOT (s.check_out <= $1 OR s.check_in >= $2)
+       AND g.name NOT ILIKE '%CLOSED%'
        ORDER BY s.check_in`,
         [start, endInclusive]
       );

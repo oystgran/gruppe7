@@ -1,3 +1,15 @@
+/*
+  index.js
+  --------------------------------------------------
+  Entry point for the Express backend server:
+    • Loads environment variables and initializes PostgreSQL connection.
+    • Sets up middleware: CORS and JSON parsing.
+    • Registers route modules for:
+        – /api/guests  → guest management
+        – /api/stays   → stay booking and updates
+        – /api/checks  → daily spot checks
+    • Starts the server on port 3000.
+*/
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();

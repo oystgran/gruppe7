@@ -1,3 +1,16 @@
+/*
+  createGuestFormRules.js
+  --------------------------------------------------
+  Validation rule generator for guest form (Element Plus):
+    • Returns rule object used by `el-form` to validate guest input fields.
+    • Includes standard required checks for name, car number, nationality, etc.
+    • Custom validator ensures:
+        – Check-out date is after check-in.
+        – At least one adult or child is registered.
+    • Depends on the `form` object passed in to validate cross-field logic.
+    • Used in GuestModal.vue for validating form before submission.
+*/
+
 export function createGuestFormRules(form) {
   return {
     name: [{ required: true, message: "Please enter a name", trigger: "blur" }],
