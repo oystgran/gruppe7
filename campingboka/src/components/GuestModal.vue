@@ -539,14 +539,12 @@ export default {
     "form.name"(newVal) {
       if (!newVal || !this.nameSelectedFromList) {
         this.isVip = false;
-        this.debouncedVipCheck(newVal);
       }
       this.nameSelectedFromList = false;
     },
     "form.car_number"(newVal) {
       if (!newVal || !this.carSelectedFromList) {
         this.isVip = false;
-        this.debouncedVipCheck(newVal);
       }
       this.carSelectedFromList = false;
     },
@@ -623,7 +621,6 @@ export default {
   created() {
     this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 600);
     this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 600);
-    this.debouncedVipCheck = debounce(this.checkVipStatus, 600);
   },
   methods: {
     async handleMoveProposal(stayId, newSpotId, fromDate) {
@@ -704,39 +701,6 @@ export default {
       }
       return `Spot ${id}`;
     },
-    async checkVipStatus(nameOrCarNumber) {
-      if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
-        this.isVip = false;
-        return;
-      }
-
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`,
-          { headers }
-        );
-        const guests = await res.json();
-
-        const matched = guests.find(
-          (g) =>
-            g.name.toLowerCase() === this.form.name.toLowerCase() &&
-            g.car_number.toLowerCase() === this.form.car_number.toLowerCase()
-        );
-
-        if (matched?.last_checkout) {
-          const daysAgo =
-            (new Date() - new Date(matched.last_checkout)) /
-            (1000 * 60 * 60 * 24);
-          this.isVip = daysAgo >= 14;
-        } else {
-          this.isVip = false;
-        }
-      } catch (err) {
-        console.error("VIP lookup failed:", err);
-        this.isVip = false;
-      }
-    },
     hasValidationError(fieldName) {
       const field = this.$refs.guestForm?.fields?.find(
         (f) => f.prop === fieldName
@@ -758,6 +722,7 @@ export default {
           suggestions.map((g) => ({
             value: `${g.car_number} (${g.name})`,
             guest: g,
+            vip: g.vip === true,
           }))
         );
       } catch (err) {
@@ -779,6 +744,7 @@ export default {
           suggestions.map((g) => ({
             value: `${g.name} (${g.car_number})`,
             guest: g,
+            vip: g.vip === true,
           }))
         );
       } catch (err) {
@@ -795,17 +761,8 @@ export default {
 
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
-      this.form.vip = item.guest.vip || false;
-
-      const lastCheckout = item.guest.last_checkout;
-      if (lastCheckout) {
-        const daysAgo = Math.floor(
-          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
-        );
-        this.isVip = daysAgo >= 14;
-      } else {
-        this.isVip = false;
-      }
+      this.form.vip = item.vip;
+      this.isVip = item.vip;
 
       const nationality = guest.nationality;
       console.log("Tidligere brukt nasjonalitet:", nationality);
@@ -830,16 +787,6 @@ export default {
       this.form.name = guest.name || "";
       this.form.car_number = guest.car_number || "";
       this.form.vip = item.guest.vip || false;
-
-      const lastCheckout = item.guest.last_checkout;
-      if (lastCheckout) {
-        const daysAgo = Math.floor(
-          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
-        );
-        this.isVip = daysAgo >= 14;
-      } else {
-        this.isVip = false;
-      }
 
       const nationality = guest.nationality;
       if (nationality) {
