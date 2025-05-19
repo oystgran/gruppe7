@@ -54,7 +54,7 @@ export default {
         loading.value = true;
         try {
           await auth.signIn(form.value.email, form.value.password);
-          router.push({ name: "Dashboard" });
+          router.push({ name: "Books" });
         } catch (error) {
           if (error.code === 'auth/user-not-found') {
             ElMessage.error('Account does not exist');

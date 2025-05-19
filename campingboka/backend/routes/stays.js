@@ -56,7 +56,7 @@ ORDER BY s.check_in`,
       });
       res.json(result.rows);
     } catch (err) {
-      console.error("🔥 FULL FEIL I /api/stays:");
+      console.error("FULL FEIL I /api/stays:");
       console.error("Melding:", err.message);
       console.error("Stack trace:", err.stack);
       res.status(500).json({ error: "Something went wrong" });
@@ -119,23 +119,22 @@ ORDER BY s.check_in`,
   });
 
   router.get("/archive", verifyFirebaseToken, async (req, res) => {
+    const dayjs = require("dayjs");
     const { start, end } = req.query;
 
     try {
+      const endInclusive = dayjs(end).add(1, "day").format("YYYY-MM-DD");
+
       const result = await pool.query(
         `SELECT s.*, g.name, g.car_number, g.nationality
-         FROM stays s
-         JOIN guests g ON s.guest_id = g.id
-         WHERE (
-           (s.check_in BETWEEN $1 AND $2)
-           OR (s.check_out BETWEEN $1 AND $2)
-           OR (s.check_in <= $1 AND s.check_out >= $2)
-         )
-         ORDER BY s.check_in`,
-        [start, end]
+       FROM stays s
+       JOIN guests g ON s.guest_id = g.id
+       WHERE NOT (s.check_out <= $1 OR s.check_in >= $2)
+       ORDER BY s.check_in`,
+        [start, endInclusive]
       );
 
-      // Formatér datoene for frontend
+      // 🧹 Formatér datoene for frontend-visning
       const formatted = result.rows.map((row) => ({
         ...row,
         Startdato: row.check_in.toISOString().split("T")[0],
@@ -145,7 +144,7 @@ ORDER BY s.check_in`,
 
       res.json(formatted);
     } catch (err) {
-      console.error(err);
+      console.error("Archive query failed:", err);
       res.status(500).json({ error: "Archive query failed" });
     }
   });
@@ -373,10 +372,13 @@ ORDER BY s.check_in`,
         );
 
         const conflictStay = conflict.rows[0];
+        const dayjs = require("dayjs");
         if (conflictStay) {
           throw new Error(
             `Cannot move: Target spot ${newSpotId} has a conflicting stay from ` +
-              `${conflictStay.check_in} to ${conflictStay.check_out}.`
+              `${dayjs(conflictStay.check_in).format("YYYY-MM-DD")} to ${dayjs(
+                conflictStay.check_out
+              ).format("YYYY-MM-DD")}.`
           );
         }
       }
@@ -440,74 +442,6 @@ ORDER BY s.check_in`,
       client.release();
     }
   });
-  /* 
-  router.post("/move", async (req, res) => {
-    const { stayId, newSpotId, fromDate } = req.body;
-
-    const client = await pool.connect();
-    try {
-      await client.query("BEGIN");
-
-      const { rows } = await client.query("SELECT * FROM stays WHERE id = $1", [
-        stayId,
-      ]);
-      const stay = rows[0];
-
-      if (!stay) throw new Error("Stay not found");
-
-      // Forkort det gamle oppholdet
-      const cutoff = new Date(fromDate);
-      cutoff.setHours(12, 0, 0, 0);
-      const cutoffStr = cutoff.toISOString();
-
-      // 🚫 Ikke trekk fra én dag hvis fromDate og check_in er samme dag
-      const sameDay =
-        new Date(stay.check_in).toDateString() ===
-        new Date(fromDate).toDateString();
-
-      if (sameDay) {
-        // Bare slett stayen istedenfor å splitte
-        await client.query("DELETE FROM stays WHERE id = $1", [stay.id]);
-      } else {
-        // Forkort stay som vanlig
-        await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
-          cutoffStr,
-          stay.id,
-        ]);
-      }
-
-      await client.query("UPDATE stays SET check_out = $1 WHERE id = $2", [
-        cutoffStr,
-        stay.id,
-      ]);
-
-      // Lag nytt opphold på ny plass fra fromDate til original check_out
-      await client.query(
-        `INSERT INTO stays 
-          (guest_id, spot_id, check_in, check_out, adults, children, electricity, price)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-        [
-          stay.guest_id,
-          newSpotId,
-          fromDate,
-          stay.check_out, // behold opprinnelig utsjekk
-          stay.adults,
-          stay.children,
-          stay.electricity,
-          stay.price,
-        ]
-      );
-
-      await client.query("COMMIT");
-      res.json({ message: "Guest moved successfully" });
-    } catch (err) {
-      await client.query("ROLLBACK");
-      console.error("❌ Move error:", err);
-      res.status(500).json({ error: "Failed to move guest" });
-    } finally {
-      client.release();
-    }
-  }); */
 
   return router;
 };
