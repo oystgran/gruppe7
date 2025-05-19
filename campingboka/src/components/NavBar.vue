@@ -129,9 +129,6 @@ function logout() {
   font-size: clamp(14px, 1.5vw, 18px);
 }
 @media (max-width: 600px) {
-  .nav-bar {
-  position: relative;
-  }
   .nav-bar .el-menu-item {
     display: none !important;
   }
