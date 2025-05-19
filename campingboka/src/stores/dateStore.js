@@ -1,5 +1,5 @@
 /*
-  date.js (Pinia store)
+  dateStore.js (Pinia store)
   --------------------------------------------------
   Store for managing globally selected date:
     • selectedDate: Holds the currently selected date as a Date object.
