@@ -1,3 +1,15 @@
+<!--
+  GuestBook.vue
+  --------------------------------------------------
+  Component for displaying and interacting with bookings per spot:
+    • Renders grouped GuestBookCard components in a responsive grid.
+    • Displays booking data (car number, check-in/out, price, VIP) for each spot.
+    • Emits modal open events based on whether a spot has a booking.
+    • Supports drag-and-drop to swap or move bookings between spots.
+    • Allows toggling "checked" status for a spot using a checkbox.
+    • Watches selectedDate and debounces loading of guests and checks from the store.
+    • Adjusts layout responsively based on window width.
+-->
 <template>
   <div class="guestbook-wrapper">
     <div class="bookCards">

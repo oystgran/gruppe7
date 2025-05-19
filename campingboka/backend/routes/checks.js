@@ -1,3 +1,19 @@
+/*
+  routes/checks.js
+  --------------------------------------------------
+  Express route handler for managing checked spots:
+    • Secured by Firebase authentication middleware (`verifyFirebaseToken`).
+    • GET /api/checks?date=YYYY-MM-DD
+        – Returns all spot_ids marked as checked on the given date.
+    • POST /api/checks
+        – Adds a new check for a spot on a given date (ignores duplicates).
+    • DELETE /api/checks
+        – Removes a check for a specific spot and date.
+
+  Notes:
+    • All routes require valid Firebase ID token in the Authorization header.
+    • Uses PostgreSQL connection pool (`pool`) to perform queries on the `checks` table.
+*/
 const verifyFirebaseToken = require("../middlewares/authMiddleware");
 
 const express = require("express");

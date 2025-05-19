@@ -1,3 +1,13 @@
+<!--
+  DateNavigator.vue
+  --------------------------------------------------
+  Component for selecting and navigating between dates:
+    • Displays the selected date and weekday in a readable format.
+    • Allows users to pick a date using a calendar input.
+    • Includes previous/next day buttons for quick navigation.
+    • Emits updates to parent component via v-model (modelValue).
+    • Adapts layout responsively: mobile view shows only calendar icon input.
+-->
 <template>
   <div class="date-navigator">
     <label class="calendar-button" aria-label="Select date">

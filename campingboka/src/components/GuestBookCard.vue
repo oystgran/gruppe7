@@ -1,3 +1,15 @@
+<!--
+  GuestBookCard.vue
+  --------------------------------------------------
+  Visual card component for displaying a single camping spot's booking:
+    • Shows key booking info: spot number, car number, nationality, check-in/out, price, VIP tag.
+    • Displays national flag with tooltip based on guest's nationality.
+    • Indicates VIP guests with a special badge.
+    • Includes a checkbox to mark spot as "checked", emitting an event when toggled.
+    • Supports dynamic flag and tooltip rendering via computed country property.
+    • Slot allows injection of custom car number content.
+    • Responsively hides VIP text on narrow screens.
+-->
 <template>
   <el-card shadow="hover">
     <el-row :gutter="30">

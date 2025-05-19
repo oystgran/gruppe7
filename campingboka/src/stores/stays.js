@@ -1,3 +1,16 @@
+/*
+  stays.js (Pinia store)
+  --------------------------------------------------
+  Store for managing current and historical guest bookings:
+    • loadGuests(): Loads bookings for a given date, with caching unless forceReload is true.
+    • addGuest(): Adds a new guest and stay, or reuses existing guest if matched by name and car number.
+    • updateGuest(): Updates guest and stay data for a given stay ID.
+    • deleteGuest(): Deletes a guest and their associated stay.
+    • fetchStaysInRange(): Fetches stays for a specified date range (used in archive).
+    • Stores bookingsToday keyed by spot ID, with metadata for current date.
+    • Provides helper values like `allSpots`, `count`, and `doubleCount`.
+    • Used across BookScreen, MapScreen, GuestModal, Archive, and Dashboard components.
+*/
 import { defineStore } from "pinia";
 import { ref, computed } from "vue";
 import { keyBy } from "lodash";

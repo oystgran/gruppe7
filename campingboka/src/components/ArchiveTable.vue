@@ -1,3 +1,13 @@
+<!--
+  ArchiveTable.vue
+  --------------------------------------------------
+  Component for displaying archived stays in a data grid:
+    • Uses AG Grid to show stay data with columns like name, car number, dates, and price.
+    • Applies Norwegian date formatting to check-in and check-out columns.
+    • Supports pagination and quick filtering via `quickFilterText` prop.
+    • Dynamically receives `rowData` from parent and renders full-height responsive table.
+    • Styled with AG Grid Alpine theme and adjusts to viewport height.
+-->
 <template>
   <div class="archive-table-wrapper">
     <div

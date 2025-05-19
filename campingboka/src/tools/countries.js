@@ -1,3 +1,14 @@
+/*
+  countries.js (utility data)
+  --------------------------------------------------
+  Provides a mapping of country codes to:
+    • Country name in English.
+    • URL to country flag image (hosted via flagcdn).
+  Used for:
+    • Displaying guest nationality with flag and tooltip in GuestBookCard.vue.
+    • Autocomplete suggestions and formatting in GuestModal.vue.
+    • Nationality-based charts in ArchiveChart.vue.
+*/
 export const countries = {
   AFG: { name: "Afghanistan", flag: "https://flagcdn.com/w80/af.png" },
   ALB: { name: "Albania", flag: "https://flagcdn.com/w80/al.png" },
@@ -21,7 +32,10 @@ export const countries = {
   BEN: { name: "Benin", flag: "https://flagcdn.com/w80/bj.png" },
   BTN: { name: "Bhutan", flag: "https://flagcdn.com/w80/bt.png" },
   BOL: { name: "Bolivia", flag: "https://flagcdn.com/w80/bo.png" },
-  BIH: { name: "Bosnia and Herzegovina", flag: "https://flagcdn.com/w80/ba.png" },
+  BIH: {
+    name: "Bosnia and Herzegovina",
+    flag: "https://flagcdn.com/w80/ba.png",
+  },
   BWA: { name: "Botswana", flag: "https://flagcdn.com/w80/bw.png" },
   BRA: { name: "Brazil", flag: "https://flagcdn.com/w80/br.png" },
   BRN: { name: "Brunei Darussalam", flag: "https://flagcdn.com/w80/bn.png" },
@@ -155,5 +169,5 @@ export const countries = {
   VNM: { name: "Vietnam", flag: "https://flagcdn.com/w80/vn.png" },
   ZMB: { name: "Zambia", flag: "https://flagcdn.com/w80/zm.png" },
   ZWE: { name: "Zimbabwe", flag: "https://flagcdn.com/w80/zw.png" },
-  ALA: { name: "Åland Islands", flag: "https://flagcdn.com/w80/ax.png" }
+  ALA: { name: "Åland Islands", flag: "https://flagcdn.com/w80/ax.png" },
 };
