@@ -52,6 +52,7 @@ import { CirclePlusFilled } from "@element-plus/icons-vue";
 import { useStaysStore } from "@/stores/stays";
 import { useChecksStore } from "@/stores/checks";
 import { getIdTokenHeader } from "@/tools/firebaseToken";
+import { debounce } from "lodash";
 
 export default {
   name: "GuestBook",
@@ -69,8 +70,8 @@ export default {
     selectedDate: {
       immediate: true,
       handler(newDate) {
-        this.store.loadGuests(newDate);
-        this.checksStore.loadCheckedSpots(newDate);
+        this.debouncedLoadGuests(newDate);
+        this.debouncedLoadChecks(newDate);
       },
     },
   },
@@ -79,6 +80,14 @@ export default {
     return {
       windowWidth: window.innerWidth,
       dragSourceSpotId: null,
+
+      debouncedLoadGuests: debounce(function (date) {
+        this.store.loadGuests(date);
+      }, 300),
+
+      debouncedLoadChecks: debounce(function (date) {
+        this.checksStore.loadCheckedSpots(date);
+      }, 300),
     };
   },
   mounted() {

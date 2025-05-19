@@ -45,15 +45,14 @@ const selectedDate = computed({
 });
 
 console.log(store);
-watch(
-  selectedDate,
-  debounce(() => {
-    console.log("selectedDate: ");
-    console.log(selectedDate);
-    store.loadGuests(selectedDate);
-  }, 300)
-);
-store.loadGuests(selectedDate);
+const debouncedLoadGuests = debounce(() => {
+  console.log("selectedDate:", selectedDate.value);
+  store.loadGuests(selectedDate.value);
+}, 1000);
+
+watch(selectedDate, () => {
+  debouncedLoadGuests();
+});
 
 function logout() {
   auth.signOut();
@@ -68,9 +67,6 @@ function logout() {
   height: clamp(40px, 8vh, 60px);
   line-height: clamp(40px, 8vh, 60px);
   width: 100%;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
 }
 
 .nav-bar .el-menu-item,

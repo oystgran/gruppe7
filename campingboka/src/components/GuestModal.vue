@@ -120,9 +120,10 @@
             </template>
             <el-date-picker
               v-model="form.check_in"
-              type="datetime"
+              type="date"
               placeholder="Choose check-in date"
               required
+              @change="setCheckInTime"
             />
           </el-form-item>
 
@@ -178,7 +179,7 @@
                 "
               >
                 {{
-                  isFjordSpot
+                  isFjordSpotComputed
                     ? `Fjord spot + ${120 + 340}kr`
                     : `Standard spot + ${340}kr`
                 }}
@@ -327,20 +328,18 @@ import { countries } from "@/tools/countries";
 import dayjs from "dayjs";
 import debounce from "lodash/debounce";
 import { getIdTokenHeader } from "@/tools/firebaseToken";
-
-const BASE_PRICE = 340;
-const FJORD_EXTRA = 120;
-const ADULT_PRICE = 40;
-const CHILD_PRICE = 20;
-const ELECTRICITY_PRICE = 50;
-const FJORD_SPOTS = new Set([
-  ...Array.from({ length: 19 }, (_, i) => i + 1),
-  38,
-  39,
-  40,
-  41,
-  42,
-]);
+import {
+  calculatePrice,
+  calculateNights,
+  isFjordSpot,
+} from "@/utils/guestPriceUtils";
+import {
+  fetchGuestSuggestions,
+  fetchCarSuggestions,
+  queryNationalitySuggestions,
+} from "@/utils/autocompleteUtils";
+import { createGuestFormRules } from "@/utils/guestFormRules";
+import { fillGuestForm } from "@/utils/guestUtils";
 
 export default {
   name: "GuestModal",
@@ -373,69 +372,6 @@ export default {
         electricity: false,
         check_out: null,
         vip: false,
-      },
-      formRules: {
-        name: [
-          { required: true, message: "Please enter a name", trigger: "blur" },
-        ],
-        car_number: [
-          {
-            required: true,
-            message: "Please enter a car number",
-            trigger: "blur",
-          },
-        ],
-        nationality: [
-          {
-            required: true,
-            message: "Please select a nationality",
-            trigger: "blur",
-          },
-        ],
-        check_in: [
-          {
-            required: true,
-            message: "Please choose a check-in date",
-            trigger: "change",
-          },
-        ],
-        check_out: [
-          {
-            required: true,
-            validator: (rule, value, callback) => {
-              if (!value)
-                return callback(new Error("Please select a check-out date"));
-              const checkIn = new Date(this.form.check_in);
-              const checkOut = new Date(value);
-              if (checkOut <= checkIn) {
-                return callback(new Error("Check-out must be after check-in"));
-              }
-              callback();
-            },
-            trigger: "change",
-          },
-        ],
-        spotId: [
-          {
-            required: true,
-            message: "Spot number is required",
-            trigger: "change",
-          },
-        ],
-        adults: [
-          {
-            required: true,
-            validator: (rule, value, callback) => {
-              if (this.form.adults === 0 && this.form.children === 0) {
-                return callback(
-                  new Error("At least one adult or child is required")
-                );
-              }
-              callback();
-            },
-            trigger: "change",
-          },
-        ],
       },
     };
   },
@@ -539,14 +475,12 @@ export default {
     "form.name"(newVal) {
       if (!newVal || !this.nameSelectedFromList) {
         this.isVip = false;
-        this.checkVipStatus(newVal);
       }
       this.nameSelectedFromList = false;
     },
     "form.car_number"(newVal) {
       if (!newVal || !this.carSelectedFromList) {
         this.isVip = false;
-        this.checkVipStatus(newVal);
       }
       this.carSelectedFromList = false;
     },
@@ -573,7 +507,9 @@ export default {
     },
     form: {
       handler() {
-        this.calculatePrice();
+        if (!this.priceManuallyEdited) {
+          this.form.price = calculatePrice({ ...this.form });
+        }
       },
       deep: true,
     },
@@ -594,6 +530,9 @@ export default {
     },
   },
   computed: {
+    isFjordSpotComputed() {
+      return isFjordSpot(this.form.spotId);
+    },
     allSpots() {
       return Array.from({ length: 42 }, (_, i) => i + 1);
     },
@@ -603,28 +542,30 @@ export default {
       const withCurrent = new Set([...all, current]);
       return Array.from(withCurrent);
     },
-    isFjordSpot() {
-      return FJORD_SPOTS.has(this.form.spotId);
-    },
     priceSummary() {
-      const nights = this.calculateNights();
+      const nights = calculateNights(this.form.check_in, this.form.check_out);
       if (!nights) return "";
-      const nightlyRate =
-        BASE_PRICE +
-        (this.isFjordSpot ? FJORD_EXTRA : 0) +
-        this.form.adults * ADULT_PRICE +
-        this.form.children * CHILD_PRICE +
-        (this.form.electricity ? ELECTRICITY_PRICE : 0);
-      return `${nightlyRate} kr × ${nights} nights = ${
-        nightlyRate * nights
-      } kr`;
+      const total = calculatePrice({ ...this.form });
+      return `${Math.round(
+        total / nights
+      )} kr × ${nights} nights = ${total} kr`;
+    },
+    formRules() {
+      return createGuestFormRules(this.form);
     },
   },
   created() {
-    this.debouncedGuestSearch = debounce(this.fetchGuestSuggestions, 600);
-    this.debouncedCarSearch = debounce(this.fetchCarSuggestions, 600);
+    this.debouncedGuestSearch = debounce(fetchGuestSuggestions, 600);
+    this.debouncedCarSearch = debounce(fetchCarSuggestions, 600);
   },
   methods: {
+    setCheckInTime(date) {
+      if (date instanceof Date) {
+        const withTime = new Date(date);
+        withTime.setHours(15, 0, 0, 0); // Alltid 15:00
+        this.form.check_in = withTime;
+      }
+    },
     async handleMoveProposal(stayId, newSpotId, fromDate) {
       try {
         const headers = await getIdTokenHeader();
@@ -703,39 +644,6 @@ export default {
       }
       return `Spot ${id}`;
     },
-    async checkVipStatus(nameOrCarNumber) {
-      if (!nameOrCarNumber || nameOrCarNumber.length < 3) {
-        this.isVip = false;
-        return;
-      }
-
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(nameOrCarNumber)}`,
-          { headers }
-        );
-        const guests = await res.json();
-
-        const matched = guests.find(
-          (g) =>
-            g.name.toLowerCase() === this.form.name.toLowerCase() &&
-            g.car_number.toLowerCase() === this.form.car_number.toLowerCase()
-        );
-
-        if (matched?.last_checkout) {
-          const daysAgo =
-            (new Date() - new Date(matched.last_checkout)) /
-            (1000 * 60 * 60 * 24);
-          this.isVip = daysAgo >= 14;
-        } else {
-          this.isVip = false;
-        }
-      } catch (err) {
-        console.error("VIP lookup failed:", err);
-        this.isVip = false;
-      }
-    },
     hasValidationError(fieldName) {
       const field = this.$refs.guestForm?.fields?.find(
         (f) => f.prop === fieldName
@@ -744,110 +652,19 @@ export default {
       const isEmpty = !this.form[fieldName];
       return isInvalid || isEmpty;
     },
-    async fetchCarSuggestions(query, cb) {
-      if (!query || query.trim().length < 1) return cb([]);
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`,
-          { headers }
-        );
-        const suggestions = await res.json();
-        cb(
-          suggestions.map((g) => ({
-            value: `${g.car_number} (${g.name})`,
-            guest: g,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching car number suggestions:", err);
-        cb([]);
-      }
-    },
-    async fetchGuestSuggestions(query, cb) {
-      if (!query || query.trim().length < 1) return cb([]);
-
-      try {
-        const headers = await getIdTokenHeader();
-        const res = await fetch(
-          `/api/guests/search?query=${encodeURIComponent(query)}`,
-          { headers }
-        );
-        const suggestions = await res.json();
-        cb(
-          suggestions.map((g) => ({
-            value: `${g.name} (${g.car_number})`,
-            guest: g,
-          }))
-        );
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-        cb([]);
-      }
-    },
     onGuestSelected(item) {
       this.nameSelectedFromList = true;
-      if (!item || !item.guest) return;
-
-      const guest = item.guest;
-      console.log("Valgt gjest:", guest);
-
-      this.form.name = guest.name || "";
-      this.form.car_number = guest.car_number || "";
-      this.form.vip = item.guest.vip || false;
-
-      const lastCheckout = item.guest.last_checkout;
-      if (lastCheckout) {
-        const daysAgo = Math.floor(
-          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
-        );
-        this.isVip = daysAgo >= 14;
-      } else {
-        this.isVip = false;
-      }
-
-      const nationality = guest.nationality;
-      console.log("Tidligere brukt nasjonalitet:", nationality);
-
-      if (nationality) {
-        const match = Object.values(countries).find(
-          (c) => c.name.toLowerCase() === nationality.toLowerCase()
-        );
-        this.form.nationality = match ? match.name : "";
-        console.log("Matchet nasjonalitet:", this.form.nationality);
-      } else {
-        this.form.nationality = "";
+      if (item?.guest) {
+        fillGuestForm(this.form, item.guest, item.vip);
+        this.isVip = item.vip;
       }
     },
 
     onCarSelected(item) {
       this.carSelectedFromList = true;
-      if (!item || !item.guest) return;
-
-      const guest = item.guest;
-
-      this.form.name = guest.name || "";
-      this.form.car_number = guest.car_number || "";
-      this.form.vip = item.guest.vip || false;
-
-      const lastCheckout = item.guest.last_checkout;
-      if (lastCheckout) {
-        const daysAgo = Math.floor(
-          (new Date() - new Date(lastCheckout)) / (1000 * 60 * 60 * 24)
-        );
-        this.isVip = daysAgo >= 14;
-      } else {
-        this.isVip = false;
-      }
-
-      const nationality = guest.nationality;
-      if (nationality) {
-        const match = Object.values(countries).find(
-          (c) => c.name.toLowerCase() === nationality.toLowerCase()
-        );
-        this.form.nationality = match ? match.name : "";
-      } else {
-        this.form.nationality = "";
+      if (item?.guest) {
+        fillGuestForm(this.form, item.guest, item.guest.vip);
+        this.isVip = item.guest.vip || false;
       }
     },
     isToday(date) {
@@ -858,38 +675,8 @@ export default {
         date.getFullYear() === today.getFullYear()
       );
     },
-    calculateNights() {
-      const checkIn = new Date(this.form.check_in);
-      const checkOut = new Date(this.form.check_out);
-      checkIn.setHours(0, 0, 0, 0);
-      checkOut.setHours(0, 0, 0, 0);
-      const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
-      return nights > 0 ? nights : 0;
-    },
-    calculatePrice() {
-      if (this.priceManuallyEdited) return;
-      const nights = this.calculateNights();
-      if (!nights) return (this.form.price = 0);
-      const base = BASE_PRICE + (this.isFjordSpot ? FJORD_EXTRA : 0);
-      const total =
-        nights *
-        (base +
-          this.form.adults * ADULT_PRICE +
-          this.form.children * CHILD_PRICE +
-          (this.form.electricity ? ELECTRICITY_PRICE : 0));
-      this.form.price = Number(total);
-    },
     querySearch(queryString, cb) {
-      const results = Object.entries(countries).filter(([code, { name }]) => {
-        const lower = queryString.toLowerCase();
-        return (
-          code.toLowerCase().includes(lower) ||
-          name.toLowerCase().includes(lower)
-        );
-      });
-      cb(
-        results.map(([code, { name, flag }]) => ({ value: name, code, flag }))
-      );
+      queryNationalitySuggestions(queryString, cb);
     },
     validateNationality() {
       const valid = Object.values(countries).map((c) => c.name);
@@ -902,13 +689,16 @@ export default {
           return;
         }
 
-        // 🔐 Ekstra sjekk for å hindre overskriving av annen gjest sin plass
+        // Ekstra sjekk for å hindre overskriving av annen gjest sin plass
         if (this.mode === "edit" && this.isSpotOccupied(this.form.spotId)) {
           this.$message.warning(
             `Spot ${this.form.spotId} is already occupied. Please propose a swap or select another spot.`
           );
           return;
         }
+
+        const checkInDate = new Date(this.form.check_in);
+        checkInDate.setHours(15, 0, 0, 0);
 
         const checkOutDate = new Date(this.form.check_out);
         checkOutDate.setHours(12, 0, 0, 0);
@@ -921,7 +711,7 @@ export default {
 
         const stayPayload = {
           spot_Id: this.form.spotId,
-          check_in: dayjs(this.form.check_in).format("YYYY-MM-DDTHH:mm:ss"),
+          check_in: dayjs(checkInDate).format("YYYY-MM-DDTHH:mm:ss"),
           check_out: dayjs(checkOutDate).format("YYYY-MM-DDTHH:mm:ss"),
           price: this.form.price,
           adults: this.form.adults,
@@ -934,7 +724,8 @@ export default {
             console.log("Updating guest:", this.guest);
             console.log("guestId:", this.guest?.guestId);
             console.log("stayId:", this.guest?.stayId);
-
+            console.log("Innsjekk som sendes:", stayPayload.check_in);
+            console.log("Utsjekk som sendes:", stayPayload.check_out);
             await this.store.updateGuest(
               this.guest.guestId,
               guestPayload,
@@ -946,8 +737,8 @@ export default {
           }
 
           this.$message.success(this.mode === "edit" ? "Updated!" : "Added!");
-          this.$emit("guestSaved"); // ✅ Bare én gang, etter alt er klart
-          this.closeModal(); // ✅ Bare én gang, etterpå
+          this.$emit("guestSaved");
+          this.closeModal();
         } catch (err) {
           console.error("❌ Guest save failed:", err);
           const message =
@@ -959,15 +750,29 @@ export default {
       });
     },
     async handleDelete() {
-      try {
-        await this.store.deleteGuest(this.guest.guestId, this.guest.stayId);
-        this.$message.success("Guest deleted");
-        this.$emit("guestSaved");
-        this.closeModal();
-      } catch (err) {
-        console.error(err);
-        this.$message.error("Deletion failed");
-      }
+      this.$confirm(
+        `Are you sure you want to delete ${this.guest.name} (${this.guest.car_number})?`,
+        "Confirm Deletion",
+        {
+          confirmButtonText: "Yes, delete",
+          cancelButtonText: "Cancel",
+          type: "warning",
+        }
+      )
+        .then(async () => {
+          try {
+            await this.store.deleteGuest(this.guest.guestId, this.guest.stayId);
+            this.$message.success("Guest deleted");
+            this.$emit("guestSaved");
+            this.closeModal();
+          } catch (err) {
+            console.error(err);
+            this.$message.error("Deletion failed");
+          }
+        })
+        .catch(() => {
+          this.$message.info("Deletion cancelled.");
+        });
     },
     closeModal() {
       this.$emit("close");
@@ -1018,17 +823,9 @@ export default {
 .close:hover {
   color: red;
 }
-/* ::v-deep(.el-form-item.is-required .el-form-item__label::before) {
-  content: "*";
-  color: red;
-  position: absolute;
-  left: -10px; 
-  font-size: 16px;
-} */
 
 ::v-deep(.el-form-item__label) {
-  position: relative; /* 
-  padding-right: 10px; */
+  position: relative;
 }
 ::v-deep(.el-form-item__label::before) {
   display: none !important;
